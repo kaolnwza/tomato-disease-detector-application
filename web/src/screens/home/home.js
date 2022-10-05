@@ -6,8 +6,8 @@ function Home({navigation}) {
     <View style={styles.container}>
       <Text>Home Screenasdmsanj</Text>
       <Button
-        title="Go to Details"
-        onPress={() => navigation.navigate('Details')}
+        title="Go to Camera"
+        onPress={() => navigation.navigate('Camera')}
       />
     </View>
   );
