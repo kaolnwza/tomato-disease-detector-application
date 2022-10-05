@@ -44,5 +44,5 @@ class CNN(nn.Module):
 
 
 model = CNN()
-model.load_state_dict(torch.load("modelkub.pt"))
-model.eval()
+model.load_state_dict(torch.load("modeljra.pt"))
+# model.eval()
