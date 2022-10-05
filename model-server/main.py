@@ -1,3 +1,5 @@
+from io import BytesIO
+import requests
 import os
 import numpy as np
 import torch
@@ -16,7 +18,7 @@ import cv2 as cv
 import seaborn as sns
 import matplotlib.pyplot as plt
 from PIL import Image
-
+import urllib.request
 
 import torchvision.transforms.functional as TF
 
@@ -71,18 +73,37 @@ for var_name in optimizer.state_dict():
 
 # model.load_state_dict(torch.load("modelkub.pt"))
 # model.eval()
-
+transformer = transforms.Compose([
+    transforms.Resize((224, 224)),
+    transforms.ToTensor(),
+    # transforms.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5])
+])
 
 model.load_state_dict(torch.load("modeljra.pt", map_location='cpu'))
 # # load = torch.load("modelkub.pt")
 # model.eval()
 
 
-# ps, classes2 = predict(
-#     "./test/0db85707-41f9-42df-ba3b-842d14f00a68___GHLB2 Leaf 8909.JPG", model)
-# print(ps, classes2)
-def prediction123(img_path, transformer):
+def prediction(img_path):
+
     image = Image.open(img_path).convert('RGB')
+    image_tensor = transformer(image)
+    image_tensor = image_tensor.unsqueeze_(
+        0)  # so img is not treated as a batch
+    input_img = Variable(image_tensor)
+    output = model(input_img)
+    # print(output)
+    index = output.data.numpy().argmax()
+    pred = classes[index]
+    return pred
+
+
+def predictionURL(img_path):
+
+    response = requests.get(
+        img_path)
+    img = Image.open(BytesIO(response.content))
+    image = img.convert('RGB')
     image_tensor = transformer(image)
     image_tensor = image_tensor.unsqueeze_(
         0)  # so img is not treated as a batch
@@ -100,17 +121,8 @@ def prediction123(img_path, transformer):
 pred_path = 'test/bacterisspot'
 test_imgs = glob.glob(pred_path+'/*')
 
-print('test_imgs', test_imgs)
+# for i in test_imgs:
+# print(prediction(i))
 
-transformeree = transforms.Compose([
-    transforms.Resize((224, 224)),
-    transforms.ToTensor(),
-    # transforms.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5])
-])
-print('test')
-
-for i in test_imgs:
-    print(prediction123(i, transformeree))
-print('endloop')
-
-# print('clas', classes)
+print(predictionURL(
+    "http://extension.msstate.edu/sites/default/files/publication-images/P3361/Figure_1.jpg"))
