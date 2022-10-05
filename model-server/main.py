@@ -43,6 +43,11 @@ class CNN(nn.Module):
         return out
 
 
+# model = CNN()
 model = CNN()
+# model.load_state_dict(torch.load("modelkub.pt"))
+# model.eval()
+
 model.load_state_dict(torch.load("modelkub.pt"))
+# load = torch.load("modelkub.pt")
 model.eval()
