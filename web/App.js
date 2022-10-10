@@ -1,23 +1,18 @@
 import * as React from 'react';
-import {View, Text} from 'react-native';
-import {NavigationContainer} from '@react-navigation/native';
-import {createNativeStackNavigator} from '@react-navigation/native-stack';
-import {Home, Camera} from './src/screens';
+import * as eva from '@eva-design/eva';
+import {ApplicationProvider, IconRegistry} from '@ui-kitten/components';
+import {EvaIconsPack} from '@ui-kitten/eva-icons';
+import {AppNavigator} from './src/components/Navigations/navigation';
 
-const Stack = createNativeStackNavigator();
-
-function App() {
+export const App = () => {
   return (
-    <NavigationContainer>
-      <Stack.Navigator
-        screenOptions={{
-          headerShown: true,
-        }}>
-        <Stack.Screen name="Home" component={Home} />
-        <Stack.Screen name="Camera" component={Camera} />
-      </Stack.Navigator>
-    </NavigationContainer>
+    <>
+      <IconRegistry icons={EvaIconsPack} />
+      <ApplicationProvider {...eva} theme={eva.light}>
+        <AppNavigator />
+      </ApplicationProvider>
+    </>
   );
-}
+};
 
 export default App;

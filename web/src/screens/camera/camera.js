@@ -1,13 +1,22 @@
 import React from 'react';
-import {Text, View, StyleSheet, Button} from 'react-native';
 
-function CameraPage({navigation}) {
+import {SafeAreaView, StyleSheet} from 'react-native';
+import {
+  Divider,
+  Icon,
+  Layout,
+  Text,
+  TopNavigation,
+  TopNavigationAction,
+} from '@ui-kitten/components';
+
+export const CameraScreen = ({navigation}) => {
   return (
-    <View style={styles.container}>
-      <Text>Camera Screen</Text>
-    </View>
+    <Layout style={styles.container}>
+      <Text category="h1">DETAILS</Text>
+    </Layout>
   );
-}
+};
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -15,5 +24,3 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 });
-
-export default CameraPage;
