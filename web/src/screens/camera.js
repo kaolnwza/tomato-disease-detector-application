@@ -6,14 +6,14 @@ import {
   Icon,
   Layout,
   Text,
-  TopNavigation,
+  Button,
   TopNavigationAction,
 } from '@ui-kitten/components';
 
 export const CameraScreen = ({navigation}) => {
   return (
     <Layout style={styles.container}>
-      <Text category="h1">DETAILS</Text>
+      <Button onPress={() => {}}>Open Camera</Button>
     </Layout>
   );
 };
