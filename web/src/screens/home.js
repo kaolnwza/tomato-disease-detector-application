@@ -21,7 +21,6 @@ export const HomeScreen = ({navigation}) => {
           React Native Box Shadow (Shadow Props)
         </Text>
       </Layout>
-
       <FlatList
         numColumns={2}
         columnWrapperStyle={{justifyContent: 'space-between'}}
