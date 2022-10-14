@@ -24,5 +24,21 @@ func Controller(port string) {
 		})
 	})
 
+	type Dog struct {
+		Msg string `json:"dog"`
+	}
+	r.POST("/bin", func(c *gin.Context) {
+
+		var doh *Dog
+		if err := c.ShouldBind(&doh); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"message": doh,
+		})
+	})
+
 	r.Run(port)
 }
