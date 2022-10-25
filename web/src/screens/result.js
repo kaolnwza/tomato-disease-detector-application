@@ -46,7 +46,7 @@ export const ResultPage = ({route, navigation}) => {
     );
   return (
     <Layout style={{flex: 1, paddingVertical: 120, paddingHorizontal: 20}}>
-      {/* {resizedImage ? console.log(resizedImage) : console.log('Wait')} */}
+      {console.log(resizedImage)}
 
       <Image
         style={{
