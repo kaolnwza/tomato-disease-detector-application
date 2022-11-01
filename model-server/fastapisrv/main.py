@@ -1,33 +1,22 @@
-from torchvision.transforms.functional import to_pil_image
-import argparse
-import random
+
+
 import pandas as pd
 import torchvision.transforms.functional as TF
-from io import BytesIO
-import requests
-import os
+
 import numpy as np
 import torch
-import glob
 from pathlib import Path
 import torch.nn as nn
 from torchvision.transforms import transforms
 from torch.utils.data import DataLoader, Dataset
 from torch.optim import Adam
 from torch.autograd import Variable
-import torchvision
-import pathlib
 from datetime import datetime
 from torch.utils.data.sampler import SubsetRandomSampler
 import cv2 as cv
 import base64
 import io
-import seaborn as sns
-import matplotlib.pyplot as plt
 from PIL import Image
-import urllib.request
-from torchvision.io import read_image
-from torchvision.utils import draw_bounding_boxes
 
 from typing import Union
 import uvicorn
