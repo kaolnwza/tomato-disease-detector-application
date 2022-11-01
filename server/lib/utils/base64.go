@@ -31,3 +31,15 @@ func Base64ToImg(path string, base64Str string) error {
 
 	return nil
 }
+
+func BytesToString(bytes []byte) (*string, error) {
+	rawDecodedText := base64.StdEncoding.EncodeToString(bytes)
+
+	data, err := base64.StdEncoding.DecodeString(rawDecodedText)
+	if err != nil {
+		return nil, err
+	}
+
+	str := string(data)
+	return &str, nil
+}

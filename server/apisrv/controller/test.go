@@ -9,37 +9,35 @@ import (
 	"net/http"
 	"os"
 	"time"
-	"tomato-api/core/grpcsrv/proto/pb"
-	"tomato-api/lib/config"
+	"tomato-api/apisrv/repository"
 	"tomato-api/lib/utils"
 
 	"github.com/gin-gonic/gin"
-	"google.golang.org/grpc"
 )
 
-func Controller(port string) {
-	conn, err := grpc.Dial("localhost:50051", grpc.WithInsecure())
-	if err != nil {
-		panic(err)
-	}
+// func Controller(port string) {
+// conn, err := grpc.Dial("localhost:50051", grpc.WithInsecure())
+// if err != nil {
+// 	panic(err)
+// }
 
-	client := pb.NewGreeterClient(conn)
+// client := pb.NewGreeterClient(conn)
+func Test(r *gin.Engine) {
+	// r := gin.Default()
 
-	r := gin.Default()
+	// r.Use(config.CorsConfig())
+	// r.SetTrustedProxies([]string{"*"})
 
-	r.Use(config.CorsConfig())
-	r.SetTrustedProxies([]string{"*"})
-
-	r.GET("/grpc", func(ctx *gin.Context) {
-		req := &pb.HelloRequest{Name: "prayuth"}
-		if response, err := client.SayHello(ctx, req); err == nil {
-			ctx.JSON(http.StatusOK, gin.H{
-				"result": fmt.Sprint(response.Message),
-			})
-		} else {
-			ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		}
-	})
+	// r.GET("/grpc", func(ctx *gin.Context) {
+	// 	req := &pb.HelloRequest{Name: "prayuth"}
+	// 	if response, err := client.SayHello(ctx, req); err == nil {
+	// 		ctx.JSON(http.StatusOK, gin.H{
+	// 			"result": fmt.Sprint(response.Message),
+	// 		})
+	// 	} else {
+	// 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	// 	}
+	// })
 
 	r.GET("/", func(ctx *gin.Context) {
 		ctx.JSON(200, gin.H{
@@ -233,5 +231,18 @@ func Controller(port string) {
 
 	})
 
-	r.Run(port)
+	r.GET("/db", func(c *gin.Context) {
+		err := repository.TestFuck555()
+		if err != nil {
+			fmt.Println("err", err)
+		}
+		fmt.Println("x", err)
+	})
+
+	r.GET("/dbis", func(c *gin.Context) {
+		repository.TestFuckLOL()
+
+	})
+
+	// }
 }

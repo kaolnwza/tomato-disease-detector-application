@@ -1,6 +1,4 @@
 from torchvision.transforms.functional import to_pil_image
-from torchvision.models.detection import fasterrcnn_resnet50_fpn_v2, FasterRCNN_ResNet50_FPN_V2_Weights
-from torchvision.io.image import read_image
 import argparse
 import random
 import pandas as pd
@@ -25,7 +23,6 @@ import cv2 as cv
 import base64
 import io
 
-from base64test import byte_data
 import seaborn as sns
 import matplotlib.pyplot as plt
 from PIL import Image
@@ -115,7 +112,7 @@ class AlexNet(nn.Module):
 
 # resnet18 = torch.hub.load('pytorch/vision:v0.10.0',
 #                           'resnet18', pretrained=False)
-resnet18 = torch.hub.load('pytorch/vision:v0.10.0',
+resnet18 = torch.hub.load('pytorch/vision:v0.8.0',
                           'resnet18', pretrained=False)
 
 
@@ -153,7 +150,7 @@ model.load_state_dict(torch.load(
     # "lr0.001-alexk2-overfit-modeleiei.pt", map_location='cpu'))
     # "lol555.pt", map_location='cpu'))
     # "lol555-lr0.0001-20.pt", map_location='cpu'))
-    "resnet-lr0.00001-20.pt", map_location='cpu'))
+    "resnet18-lr0.001-10 ithink0.0001.pt", map_location='cpu'))
 # "lol555-lr0.001.pt", map_location='cpu'))
 # "cv_resnet.pt", map_location='cpu'))
 # "resnet18-overfit.pt", map_location='cpu'))
