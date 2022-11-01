@@ -15,10 +15,10 @@ func Prediction(c *gin.Context) {
 		return
 	}
 
-	if err := utils.Base64ToImg("../lib/tmp/", img.Image); err != nil {
-		c.JSON(500, err.Error())
-		return
-	}
+	// if err := utils.Base64ToImg("../lib/tmp/", img.Image); err != nil {
+	// 	c.JSON(500, err.Error())
+	// 	return
+	// }
 
 	byyt, err := json.Marshal(img)
 	if err != nil {
