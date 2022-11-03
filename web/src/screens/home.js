@@ -2,7 +2,7 @@ import React, {useState} from 'react';
 import {Text, StyleSheet, FlatList, View} from 'react-native';
 import {Button, lightColors, createTheme, ThemeProvider} from '@rneui/themed';
 import Icon from 'react-native-vector-icons/dist/Ionicons';
-
+import {font, buttons} from './styles';
 export const HomeScreen = ({navigation}) => {
   const [menu, setMenu] = useState([
     {name: 'ประวัติการบันทึก', color: '#047675', icon: 'list-outline'},
@@ -19,9 +19,7 @@ export const HomeScreen = ({navigation}) => {
   return (
     <View style={styles.container}>
       <View style={[styles.card, styles.shadowProp]}>
-        <Text style={styles.heading}>
-          React Native Box Shadow (Shadow Props)
-        </Text>
+        <Text style={font.kanit}>React Native Box Shadow (Shadow Props)</Text>
       </View>
 
       <FlatList
@@ -32,7 +30,7 @@ export const HomeScreen = ({navigation}) => {
           <Button
             type="clear"
             title={item.name}
-            titleStyle={{color: '#fff'}}
+            titleStyle={[{color: '#fff'}, font.kanit]}
             style={[styles.btn, styles.shadowProp, jewelStyle(item.color)]}
             icon={<Icon name={item.icon} size={60} color="#fff" />}
             iconPosition="top"

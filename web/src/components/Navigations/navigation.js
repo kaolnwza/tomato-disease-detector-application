@@ -16,6 +16,12 @@ const HomeNavigator = () => (
       headerShown: true,
       headerTransparent: true,
       headerBackTitleVisible: false,
+      headerTitleStyle: {
+        fontFamily: 'Kanit-Regular',
+      },
+      contentStyle: {
+        fontFamily: 'Kanit-Regular',
+      },
     }}>
     <Stack.Screen
       name="Home"

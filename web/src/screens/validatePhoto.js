@@ -1,9 +1,8 @@
 import React, {useRef} from 'react';
 
 import {Linking, SafeAreaView, StyleSheet, View, Image} from 'react-native';
-// import {Divider, Icon, Layout, Text, Button} from '@ui-kitten/components';
 import {Button} from '@rneui/base';
-import Icon from 'react-native-vector-icons/dist/MaterialCommunityIcons';
+import Icon from 'react-native-vector-icons/dist/AntDesign';
 
 export const ValidatePhoto = ({route, navigation}) => {
   const {photo} = route.params;
@@ -24,26 +23,30 @@ export const ValidatePhoto = ({route, navigation}) => {
           justifyContent: 'space-between',
         }}>
         <Button
-          style={{
-            borderRadius: 50,
+          buttonStyle={{
+            width: 75,
+            height: 75,
             margin: 5,
             marginRight: 120,
-            paddingHorizontal: 16,
+            borderRadius: 100,
             backgroundColor: '#E72970',
-            borderWidth: 0,
           }}
           type="clear"
-          icon={<Icon name="react" size={15} color="#0FF" />}
+          icon={<Icon name="reload1" size={50} color="#fFF" />}
           onPress={() => {
             navigation.goBack();
           }}
         />
         <Button
-          style={{
-            borderRadius: 50,
+          icon={<Icon name="arrowright" size={50} color="#fFF" />}
+          buttonStyle={{
+            width: 75,
+            height: 75,
             margin: 5,
-            paddingHorizontal: 16,
+            borderRadius: 100,
+
             backgroundColor: '#047675',
+
             borderWidth: 0,
           }}
           type="clear"
