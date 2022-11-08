@@ -1,8 +1,8 @@
 import React, {useEffect, useState} from 'react';
 import {Text, StyleSheet, View, Image} from 'react-native';
 import RNFS from 'react-native-fs';
-
 import RNFetchBlob from 'rn-fetch-blob';
+
 export const ResultPage = ({route, navigation}) => {
   const {photo} = route.params;
   const [loading, setLoading] = useState(true);

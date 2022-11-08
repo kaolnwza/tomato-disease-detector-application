@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import {Text, StyleSheet, FlatList, View} from 'react-native';
 import {Button, lightColors, createTheme, ThemeProvider} from '@rneui/themed';
-import Icon from 'react-native-vector-icons/dist/Ionicons';
+import Ionicons from 'react-native-vector-icons/dist/Ionicons';
 import {font, buttons} from './styles';
 export const HomeScreen = ({navigation}) => {
   const [menu, setMenu] = useState([
@@ -32,7 +32,7 @@ export const HomeScreen = ({navigation}) => {
             title={item.name}
             titleStyle={[{color: '#fff'}, font.kanit]}
             style={[styles.btn, styles.shadowProp, jewelStyle(item.color)]}
-            icon={<Icon name={item.icon} size={60} color="#fff" />}
+            icon={<Ionicons name={item.icon} size={60} color="#fff" />}
             iconPosition="top"
             onPress={() => {
               navigation.navigate(item.page);

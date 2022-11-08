@@ -2,7 +2,7 @@ import React, {useRef} from 'react';
 
 import {Linking, SafeAreaView, StyleSheet, View, Image} from 'react-native';
 import {Button} from '@rneui/base';
-import Icon from 'react-native-vector-icons/dist/AntDesign';
+import AntDesign from 'react-native-vector-icons/dist/AntDesign';
 
 export const ValidatePhoto = ({route, navigation}) => {
   const {photo} = route.params;
@@ -32,13 +32,13 @@ export const ValidatePhoto = ({route, navigation}) => {
             backgroundColor: '#E72970',
           }}
           type="clear"
-          icon={<Icon name="reload1" size={50} color="#fFF" />}
+          icon={<AntDesign name="reload1" size={50} color="#fFF" />}
           onPress={() => {
             navigation.goBack();
           }}
         />
         <Button
-          icon={<Icon name="arrowright" size={50} color="#fFF" />}
+          icon={<AntDesign name="arrowright" size={50} color="#fFF" />}
           buttonStyle={{
             width: 75,
             height: 75,

@@ -1,9 +1,11 @@
 import React, {useRef} from 'react';
 
 import {Linking, SafeAreaView, StyleSheet, View} from 'react-native';
-// import {Divider, Icon, Layout, Text, Button} from '@ui-kitten/components';
+import Icon from 'react-native-vector-icons/dist/Ionicons';
+
 import {Button} from '@rneui/themed';
 import {Camera, useCameraDevices} from 'react-native-vision-camera';
+import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
 
 export const CameraScreen = ({navigation}) => {
   const devices = useCameraDevices();
@@ -11,14 +13,21 @@ export const CameraScreen = ({navigation}) => {
   // const isFocused = useIsFocused();
   const camera = useRef(null);
 
-  const onPressButton = async () => {
+  const SnapShot = async () => {
     const photo = await camera.current.takePhoto({
       flash: 'off',
       qualityPrioritization: 'speed',
     });
-    // console.log(photo);
-
     navigation.navigate('ValidatePhoto', {photo});
+  };
+
+  const OpenPhoto = async () => {
+    const result = await launchImageLibrary({
+      mediaType: 'photo',
+      includeBase64: true,
+    });
+
+    console.log(result.assets[0].base64);
   };
 
   React.useEffect(() => {
@@ -54,12 +63,30 @@ export const CameraScreen = ({navigation}) => {
         <View style={{backgroundColor: '#d1d1d1d1', borderRadius: 50}}>
           <Button
             title="Solid"
-            onPress={onPressButton}
+            onPress={SnapShot}
             buttonStyle={{
               borderRadius: 50,
               paddingVertical: 18,
               backgroundColor: '#fff',
               margin: 5,
+            }}
+          />
+        </View>
+      </View>
+      <View
+        style={{
+          position: 'absolute',
+          alignItems: 'center',
+          bottom: 80,
+          left: 0,
+        }}>
+        <View>
+          <Button
+            type="clear"
+            icon={<Icon name="images-outline" size={50} color="#fFF" />}
+            onPress={OpenPhoto}
+            buttonStyle={{
+              marginHorizontal: 20,
             }}
           />
         </View>
