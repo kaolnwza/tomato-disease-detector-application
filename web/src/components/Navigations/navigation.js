@@ -7,9 +7,9 @@ import {HomeScreen} from '../../screens/home';
 import {CameraScreen} from '../../screens/camera';
 import {ValidatePhoto} from '../../screens/validatePhoto';
 import {ResultPage} from '../../screens/result';
+import Octicons from 'react-native-vector-icons/dist/Octicons';
 
 const Stack = createNativeStackNavigator();
-
 const HomeNavigator = () => (
   <Stack.Navigator
     screenOptions={{
@@ -33,29 +33,52 @@ const HomeNavigator = () => (
     <Stack.Screen
       name="Camera"
       component={CameraScreen}
-      options={{
-        title: 'แสกน',
+      options={({navigation}) => ({
+        title: 'สแกน',
         headerTintColor: '#fff',
-      }}
+        headerRight: () => (
+          <Octicons
+            onPress={() => navigation.navigate('Home')}
+            name="home"
+            size={25}
+            color="#fFF"
+          />
+        ),
+      })}
     />
     <Stack.Screen
       name="ValidatePhoto"
       component={ValidatePhoto}
-      options={{
+      options={({navigation}) => ({
         title: 'ตรวจสอบ',
-
+        gestureEnabled: false,
         headerTintColor: '#fff',
         headerBackVisible: false,
-      }}
+        headerRight: () => (
+          <Octicons
+            onPress={() => navigation.navigate('Home')}
+            name="home"
+            size={25}
+            color="#fFF"
+          />
+        ),
+      })}
     />
     <Stack.Screen
       name="Result"
       component={ResultPage}
-      options={{
+      options={({navigation}) => ({
         title: 'ผลลัพธ์',
         headerTintColor: '#000',
-        headerBackVisible: false,
-      }}
+        headerRight: () => (
+          <Octicons
+            onPress={() => navigation.navigate('Home')}
+            name="home"
+            size={25}
+            color="#000"
+          />
+        ),
+      })}
     />
   </Stack.Navigator>
 );

@@ -1,16 +1,15 @@
-import React, {useRef} from 'react';
+import React, {useRef, useEffect} from 'react';
 
-import {Linking, SafeAreaView, StyleSheet, View} from 'react-native';
+import {Linking, Text, StyleSheet, View} from 'react-native';
 import Icon from 'react-native-vector-icons/dist/Ionicons';
 
 import {Button} from '@rneui/themed';
 import {Camera, useCameraDevices} from 'react-native-vision-camera';
-import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
+import {launchImageLibrary} from 'react-native-image-picker';
 
 export const CameraScreen = ({navigation}) => {
-  const devices = useCameraDevices();
+  const devices = useCameraDevices('wide-angle-camera');
   const device = devices.back;
-  // const isFocused = useIsFocused();
   const camera = useRef(null);
 
   const SnapShot = async () => {
@@ -18,7 +17,8 @@ export const CameraScreen = ({navigation}) => {
       flash: 'off',
       qualityPrioritization: 'speed',
     });
-    navigation.navigate('ValidatePhoto', {photo});
+    // console.log(photo.path);
+    navigation.navigate('ValidatePhoto', {photo, type: 'snapshot'});
   };
 
   const OpenPhoto = async () => {
@@ -26,11 +26,15 @@ export const CameraScreen = ({navigation}) => {
       mediaType: 'photo',
       includeBase64: true,
     });
-
-    console.log(result.assets[0].base64);
+    if (result.didCancel) {
+      console.log('You Canceled');
+    } else {
+      const photo = result.assets[0];
+      navigation.navigate('ValidatePhoto', {photo, type: 'gallery'});
+    }
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     reqCameraPermission();
   });
 
@@ -41,7 +45,7 @@ export const CameraScreen = ({navigation}) => {
       await Linking.openSettings();
     }
   }, []);
-  if (device == null) return null;
+  if (device == null) return <Text>Loading</Text>;
   return (
     <View style={{flex: 1}}>
       <Camera

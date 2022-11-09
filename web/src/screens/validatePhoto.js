@@ -1,17 +1,38 @@
 import React, {useRef} from 'react';
 
-import {Linking, SafeAreaView, StyleSheet, View, Image} from 'react-native';
+import {
+  Linking,
+  SafeAreaView,
+  StyleSheet,
+  View,
+  Image,
+  Text,
+} from 'react-native';
 import {Button} from '@rneui/base';
 import AntDesign from 'react-native-vector-icons/dist/AntDesign';
+import RNFS from 'react-native-fs';
 
 export const ValidatePhoto = ({route, navigation}) => {
-  const {photo} = route.params;
+  const {photo, type} = route.params;
+  const routes = navigation.getState();
+  const ImgToBase64 = async () => {
+    if (type == 'snapshot') {
+      const Base64 = await RNFS.readFile(photo.path, 'base64');
+      navigation.navigate('Result', {Base64});
+    } else {
+      const Base64 = photo.base64;
+      navigation.navigate('Result', {Base64});
+    }
+    console.log(type);
+  };
+
   return (
     <View style={{flex: 1}}>
+      {console.log(routes)}
       <Image
-        style={{height: 1000}}
+        style={{height: '100%'}}
         source={{
-          uri: photo.path,
+          uri: photo.path ? photo.path : photo.uri,
         }}
       />
       <View
@@ -50,7 +71,7 @@ export const ValidatePhoto = ({route, navigation}) => {
             borderWidth: 0,
           }}
           type="clear"
-          onPress={() => navigation.navigate('Result', {photo})}
+          onPress={ImgToBase64}
         />
       </View>
     </View>
