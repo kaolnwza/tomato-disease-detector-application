@@ -33,6 +33,6 @@ func main() {
 		c.JSON(200, x)
 	})
 	fmt.Println("Hello World!!", os.Getenv("HOST_URL"))
-	r.Run(os.Getenv("HOST_URL") + ":8765")
+	r.Run("0.0.0.0" + ":8765")
 
 }
