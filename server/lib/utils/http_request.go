@@ -11,7 +11,7 @@ import (
 func PostRequest(jsonData []byte) (*[]byte, error) {
 	jsonBody := []byte(string(jsonData))
 	bodyReader := bytes.NewReader(jsonBody)
-	requestURL := "http://" + os.Getenv("FASTAPI_HOST_URL") + ":1234" + "/imgpred"
+	requestURL := "http://" + os.Getenv("HOST_URL") + ":1234" + "/imgpred"
 
 	req, err := http.NewRequest(http.MethodPost, requestURL, bodyReader)
 	if err != nil {

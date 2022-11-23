@@ -27,7 +27,12 @@ func main() {
 
 		c.JSON(200, "NICE!!")
 	})
-	fmt.Println("Hello World!!", os.Getenv("GIN_HOST_URL"))
-	r.Run(os.Getenv("GIN_HOST_URL") + ":8765")
+
+	r.GET("/host", func(c *gin.Context) {
+		x := "IP: " + os.Getenv("HOST_URL")
+		c.JSON(200, x)
+	})
+	fmt.Println("Hello World!!", os.Getenv("HOST_URL"))
+	r.Run(os.Getenv("HOST_URL") + ":8765")
 
 }
