@@ -43,13 +43,13 @@ transformer = transforms.Compose([
     transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))
 ])
 
-model_dir = "./pymodel"
+model_dir = "./ptmodel/"
 if os.environ["HOST_URL"] != "localhost":
     model_dir = "." + model_dir
 
 model.load_state_dict(torch.load(
     # "resnet18-lr0.001-10 ithink0.0001.pt", map_location='cpu'))
-    "./ptmodel/dense-lr0.001-10.pt", map_location='cpu'))
+    model_dir + "dense-lr0.001-10.pt", map_location='cpu'))
 
 model.eval()
 
