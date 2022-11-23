@@ -1,8 +1,8 @@
 
 
-import pandas as pd
+# import pandas as pd
 import torchvision.transforms.functional as TF
-
+import os
 import numpy as np
 import torch
 from pathlib import Path
@@ -46,7 +46,7 @@ transformer = transforms.Compose([
 
 model.load_state_dict(torch.load(
     # "resnet18-lr0.001-10 ithink0.0001.pt", map_location='cpu'))
-    "../ptmodel/dense-lr0.001-10.pt", map_location='cpu'))
+    "./ptmodel/dense-lr0.001-10.pt", map_location='cpu'))
 
 model.eval()
 
@@ -58,6 +58,8 @@ def predictionImg(image):
     output = model(input_img)
     index = output.data.numpy().argmax()
     pred = classes[index]
+    # labels = torch.tensor(classes[index])
+    # print(labels)
     return pred
 
 
@@ -102,11 +104,11 @@ async def imgpred(item: Img):
 
 @app.post("/imgpred/resnet")
 async def imgpred(item: Img):
+
     b = base64.b64decode(item.image)
     img = Image.open(io.BytesIO(b))
     resp = predictionImg(img)
     return resp
 
-
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=1234)
+    uvicorn.run(app, host=os.environ['HOST_URL'], port=1234)
