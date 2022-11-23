@@ -8,3 +8,5 @@ services:
       - 8080:8765
     volumes:
       - .:/go/app
+    env_file:
+      - .envrc
