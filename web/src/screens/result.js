@@ -5,6 +5,7 @@ import RNFetchBlob from 'rn-fetch-blob';
 export const ResultPage = ({route, navigation}) => {
   const {photo, Base64} = route.params;
   const [loading, setLoading] = useState(true);
+  const [result, setResult] = useState(null);
 
   useEffect(() => {
     const {routes} = navigation.getState();
@@ -20,31 +21,32 @@ export const ResultPage = ({route, navigation}) => {
   }, []);
 
   const getData = async () => {
-    // RNFetchBlob.fetch(
-    //   'POST',
-    //   'http://139.59.120.159:8765/prediction',
-    //   {
-    //     'Content-Type': 'application/json',
-    //   },
-    //   JSON.stringify({image: Base64}),
-    // )
-    //   // listen to upload progress event, emit every 250ms
-    //   .uploadProgress({interval: 250}, (written, total) => {
-    //     console.log('uploaded', written / total);
-    //   })
-    //   // listen to download progress event, every 10%
-    //   .progress({count: 10}, (received, total) => {
-    //     console.log('progress', received / total);
-    //   })
-    //   .then(res => {
-    //     console.log(res.info().status, res.text());
-    //     if (res.info().status == 200) {
-    //       setLoading(false);
-    //     }
-    //   })
-    //   .catch(err => {
-    //     console.log(err);
-    //   });
+    RNFetchBlob.fetch(
+      'POST',
+      'http://139.59.120.159:8080/prediction',
+      {
+        'Content-Type': 'application/json',
+      },
+      JSON.stringify({image: Base64}),
+    )
+      // listen to upload progress event, emit every 250ms
+      .uploadProgress({interval: 250}, (written, total) => {
+        console.log('uploaded', written / total);
+      })
+      // listen to download progress event, every 10%
+      .progress({count: 10}, (received, total) => {
+        console.log('progress', received / total);
+      })
+      .then(res => {
+        console.log(res.info().status, res.json());
+        setResult(res.json());
+        if (res.info().status == 200) {
+          setLoading(false);
+        }
+      })
+      .catch(err => {
+        console.log(err);
+      });
   };
 
   if (loading)
@@ -55,12 +57,14 @@ export const ResultPage = ({route, navigation}) => {
     );
   return (
     <View style={{flex: 1, paddingVertical: 120, paddingHorizontal: 20}}>
+      {/* {console.log(photo)} */}
       <Image
         style={{height: '40%', width: '40%', borderRadius: 10}}
         source={{
-          uri: photo.path,
+          uri: photo.path ? photo.path : photo.uri,
         }}
       />
+      <Text>{result}</Text>
     </View>
   );
 };
