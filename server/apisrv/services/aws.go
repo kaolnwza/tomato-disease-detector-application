@@ -15,15 +15,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 )
 
-const (
-	aws_access_key_id     = "ASIA6LDADBAVEIBZKNUV"
-	aws_secret_access_key = "hrfOEvUTLwXuubRVPlGane8+p/NxlWnRtVYmM/+D"
-	aws_session_token     = "FwoGZXIvYXdzEC0aDJfCqcmfo7w21JwilSLGAa/GM+g9nOOEf2s4jPehIOKjTQaiA/JHRA1Bs1wnkN1H+NwzbttEpPbfWP+TzdufPNpy4WNTdsoRU0/8LhgkUL+G5bOo7DhcClNHfyvXJKJ+rRLUfOkTv3X7qRe33UrhUJNg9tjUDIVy7J4O/mmsUEn/Tdl8bBsVssS7tihR7nTylgzsgIFMJuP+OmCQx5ccAfjK9wyjZrlm1tn2ZTgtHsZtxS90H+Fq+CCwKtG+gqd4tsRq39BZspKIepwB06+4Wd66hu6DGiiT1tabBjItlCfbV0n+RW/uQcOniinHLnKNWwuPbDEjs7+mNMBXsJz4v4/guvU8YtvzPyca"
-	BUCKET                = "website-1212345"
-)
-
 func S3Config() *s3.S3 {
-	creds := credentials.NewStaticCredentials(aws_access_key_id, aws_secret_access_key, aws_session_token)
+	creds := credentials.NewStaticCredentials(os.Getenv("AWS_ACCESS_KEY_ID"), os.Getenv("AWS_SECRET_ACCESS_KEY"), os.Getenv("AWS_SESSION_TOKEN"))
 	_, err := creds.Get()
 	if err != nil {
 		// handle error
@@ -53,7 +46,7 @@ func TestS3() {
 	// path := "/media/" + file.Name()
 	path := "/media/" + time.Now().String() + ".jpeg"
 	params := &s3.PutObjectInput{
-		Bucket:        aws.String(BUCKET),
+		Bucket:        aws.String(os.Getenv("AWS_BUCKET")),
 		Key:           aws.String(path),
 		Body:          fileBytes,
 		ContentLength: aws.Int64(size),
@@ -74,7 +67,7 @@ func S3Get() {
 	fmt.Println("Downloading: ", filename)
 
 	resp, err := svc.GetObject(&s3.GetObjectInput{
-		Bucket: aws.String(BUCKET),
+		Bucket: aws.String(os.Getenv("AWS_BUCKET")),
 		Key:    aws.String("/media/" + filename),
 	})
 

@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"os"
 	"time"
-	"tomato-api/apisrv/repository"
 	"tomato-api/lib/utils"
 
 	"github.com/gin-gonic/gin"
@@ -231,18 +230,18 @@ func Test(r *gin.Engine) {
 
 	})
 
-	r.GET("/db", func(c *gin.Context) {
-		err := repository.TestFuck555()
-		if err != nil {
-			fmt.Println("err", err)
-		}
-		fmt.Println("x", err)
-	})
+	// r.GET("/db", func(c *gin.Context) {
+	// 	err := repository.TestFuck555()
+	// 	if err != nil {
+	// 		fmt.Println("err", err)
+	// 	}
+	// 	fmt.Println("x", err)
+	// })
 
-	r.GET("/dbis", func(c *gin.Context) {
-		repository.TestFuckLOL()
+	// r.GET("/dbis", func(c *gin.Context) {
+	// 	repository.TestFuckLOL()
 
-	})
+	// })
 
 	// }
 }

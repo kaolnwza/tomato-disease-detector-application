@@ -1,0 +1,1 @@
+drop table tomato_disease_info
