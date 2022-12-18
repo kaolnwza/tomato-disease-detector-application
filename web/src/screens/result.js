@@ -23,9 +23,11 @@ export const ResultPage = ({route, navigation}) => {
   const getData = async () => {
     RNFetchBlob.fetch(
       'POST',
-      'http://139.59.120.159:8080/prediction',
+      'http://139.59.120.159:8080/v1/base64img',
       {
         'Content-Type': 'application/json',
+        Authorization:
+          'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NfdXVpZCI6ImVkMmE2MWJlLWYxMzMtNGMyNS04MDU0LWU0YjRkMWNmZjZhZCIsImV4cCI6MTY3MTQ0MTM1MiwidXNlcl91dWlkIjoiOGU0ZDgzMjAtOGExOS00NmZjLTgxNTEtN2E2MjI2ZDc2ZjZiIn0.JOvj31asDuKjblE_cjruRKxNWAa9GUn2GfknYrqOi94',
       },
       JSON.stringify({image: Base64}),
     )

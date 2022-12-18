@@ -77,14 +77,3 @@ export const ValidatePhoto = ({route, navigation}) => {
     </View>
   );
 };
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  icon: {
-    width: 50,
-    height: 50,
-  },
-});
