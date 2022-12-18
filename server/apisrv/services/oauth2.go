@@ -22,7 +22,7 @@ import (
 
 var (
 	googleOauthConfig = &oauth2.Config{
-		RedirectURL: os.Getenv("HOST_URL") + ":8080/oauth/callback",
+		RedirectURL: "http://kao.monster" + ":8080/oauth/callback",
 		// RedirectURL:  "http://localhost:8765/oauth/callback",
 		ClientID:     os.Getenv("GOOGLE_AUTH_CLIENT_ID"),
 		ClientSecret: os.Getenv("GOOGLE_AUTH_SECRET"),
