@@ -1,8 +1,12 @@
 package repo
 
-import "tomato-api/apisrv/model"
+import (
+	"tomato-api/apisrv/model"
 
-func GetTomatoDisease(disease *[]*model.TomatoDisease) error {
+	"github.com/jmoiron/sqlx"
+)
+
+func GetTomatoDisease(tx sqlx.Queryer, disease *[]*model.TomatoDisease) error {
 	s := `
 		SELECT
 			disease_uuid,
@@ -13,5 +17,5 @@ func GetTomatoDisease(disease *[]*model.TomatoDisease) error {
 			disease_resolve
 		FROM tomato_disease_info`
 
-	return db.Select(disease, s)
+	return sqlx.Select(tx, disease, s)
 }

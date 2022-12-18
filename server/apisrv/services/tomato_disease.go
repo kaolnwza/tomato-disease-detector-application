@@ -11,7 +11,7 @@ import (
 func GetDiseasesInfoHandler(c *gin.Context) {
 	disease := []*model.TomatoDisease{}
 
-	if err := repo.GetTomatoDisease(&disease); err != nil {
+	if err := repo.GetTomatoDisease(repo.DB, &disease); err != nil {
 		c.JSON(http.StatusInternalServerError, err)
 		return
 	}

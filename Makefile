@@ -13,6 +13,13 @@ build-go:
 migrate-up:
 	echo "-----[Migrations UP...]-----"
 	cd server/lib && migrate -database $$DATABASE_URL -path migrate/migrations up
+migrate-down:
+	echo "-----[Migrations UP...]-----"
+	cd server/lib && migrate -database $$DATABASE_URL -path migrate/migrations down
+
+
 
 wtf:
 	echo $$DATABASE_URL
+
+# migrate create -ext sql -dir lib/migrate/migrations -seq create_test    

@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX user_provider_unique_email_type ON user_provider (email, type);

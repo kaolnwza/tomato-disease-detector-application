@@ -3,10 +3,9 @@ package main
 import (
 	"fmt"
 	"os"
-	"tomato-api/apisrv/model"
+	"tomato-api/apisrv/middleware"
 	"tomato-api/apisrv/services"
 	"tomato-api/lib/config"
-	"tomato-api/lib/database"
 
 	"github.com/gin-gonic/gin"
 )
@@ -32,34 +31,21 @@ func main() {
 		c.JSON(200, x)
 	})
 
-	v1 := r.Group("/v1")
+	oauth := r.Group("/oauth")
+	oauth.GET("/login", services.GoogleLoginHandler)
+	oauth.GET("/callback", services.GoogleCallbackHandler)
+
+	// r.GET("/im", services.Prediction)
+
+	v1 := r.Group("/v1", middleware.Middleware())
+
 	v1.POST("/prediction", services.Prediction)
+	v1.POST("/base64img", services.Prediction)
+	v1.POST("/log", services.CreateTomatoLogHandler)
+	v1.GET("/log", services.FetchTomatoLogByUserUUIDHandler)
 	// v1.POST("/gettest", services.GetAllUserFarmHandler)
 
 	v1.GET("/disease", services.GetDiseasesInfoHandler)
-
-	v1.GET("/testdb", func(ctx *gin.Context) {
-		db := database.DatabaseConnecting()
-
-		stt := []*model.UserFarm{}
-
-		s := `SELECT user_farm_uuid, 
-					farm_uuid, 
-					user_farm_role, 
-					users.user_uuid as "user.user_uuid" ,
-					users.first_name as "user.first_name" ,
-					users.last_name as "user.last_name" 
-			FROM user_farm
-		LEFT JOIN users ON users.user_uuid = user_farm.user_uuid`
-
-		if err := db.Select(&stt, s); err != nil {
-			fmt.Println("err", err)
-			ctx.JSON(500, err)
-			return
-		}
-
-		ctx.JSON(200, stt)
-	})
 
 	fmt.Println("Hello World!!", os.Getenv("HOST_URL"))
 	r.Run("0.0.0.0" + ":8765")

@@ -1,6 +1,10 @@
 package repo
 
-import "tomato-api/apisrv/model"
+import (
+	"tomato-api/apisrv/model"
+
+	"github.com/jmoiron/sqlx"
+)
 
 // type userFarmI struct {
 // 	model.UserFarmInterface
@@ -14,9 +18,9 @@ import "tomato-api/apisrv/model"
 // 	return customerRepositoryDB{db: db}
 // }
 
-func GetAllUsersFarm(userFarm *[]*model.UserFarm) error {
+func GetAllUsersFarm(tx sqlx.Queryer, userFarm *[]*model.UserFarm) error {
 	s := `
 		SELECT * FROM user_farm`
 
-	return db.Select(&userFarm, s)
+	return sqlx.Select(tx, &userFarm, s)
 }

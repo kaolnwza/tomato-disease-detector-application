@@ -14,7 +14,7 @@ func init() {
 }
 
 func DatabaseConnecting() *sqlx.DB {
-	db, err := sqlx.Connect("postgres", os.Getenv("DATABASE_URL"))
+	db, err := sqlx.Open("postgres", os.Getenv("DATABASE_URL"))
 	if err != nil {
 		log.Fatalln(err)
 	}

@@ -20,17 +20,18 @@ from PIL import Image
 
 from typing import Union
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, File
 from pydantic import BaseModel
 import ssl
 ssl._create_default_https_context = ssl._create_unverified_context
 
 
-classes = ['Tomato___Bacterial_spot', 'Tomato___Early_blight', 'Tomato___Late_blight', 'Tomato___Leaf_Mold', 'Tomato___Septoria_leaf_spot',
-           'Tomato___Spider_mites Two-spotted_spider_mite', 'Tomato___Target_Spot', 'Tomato___Tomato_Yellow_Leaf_Curl_Virus', 'Tomato___Tomato_mosaic_virus', 'Tomato___healthy']
-
+# classes = ['Tomato___Bacterial_spot', 'Tomato___Early_blight', 'Tomato___Late_blight', 'Tomato___Leaf_Mold', 'Tomato___Septoria_leaf_spot',
+#            'Tomato___Spider_mites Two-spotted_spider_mite', 'Tomato___Target_Spot', 'Tomato___Tomato_Yellow_Leaf_Curl_Virus', 'Tomato___Tomato_mosaic_virus', 'Tomato___healthy']
+classes = ['Bacterial Spot', 'Early Blight', 'Late Blight', 'Leaf Mold', 'Septoria Leaf Spot',
+           'Spider Mites', 'Target Spot', 'Yellow Leaf Curl Virus', 'Mosaic Virus', 'Healthy']
 resnet18 = torch.hub.load('pytorch/vision:v0.8.0',
-                          'densenet121', pretrained=False)
+                          'googlenet', pretrained=False)
 
 model = resnet18
 
@@ -43,13 +44,13 @@ transformer = transforms.Compose([
     transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))
 ])
 
-model_dir = "./ptmodel/"
-if os.environ["HOST_URL"] != "localhost":
-    model_dir = "." + model_dir
+model_dir = "../ptmodel/"
+
 
 model.load_state_dict(torch.load(
     # "resnet18-lr0.001-10 ithink0.0001.pt", map_location='cpu'))
-    model_dir + "dense-lr0.001-10.pt", map_location='cpu'))
+    # model_dir + "dense-lr0.001-10.pt", map_location='cpu'))
+    model_dir + "gnet555.pt", map_location='cpu'))
 
 model.eval()
 
@@ -112,6 +113,22 @@ async def imgpred(item: Img):
     img = Image.open(io.BytesIO(b))
     resp = predictionImg(img)
     return resp
+
+
+@app.post("/imgpred2")
+async def imgpred2(file: bytes = File(...)):
+    # img = Image.open(io.BytesIO(file))
+    img = Image.open(io.BytesIO(file)).convert('RGB')
+    # img.show()
+
+    resp = predictionImg(img)
+    print("-------------", resp)
+    return resp
+
+    # request_object_content = await file.read()
+    # Image.open(io.BytesIO(request_object_content))
+
+    # return resp
 
 if __name__ == "__main__":
     uvicorn.run(app, host=os.environ['HOST_URL'], port=1234)
