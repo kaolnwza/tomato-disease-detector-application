@@ -40,7 +40,7 @@ func main() {
 	v1 := r.Group("/v1", middleware.Middleware())
 
 	v1.POST("/prediction", services.Prediction)
-	v1.POST("/base64img", services.Prediction)
+	v1.POST("/base64img", services.PredictionByBase64)
 	v1.POST("/log", services.CreateTomatoLogHandler)
 	v1.GET("/log", services.FetchTomatoLogByUserUUIDHandler)
 	// v1.POST("/gettest", services.GetAllUserFarmHandler)
