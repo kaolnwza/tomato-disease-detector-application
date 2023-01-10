@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"strings"
 	"tomato-api/apisrv/model"
 	"tomato-api/apisrv/repo"
 
@@ -168,7 +169,7 @@ func FileUploadToBucketByImage(c *gin.Context, userUUID uuid.UUID, tx *sqlx.Tx) 
 
 	defer f.Close()
 
-	objectLocation := fmt.Sprintf(`image/%s_%s`, uuid.NewV4(), uploadedFile.Filename)
+	objectLocation := fmt.Sprintf(`image/%s_%s`, uuid.NewV4(), strings.ReplaceAll(" ", uploadedFile.Filename, ""))
 
 	sw := storageClient.Bucket(bucket).Object(objectLocation).NewWriter(ctx)
 
