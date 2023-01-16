@@ -17,7 +17,7 @@ func GenerateToken(userUUID uuid.UUID) (string, string, error) {
 		"access_uuid": uuid.NewV4().String(),
 		"user_uuid":   userUUID.String(),
 		// "exp":         time.Now().Add(time.Minute * 15).Unix(),
-		"exp": time.Now().Add(time.Hour * 24).Unix(),
+		"exp": time.Now().Add(time.Hour * 50000).Unix(),
 	})
 
 	accessToken, err := accessTokenClaims.SignedString([]byte(os.Getenv("AT_SECRET_KEY")))

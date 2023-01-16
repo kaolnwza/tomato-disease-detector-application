@@ -60,6 +60,10 @@ func CreateTomatoLogHandler(c *gin.Context) {
 	disease := c.Request.FormValue("disease")
 
 	tx, err := repo.DB.Beginx()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, err.Error())
+		return
+	}
 	upload, err := FileUploadToBucketByImage(c, userUUID, tx)
 	if err != nil {
 		tx.Rollback()

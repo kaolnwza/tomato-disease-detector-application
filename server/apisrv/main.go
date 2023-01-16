@@ -32,20 +32,23 @@ func main() {
 	})
 
 	oauth := r.Group("/oauth")
-	oauth.GET("/login", services.GoogleLoginHandler)
-	oauth.GET("/callback", services.GoogleCallbackHandler)
+	{
+		oauth.GET("/login", services.GoogleLoginHandler)
+		oauth.GET("/callback", services.GoogleCallbackHandler)
+	}
 
 	// r.GET("/im", services.Prediction)
 
 	v1 := r.Group("/v1", middleware.Middleware())
+	{
+		v1.POST("/prediction", services.Prediction)
+		v1.POST("/base64img", services.PredictionByBase64)
+		v1.POST("/log", services.CreateTomatoLogHandler)
+		v1.GET("/log", services.FetchTomatoLogByUserUUIDHandler)
+		// v1.POST("/gettest", services.GetAllUserFarmHandler)
 
-	v1.POST("/prediction", services.Prediction)
-	v1.POST("/base64img", services.PredictionByBase64)
-	v1.POST("/log", services.CreateTomatoLogHandler)
-	v1.GET("/log", services.FetchTomatoLogByUserUUIDHandler)
-	// v1.POST("/gettest", services.GetAllUserFarmHandler)
-
-	v1.GET("/disease", services.GetDiseasesInfoHandler)
+		v1.GET("/disease", services.GetDiseasesInfoHandler)
+	}
 
 	fmt.Println("Hello World!!", os.Getenv("HOST_URL"))
 	r.Run("0.0.0.0" + ":8765")

@@ -14,8 +14,10 @@ func GetTomatoDisease(tx sqlx.Queryer, disease *[]*model.TomatoDisease) error {
 			disease_cause,
 			disease_symptom,
 			disease_epidemic,
-			disease_resolve
-		FROM tomato_disease_info`
+			disease_resolve,
+			path as image_path
+		FROM tomato_disease_info
+		LEFT JOIN upload ON upload.upload_uuid = tomato_disease_info.upload_uuid`
 
 	return sqlx.Select(tx, disease, s)
 }
