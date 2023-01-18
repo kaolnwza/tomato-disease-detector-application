@@ -21,49 +21,56 @@ export const ResultPage = ({route, navigation}) => {
   }, []);
 
   const getData = async () => {
+    const imageUri = photo.path ? 'file://' + photo.path : photo.uri;
+    const fileName = photo.fileName
+      ? photo.fileName
+      : photo.path.split('/').pop();
+    // console.log(imageUri, fileName);
+
     RNFetchBlob.fetch(
       'POST',
-      'http://139.59.120.159:8080/v1/base64img',
+      'http://139.59.120.159:8080/v1/prediction',
       {
-        'Content-Type': 'application/json',
+        'Content-Type': 'multipart/form-data',
         Authorization:
-          'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NfdXVpZCI6ImVkMmE2MWJlLWYxMzMtNGMyNS04MDU0LWU0YjRkMWNmZjZhZCIsImV4cCI6MTY3MTQ0MTM1MiwidXNlcl91dWlkIjoiOGU0ZDgzMjAtOGExOS00NmZjLTgxNTEtN2E2MjI2ZDc2ZjZiIn0.JOvj31asDuKjblE_cjruRKxNWAa9GUn2GfknYrqOi94',
+          'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NfdXVpZCI6IjUzYmRhZThlLWMxZTMtNDAzMC1hODVkLWNkMWZhOTNhOWJlNSIsImV4cCI6MTg1MzkyNTA4OCwidXNlcl91dWlkIjoiOGU0ZDgzMjAtOGExOS00NmZjLTgxNTEtN2E2MjI2ZDc2ZjZiIn0.YKjeADsaC5oKaD4bBEkWxTDVbZMH_34j4Vx3bKgeZhc',
       },
-      JSON.stringify({image: Base64}),
+      [
+        {
+          name: fileName.split('.')[0],
+          // filename: fileName,
+          data: RNFetchBlob.wrap(imageUri),
+        },
+      ],
     )
-      // listen to upload progress event, emit every 250ms
-      .uploadProgress({interval: 250}, (written, total) => {
-        console.log('uploaded', written / total);
+      .then(response => {
+        console.log('res', response.json());
+        // handle response
       })
-      // listen to download progress event, every 10%
-      .progress({count: 10}, (received, total) => {
-        console.log('progress', received / total);
-      })
-      .then(res => {
-        console.log(res.info().status, res.json());
-        setResult(res.json());
-        if (res.info().status == 200) {
-          setLoading(false);
-        }
-      })
-      .catch(err => {
-        console.log(err);
+      .catch(error => {
+        // handle error
+        console.log(error);
       });
   };
 
   if (loading)
     return (
       <View style={{flex: 1, paddingVertical: 120, paddingHorizontal: 20}}>
-        <Text>Load</Text>
+        <Text>Loading</Text>
+        <Image
+          style={{height: '40%', width: '40%', borderRadius: 10}}
+          source={{
+            uri: photo.path ? 'file://' + photo.path : photo.uri,
+          }}
+        />
       </View>
     );
   return (
     <View style={{flex: 1, paddingVertical: 120, paddingHorizontal: 20}}>
-      {/* {console.log(photo)} */}
       <Image
         style={{height: '40%', width: '40%', borderRadius: 10}}
         source={{
-          uri: photo.path ? photo.path : photo.uri,
+          uri: photo.path ? 'file://' + photo.path : photo.uri,
         }}
       />
       <Text>{result}</Text>

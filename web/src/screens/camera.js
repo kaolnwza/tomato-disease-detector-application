@@ -17,20 +17,19 @@ export const CameraScreen = ({navigation}) => {
       flash: 'off',
       qualityPrioritization: 'speed',
     });
-    // console.log(photo.path);
-    navigation.navigate('ValidatePhoto', {photo, type: 'snapshot'});
+    navigation.navigate('ValidatePhoto', {photo});
   };
 
   const OpenPhoto = async () => {
     const result = await launchImageLibrary({
       mediaType: 'photo',
-      includeBase64: true,
+      includeBase64: false,
     });
     if (result.didCancel) {
       console.log('You Canceled');
     } else {
       const photo = result.assets[0];
-      navigation.navigate('ValidatePhoto', {photo, type: 'gallery'});
+      navigation.navigate('ValidatePhoto', {photo});
     }
   };
 

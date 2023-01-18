@@ -13,12 +13,23 @@ import MaterialCommunityIcons from 'react-native-vector-icons/dist/MaterialCommu
 import Ionicons from 'react-native-vector-icons/dist/Ionicons';
 import {font, buttons} from './styles';
 const Detail = props => {
-  const {name, avatar_url, subtitle, inform} = props.route.params.item;
-  const [disease, setDisease] = useState(true);
-  const [protect, setProtect] = useState(true);
+  const detail = props.route.params.item;
+
+  const {name_th, image_url, name, inform} = props.route.params.item;
+  // const [disease, setDisease] = useState(true);
+  // const [protect, setProtect] = useState(true);
   const [cause, setCause] = useState(false);
-  const [symptom, setSymptom] = useState(false);
-  const [virus, setVirus] = useState(false);
+  // const [symptom, setSymptom] = useState(false);
+  // const [virus, setVirus] = useState(false);
+  const [expandedItems, setExpandedItems] = useState([]);
+
+  const handlePress = id => {
+    if (expandedItems.includes(id)) {
+      setExpandedItems(expandedItems.filter(item => item !== id));
+    } else {
+      setExpandedItems([...expandedItems, id]);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -26,15 +37,101 @@ const Detail = props => {
         <Avatar
           rounded
           size={150}
-          source={avatar_url && {uri: avatar_url}}
+          source={image_url && {uri: image_url}}
           title={<ActivityIndicator />}
         />
+        {/* <Button size="md" onPress={logData}>
+          Medium
+        </Button> */}
         <Text style={[font.kanit, {marginVertical: 15, fontSize: 18}]}>
-          {subtitle}
+          {name_th}
         </Text>
       </View>
-      <ScrollView>
-        <ListItem.Accordion
+      {/* <Button onPress={logDetail}>asd</Button> */}
+
+      <FlatList
+        data={inform.inform_data}
+        renderItem={({item, index}) => (
+          <ListItem.Accordion
+            topDivider
+            content={
+              <>
+                <MaterialCommunityIcons
+                  name={item.icon}
+                  size={20}
+                  style={{margin: 0}}
+                />
+
+                <ListItem.Content style={{marginHorizontal: 20}}>
+                  <ListItem.Title style={font.kanit}>
+                    {item.title}
+                  </ListItem.Title>
+                </ListItem.Content>
+              </>
+            }
+            onPress={() => handlePress(item.title)}
+            isExpanded={expandedItems.includes(item.title)}>
+            <ListItem>
+              <ListItem.Content>
+                <ListItem.Subtitle
+                  style={[font.kanit, {paddingHorizontal: 30}]}>
+                  {item.data}
+                </ListItem.Subtitle>
+              </ListItem.Content>
+            </ListItem>
+
+            {/* {index == 0 ? (
+              <FlatList
+                data={item.inform_data}
+                renderItem={({item}) => (
+                  <ListItem.Accordion
+                    containerStyle={{paddingHorizontal: 30}}
+                    content={
+                      <>
+                        <MaterialCommunityIcons
+                          name={item.icon}
+                          size={20}
+                          style={{margin: 0}}
+                        />
+
+                        <ListItem.Content style={{marginHorizontal: 20}}>
+                          <ListItem.Title style={font.kanit}>
+                            {item.title}
+                          </ListItem.Title>
+                        </ListItem.Content>
+                      </>
+                    }
+                    onPress={() => handlePress(item.title)}
+                    isExpanded={expandedItems.includes(item.title)}>
+                    <ListItem bottomDivider>
+                      <ListItem.Content>
+                        <ListItem.Subtitle
+                          style={[font.kanit, {paddingHorizontal: 30}]}>
+                          {item.data}
+                        </ListItem.Subtitle>
+                      </ListItem.Content>
+                    </ListItem>
+                  </ListItem.Accordion>
+                )}
+                keyExtractor={item => item.title.toString()}
+              />
+            ) : (
+              inform[1].data.map((l, i) => (
+                <ListItem key={i}>
+                  <ListItem.Content>
+                    <ListItem.Subtitle style={font.kanit}>
+                      {l}
+                    </ListItem.Subtitle>
+                  </ListItem.Content>
+                </ListItem>
+              ))
+            )} */}
+          </ListItem.Accordion>
+        )}
+        keyExtractor={item => item.title.toString()}
+      />
+
+      {/* <ListItem.Accordion
           bottomDivider
           content={
             <>
@@ -77,7 +174,7 @@ const Detail = props => {
               setCause(!cause);
             }}>
             <ListItem bottomDivider>
-              {/* <Text style={[font.kanit, {paddingHorizontal: 20}]}> */}
+
               <ListItem.Content>
                 <ListItem.Subtitle
                   style={[font.kanit, {paddingHorizontal: 30}]}>
@@ -108,7 +205,7 @@ const Detail = props => {
               setSymptom(!symptom);
             }}>
             <ListItem bottomDivider>
-              {/* <Text style={[font.kanit, {paddingHorizontal: 20}]}> */}
+
               <ListItem.Content>
                 <ListItem.Subtitle
                   style={[font.kanit, {paddingHorizontal: 30}]}>
@@ -139,7 +236,7 @@ const Detail = props => {
               setVirus(!virus);
             }}>
             <ListItem bottomDivider>
-              {/* <Text style={[font.kanit, {paddingHorizontal: 20}]}> */}
+
               <ListItem.Content>
                 <ListItem.Subtitle
                   style={[font.kanit, {paddingHorizontal: 30}]}>
@@ -148,8 +245,8 @@ const Detail = props => {
               </ListItem.Content>
             </ListItem>
           </ListItem.Accordion>
-        </ListItem.Accordion>
-        <ListItem.Accordion
+        </ListItem.Accordion> */}
+      {/* <ListItem.Accordion
           topDivider
           bottomDivider
           content={
@@ -176,11 +273,10 @@ const Detail = props => {
               <ListItem.Content>
                 <ListItem.Subtitle style={font.kanit}>{l}</ListItem.Subtitle>
               </ListItem.Content>
-              {/* <ListItem.Chevron /> */}
+
             </ListItem>
           ))}
-        </ListItem.Accordion>
-      </ScrollView>
+        </ListItem.Accordion> */}
     </View>
   );
 };

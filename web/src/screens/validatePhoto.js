@@ -8,22 +8,14 @@ const Width = Dimensions.get('screen').width;
 const Height = Dimensions.get('screen').height;
 
 export const ValidatePhoto = ({route, navigation}) => {
-  const {photo, type} = route.params;
+  const {photo} = route.params;
   const routes = navigation.getState();
   const ImgToBase64 = async () => {
-    if (type == 'snapshot') {
-      const Base64 = await RNFS.readFile(photo.path, 'base64');
-      navigation.navigate('Result', {photo, Base64});
-    } else {
-      const Base64 = photo.base64;
-      navigation.navigate('Result', {photo, Base64});
-    }
-    // console.log(type);
+    navigation.navigate('Result', {photo});
   };
 
   return (
     <View style={{flex: 1, justifyContent: 'center'}}>
-      {/* {console.log(photo)} */}
       <Image
         style={{
           minHeight: Width,

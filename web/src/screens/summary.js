@@ -36,7 +36,7 @@ const Summary = () => {
           <Text style={{fontSize: 24}}>ช่วงเวลา</Text>
         </Text>
         <DiseaseChart
-          date={['2022-11-25', '2022-12-21']}
+          date={['2022-11-25', '2022-12-19']}
           time="currnt"
           img={29}
           healthy={85}
