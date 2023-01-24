@@ -13,7 +13,6 @@ import {Button, Input, ListItem} from '@rneui/base';
 import {font} from './styles';
 import Entypo from 'react-native-vector-icons/dist/Entypo';
 import MapView, {Marker} from 'react-native-maps';
-import Geolocation from '@react-native-community/geolocation';
 
 const Width = Dimensions.get('screen').width;
 const Height = Dimensions.get('screen').height;
