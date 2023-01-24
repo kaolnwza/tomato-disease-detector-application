@@ -1,14 +1,27 @@
 import React, {useEffect, useState} from 'react';
-import {Text, StyleSheet, View, Image} from 'react-native';
+import {
+  Text,
+  StyleSheet,
+  View,
+  Image,
+  Dimensions,
+  ScrollView,
+  Animated,
+} from 'react-native';
 // import RNFetchBlob from 'rn-fetch-blob';
-import {Button} from '@rneui/base';
-import {font, buttons} from './styles';
+import {Button, Input, ListItem} from '@rneui/base';
+import {font} from './styles';
+import Entypo from 'react-native-vector-icons/dist/Entypo';
+
+const Width = Dimensions.get('screen').width;
+const Height = Dimensions.get('screen').height;
 
 export const ResultPage = ({route, navigation}) => {
   const {photo} = route.params;
   const [loading, setLoading] = useState(true);
   const [result, setResult] = useState(null);
-
+  const [gps, setGps] = useState(false);
+  const scrollY = new Animated.Value(0);
   useEffect(() => {
     const {routes} = navigation.getState();
 
@@ -95,27 +108,74 @@ export const ResultPage = ({route, navigation}) => {
     return (
       <View style={{flex: 1, paddingVertical: 120, paddingHorizontal: 20}}>
         <Text>Loading</Text>
-        <Image
-          style={{height: '40%', width: '40%', borderRadius: 10}}
-          source={{
-            uri: photo.path ? 'file://' + photo.path : photo.uri,
-          }}
-        />
       </View>
     );
 
   return (
-    <View style={{flex: 1, paddingVertical: 120, paddingHorizontal: 20}}>
+    <View style={{flex: 1}}>
+      {/* <View style={{flex: 1, paddingVertical: 120, paddingHorizontal: 20}}> */}
       <Image
-        style={{height: '40%', width: '40%', borderRadius: 10}}
+        style={{
+          minHeight: Width,
+          width: Width,
+          // height: photo.height,
+          maxHeight: Height,
+        }}
         source={{
           uri: photo.path ? 'file://' + photo.path : photo.uri,
         }}
       />
-      <Text>{result}</Text>
-      <Button size="md" onPress={saveResult}>
-        ตกลง
-      </Button>
+      <View
+        style={{
+          position: 'absolute',
+          top: 100,
+          flexDirection: 'column',
+          alignSelf: 'center',
+          alignItems: 'center',
+        }}>
+        <Text style={[font.kanit, {fontSize: 12, color: '#fff'}]}>
+          ความแม่นยำ 97.2 %
+        </Text>
+        <Text style={[font.kanit, {fontSize: 20, color: '#fff'}]}>
+          {result}
+        </Text>
+      </View>
+      <ScrollView
+        style={{
+          borderRadius: 20,
+          transform: [{translateY: -20}],
+          backgroundColor: '#fff',
+          padding: 20,
+          marginBottom: -20,
+        }}>
+        <Input
+          placeholder="ใส่ข้อมูล"
+          inputStyle={[font.kanit]}
+          style={{alignSelf: 'center', textAlign: 'center'}}
+        />
+        <ListItem.Accordion
+          content={
+            <>
+              <Entypo name="location-pin" size={20} />
+              <ListItem.Content>
+                <ListItem.Title style={font.kanit}>ตำแหน่ง</ListItem.Title>
+              </ListItem.Content>
+            </>
+          }
+          onPress={() => setGps(!gps)}
+          isExpanded={gps}>
+          <ListItem>
+            <ListItem.Content>
+              <ListItem.Subtitle style={[font.kanit, {paddingHorizontal: 10}]}>
+                ฟหวสืก่หฟิกหฟ่กดห่้ส
+              </ListItem.Subtitle>
+            </ListItem.Content>
+          </ListItem>
+        </ListItem.Accordion>
+        <Button size="md" onPress={saveResult}>
+          ตกลง
+        </Button>
+      </ScrollView>
     </View>
   );
 };
@@ -124,7 +184,6 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'flex-start',
-
     backgroundColor: '#F0F9F8',
   },
 });
