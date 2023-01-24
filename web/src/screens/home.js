@@ -4,7 +4,6 @@ import {Button} from '@rneui/themed';
 import Ionicons from 'react-native-vector-icons/dist/Ionicons';
 import {font, buttons} from './styles';
 import DiseaseChart from '../components/chart/disease-chart';
-
 export const HomeScreen = ({navigation}) => {
   const [menu, setMenu] = useState([
     {

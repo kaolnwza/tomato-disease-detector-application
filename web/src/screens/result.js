@@ -12,6 +12,8 @@ import {
 import {Button, Input, ListItem} from '@rneui/base';
 import {font} from './styles';
 import Entypo from 'react-native-vector-icons/dist/Entypo';
+import MapView, {Marker} from 'react-native-maps';
+import Geolocation from '@react-native-community/geolocation';
 
 const Width = Dimensions.get('screen').width;
 const Height = Dimensions.get('screen').height;
@@ -165,14 +167,34 @@ export const ResultPage = ({route, navigation}) => {
           onPress={() => setGps(!gps)}
           isExpanded={gps}>
           <ListItem>
-            <ListItem.Content>
-              <ListItem.Subtitle style={[font.kanit, {paddingHorizontal: 10}]}>
-                ฟหวสืก่หฟิกหฟ่กดห่้ส
-              </ListItem.Subtitle>
-            </ListItem.Content>
+            <View style={styles.container}>
+              <MapView
+                style={{height: 300, width: '100%'}}
+                moveOnMarkerPress={false}
+                pitchEnabled={false}
+                scrollEnabled={false}
+                zoomEnabled={false}
+                initialRegion={{
+                  latitude: 13.727395,
+                  longitude: 100.764551,
+                  latitudeDelta: 0.0922,
+                  longitudeDelta: 0.0421,
+                }}>
+                <Marker
+                  coordinate={{
+                    latitude: 13.727395,
+                    longitude: 100.764551,
+                  }}
+                />
+              </MapView>
+            </View>
           </ListItem>
         </ListItem.Accordion>
-        <Button size="md" onPress={saveResult}>
+        <Button
+          size="lg"
+          onPress={saveResult}
+          style={{marginBottom: 100}}
+          buttonStyle={{borderRadius: 10}}>
           ตกลง
         </Button>
       </ScrollView>
