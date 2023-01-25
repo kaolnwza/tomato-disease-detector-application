@@ -22,7 +22,6 @@ export const ResultPage = ({route, navigation}) => {
   const [loading, setLoading] = useState(true);
   const [result, setResult] = useState(null);
   const [gps, setGps] = useState(false);
-  const scrollY = new Animated.Value(0);
   useEffect(() => {
     const {routes} = navigation.getState();
 
@@ -169,10 +168,10 @@ export const ResultPage = ({route, navigation}) => {
             <View style={styles.container}>
               <MapView
                 style={{height: 300, width: '100%'}}
-                moveOnMarkerPress={false}
-                pitchEnabled={false}
-                scrollEnabled={false}
-                zoomEnabled={false}
+                // moveOnMarkerPress={false}
+                // pitchEnabled={false}
+                // scrollEnabled={false}
+                // zoomEnabled={false}
                 initialRegion={{
                   latitude: 13.727395,
                   longitude: 100.764551,
