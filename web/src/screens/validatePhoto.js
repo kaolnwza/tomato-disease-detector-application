@@ -8,10 +8,10 @@ const Width = Dimensions.get('screen').width;
 const Height = Dimensions.get('screen').height;
 
 export const ValidatePhoto = ({route, navigation}) => {
-  const {photo} = route.params;
+  const {photo, info} = route.params;
 
   const ImgToBase64 = async () => {
-    navigation.navigate('Result', {photo});
+    navigation.navigate('Result', {photo, info});
   };
 
   return (

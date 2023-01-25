@@ -59,7 +59,7 @@ const Login = ({navigation}) => {
             }}
             icon={<AntDesign name="arrowright" size={50} color="#fFF" />}
             onPress={() => {
-              navigation.navigate('Home');
+              navigation.navigate('SelectFarm');
             }}></Button>
         </View>
       </View>

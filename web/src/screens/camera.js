@@ -12,15 +12,17 @@ export const CameraScreen = ({navigation}) => {
   const devices = useCameraDevices('wide-angle-camera');
   const device = devices.back;
   const camera = useRef(null);
-  const [Location, setLocation] = useState(null);
 
   const SnapShot = async () => {
     const photo = await camera.current.takePhoto({
       flash: 'off',
       qualityPrioritization: 'speed',
     });
-
-    navigation.navigate('ValidatePhoto', {photo});
+    Geolocation.getCurrentPosition(info => {
+      if (info) {
+        navigation.navigate('ValidatePhoto', {photo, info});
+      }
+    });
   };
 
   const OpenPhoto = async () => {
@@ -32,14 +34,12 @@ export const CameraScreen = ({navigation}) => {
       console.log('You Canceled');
     } else {
       const photo = result.assets[0];
-      navigation.navigate('ValidatePhoto', {photo});
+      Geolocation.getCurrentPosition(info => {
+        if (info) {
+          navigation.navigate('ValidatePhoto', {photo, info});
+        }
+      });
     }
-  };
-
-  const getCurrentLocation = async () => {
-    Geolocation.getCurrentPosition(info => {
-      console.log(info);
-    });
   };
 
   useEffect(() => {

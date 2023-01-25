@@ -13,15 +13,17 @@ import {Button, Input, ListItem} from '@rneui/base';
 import {font} from './styles';
 import Entypo from 'react-native-vector-icons/dist/Entypo';
 import MapView, {Marker} from 'react-native-maps';
+import moment from 'moment';
 
 const Width = Dimensions.get('screen').width;
 const Height = Dimensions.get('screen').height;
 
 export const ResultPage = ({route, navigation}) => {
-  const {photo} = route.params;
+  const {photo, info} = route.params;
   const [loading, setLoading] = useState(true);
   const [result, setResult] = useState(null);
-  const [gps, setGps] = useState(false);
+  const [gps, setGps] = useState(true);
+
   useEffect(() => {
     const {routes} = navigation.getState();
 
@@ -61,7 +63,7 @@ export const ResultPage = ({route, navigation}) => {
     })
       .then(response => response.json())
       .then(responseData => {
-        console.log('response:', responseData);
+        // console.log('response:', responseData);
         setResult(responseData);
       })
       .catch(error => {
@@ -149,7 +151,7 @@ export const ResultPage = ({route, navigation}) => {
           marginBottom: -20,
         }}>
         <Input
-          placeholder="ใส่ข้อมูล"
+          placeholder="เพิ่มคำอธิบาย"
           inputStyle={[font.kanit]}
           style={{alignSelf: 'center', textAlign: 'center'}}
         />
@@ -173,15 +175,15 @@ export const ResultPage = ({route, navigation}) => {
                 // scrollEnabled={false}
                 // zoomEnabled={false}
                 initialRegion={{
-                  latitude: 13.727395,
-                  longitude: 100.764551,
-                  latitudeDelta: 0.0922,
-                  longitudeDelta: 0.0421,
+                  latitude: info.coords.latitude,
+                  longitude: info.coords.longitude,
+                  latitudeDelta: 0.001,
+                  longitudeDelta: 0.001,
                 }}>
                 <Marker
                   coordinate={{
-                    latitude: 13.727395,
-                    longitude: 100.764551,
+                    latitude: info.coords.latitude,
+                    longitude: info.coords.longitude,
                   }}
                 />
               </MapView>
@@ -192,8 +194,8 @@ export const ResultPage = ({route, navigation}) => {
           size="lg"
           onPress={saveResult}
           style={{marginBottom: 100}}
-          buttonStyle={{borderRadius: 10}}>
-          ตกลง
+          buttonStyle={{borderRadius: 10, backgroundColor: '#047675'}}>
+          <Text style={[font.kanit, {fontSize: 20, color: '#fff'}]}>ตกลง</Text>
         </Button>
       </ScrollView>
     </View>

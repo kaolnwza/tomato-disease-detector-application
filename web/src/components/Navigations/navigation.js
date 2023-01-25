@@ -14,6 +14,7 @@ import Summary from '../../screens/summary';
 import Octicons from 'react-native-vector-icons/dist/Octicons';
 import Login from '../../screens/login';
 import Detail from '../../screens/detail.';
+import SelectFarm from '../../screens/selectFarm';
 
 const Stack = createNativeStackNavigator();
 const HomeNavigator = () => (
@@ -37,13 +38,23 @@ const HomeNavigator = () => (
       }}
     />
     <Stack.Screen
-      name="Home"
-      component={HomeScreen}
+      name="SelectFarm"
+      component={SelectFarm}
       options={{
         gestureEnabled: false,
         headerBackVisible: false,
-        title: 'หน้าหลัก',
+        title: 'เลือกไร่',
       }}
+    />
+    <Stack.Screen
+      name="Home"
+      component={HomeScreen}
+      options={({route}) => ({
+        title: route.params.name,
+        headerTintColor: '#000',
+        gestureEnabled: false,
+        headerBackVisible: false,
+      })}
     />
     <Stack.Screen
       name="Summary"
