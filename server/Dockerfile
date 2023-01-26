@@ -12,12 +12,12 @@ COPY . .
 
 RUN go mod tidy -go=1.16 && go mod tidy -go=1.17
 
-RUN cd apisrv && GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build main.go
+RUN cd internal && GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build main.go
 
 FROM alpine:3.13
 WORKDIR /app
 # COPY --from=builder . .
-COPY --from=builder /go/app/apisrv/main .
+COPY --from=builder /go/app/internal/main .
 COPY --from=builder /go/app/lib/credentials/long-sonar-371616-80145143437f.json .
 
 # CMD ["./go/app/apisrv/main"]
