@@ -39,9 +39,10 @@ const History = ({navigation}) => {
   }, []);
 
   const getLog = async () => {
+    console.log('get log');
     RNFetchBlob.fetch('GET', 'http://139.59.120.159:8080/v1/log', {
       Authorization:
-        'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NfdXVpZCI6ImVkMmE2MWJlLWYxMzMtNGMyNS04MDU0LWU0YjRkMWNmZjZhZCIsImV4cCI6MTY3MTQ0MTM1MiwidXNlcl91dWlkIjoiOGU0ZDgzMjAtOGExOS00NmZjLTgxNTEtN2E2MjI2ZDc2ZjZiIn0.JOvj31asDuKjblE_cjruRKxNWAa9GUn2GfknYrqOi94',
+        'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NfdXVpZCI6IjUzYmRhZThlLWMxZTMtNDAzMC1hODVkLWNkMWZhOTNhOWJlNSIsImV4cCI6MTg1MzkyNTA4OCwidXNlcl91dWlkIjoiOGU0ZDgzMjAtOGExOS00NmZjLTgxNTEtN2E2MjI2ZDc2ZjZiIn0.YKjeADsaC5oKaD4bBEkWxTDVbZMH_34j4Vx3bKgeZhc',
     })
       .then(res => {
         let status = res.info().status;
@@ -52,7 +53,7 @@ const History = ({navigation}) => {
           // the following conversions are done in js, it's SYNC
           let text = res.text();
           let json = res.json();
-          // console.log(json);
+          console.log(json);
           setHistory(json);
         } else {
           // handle other status codes
@@ -79,7 +80,7 @@ const History = ({navigation}) => {
         <Avatar
           rounded
           size={60}
-          source={item.avatar_url && {uri: item.avatar_url}}
+          source={item.image_uri && {uri: item.image_uri}}
           title={<ActivityIndicator />}
         />
       </View>
@@ -108,7 +109,7 @@ const History = ({navigation}) => {
     <View style={styles.container}>
       <FlatList
         keyExtractor={keyExtractor}
-        data={list}
+        data={history}
         renderItem={renderItem}
       />
     </View>

@@ -1,5 +1,7 @@
 import React from 'react';
 import {NavigationContainer} from '@react-navigation/native';
+import {Text, StyleSheet, FlatList, View, TouchableOpacity} from 'react-native';
+import {font, buttons} from '../../screens/styles';
 
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {HomeScreen} from '../../screens/home';
@@ -49,8 +51,18 @@ const HomeNavigator = () => (
     <Stack.Screen
       name="Home"
       component={HomeScreen}
-      options={({route}) => ({
-        title: route.params.name,
+      initialParams={{handleTitlePress: false}}
+      options={({route, navigation}) => ({
+        headerTitle: props => (
+          <TouchableOpacity
+            onPress={() => navigation.setParams({handleTitlePress: true})}
+            style={{flexDirection: 'row', alignItems: 'center'}}>
+            <Text style={[font.kanit, {marginRight: 5, fontSize: 18}]}>
+              {route.params.name}
+            </Text>
+            <Octicons name="chevron-down" />
+          </TouchableOpacity>
+        ),
         headerTintColor: '#000',
         gestureEnabled: false,
         headerBackVisible: false,

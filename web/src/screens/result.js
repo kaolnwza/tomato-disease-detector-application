@@ -23,7 +23,7 @@ export const ResultPage = ({route, navigation}) => {
   const [loading, setLoading] = useState(true);
   const [result, setResult] = useState(null);
   const [gps, setGps] = useState(true);
-
+  const [description, setDescription] = useState('');
   useEffect(() => {
     const {routes} = navigation.getState();
 
@@ -63,7 +63,7 @@ export const ResultPage = ({route, navigation}) => {
     })
       .then(response => response.json())
       .then(responseData => {
-        // console.log('response:', responseData);
+        console.log('response:', responseData);
         setResult(responseData);
       })
       .catch(error => {
@@ -85,8 +85,9 @@ export const ResultPage = ({route, navigation}) => {
       type: 'image/jpeg',
       name: fileName,
     });
-    data.append('disease', 'Late Blight');
-    data.append('description', 'test save image to log');
+
+    data.append('disease', result.replaceAll('"', ''));
+    data.append('description', description);
 
     fetch('http://139.59.120.159:8080/v1/log', {
       method: 'POST',
@@ -104,6 +105,7 @@ export const ResultPage = ({route, navigation}) => {
       .catch(error => {
         console.log('error:', error);
       });
+    navigation.goBack();
   };
 
   if (loading)
@@ -136,7 +138,7 @@ export const ResultPage = ({route, navigation}) => {
           alignItems: 'center',
         }}>
         <Text style={[font.kanit, {fontSize: 12, color: '#fff'}]}>
-          ความแม่นยำ 97.2 %
+          ความแม่นยำ 97.2 % {description}
         </Text>
         <Text style={[font.kanit, {fontSize: 20, color: '#fff'}]}>
           {result}
@@ -152,10 +154,13 @@ export const ResultPage = ({route, navigation}) => {
         }}>
         <Input
           placeholder="เพิ่มคำอธิบาย"
+          onChangeText={newText => setDescription(newText)}
+          defaultValue={description}
           inputStyle={[font.kanit]}
           style={{alignSelf: 'center', textAlign: 'center'}}
         />
         <ListItem.Accordion
+          bottomDivider
           content={
             <>
               <Entypo name="location-pin" size={20} />
@@ -169,7 +174,12 @@ export const ResultPage = ({route, navigation}) => {
           <ListItem>
             <View style={styles.container}>
               <MapView
-                style={{height: 300, width: '100%'}}
+                style={{
+                  height: 300,
+                  width: '100%',
+                  borderRadius: 30,
+                  overflow: 'hidden',
+                }}
                 // moveOnMarkerPress={false}
                 // pitchEnabled={false}
                 // scrollEnabled={false}
@@ -177,8 +187,8 @@ export const ResultPage = ({route, navigation}) => {
                 initialRegion={{
                   latitude: info.coords.latitude,
                   longitude: info.coords.longitude,
-                  latitudeDelta: 0.001,
-                  longitudeDelta: 0.001,
+                  latitudeDelta: 0.003,
+                  longitudeDelta: 0.003,
                 }}>
                 <Marker
                   coordinate={{
@@ -193,7 +203,7 @@ export const ResultPage = ({route, navigation}) => {
         <Button
           size="lg"
           onPress={saveResult}
-          style={{marginBottom: 100}}
+          style={{marginBottom: 100, marginTop: 30}}
           buttonStyle={{borderRadius: 10, backgroundColor: '#047675'}}>
           <Text style={[font.kanit, {fontSize: 20, color: '#fff'}]}>ตกลง</Text>
         </Button>

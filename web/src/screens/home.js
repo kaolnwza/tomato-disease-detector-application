@@ -1,10 +1,15 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useRef} from 'react';
+import {Picker} from '@react-native-picker/picker';
 import {Text, StyleSheet, FlatList, View, TouchableOpacity} from 'react-native';
 import {Button} from '@rneui/themed';
 import Ionicons from 'react-native-vector-icons/dist/Ionicons';
 import {font, buttons} from './styles';
 import DiseaseChart from '../components/chart/disease-chart';
-export const HomeScreen = ({navigation}) => {
+import Modal from 'react-native-modal';
+export const HomeScreen = ({navigation, route}) => {
+  const [selectedLanguage, setSelectedLanguage] = useState();
+  const [isModalVisible, setModalVisible] = useState(false);
+  const pickerRef = useRef();
   const [menu, setMenu] = useState([
     {
       name: 'ประวัติการบันทึก',
@@ -12,7 +17,12 @@ export const HomeScreen = ({navigation}) => {
       color: '#047675',
       icon: 'list-outline',
     },
-    {name: 'กล้อง', page: 'Camera', color: '#E72970', icon: 'camera-outline'},
+    {
+      name: 'ตรวจสอบโรค',
+      page: 'Camera',
+      color: '#E72970',
+      icon: 'camera-outline',
+    },
     {
       name: 'โรคพืช',
       color: '#3ED48D',
@@ -31,6 +41,17 @@ export const HomeScreen = ({navigation}) => {
     return {
       backgroundColor: options,
     };
+  };
+  useEffect(() => {
+    if (route.params.handleTitlePress) {
+      setModalVisible(true);
+    }
+    // navigation.setParams({handleTitlePress});
+  }, [route]);
+
+  const changeFarm = item => {
+    setSelectedLanguage(item);
+    navigation.setParams({name: item});
   };
 
   return (
@@ -70,6 +91,42 @@ export const HomeScreen = ({navigation}) => {
           />
         )}
       />
+      {/* <Button
+        title="Show modal"
+        onPress={() => setModalVisible(!isModalVisible)}
+      /> */}
+
+      <Modal
+        isVisible={isModalVisible}
+        style={{justifyContent: 'flex-end'}}
+        onBackdropPress={() => setModalVisible(false)}
+        onModalHide={() => navigation.setParams({handleTitlePress: false})}>
+        <View
+          style={{
+            margin: -20,
+            borderRadius: 30,
+            padding: 20,
+            height: '40%',
+            backgroundColor: '#fff',
+          }}>
+          <Picker
+            style={{height: -80}}
+            ref={pickerRef}
+            selectedValue={selectedLanguage}
+            onValueChange={(itemValue, itemIndex) => changeFarm(itemValue)}>
+            <Picker.Item label="FARM 1" value="FARM 1" />
+            <Picker.Item label="FARM 2" value="FARM 2" />
+            <Picker.Item label="FARM 3" value="FARM 3" />
+            <Picker.Item label="FARM 4" value="FARM 4" />
+          </Picker>
+          <View>
+            {/* <Button
+              title="Hide modal"
+              onPress={() => setModalVisible(!isModalVisible)}
+            /> */}
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
