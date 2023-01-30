@@ -2,19 +2,20 @@ package handler
 
 import (
 	"net/http"
-	repo "tomato-api/internal/core/repositories"
+
+	port "tomato-api/internal/ports"
 	log "tomato-api/lib/logs"
 )
 
 type predictionHandler struct {
-	predSvc repo.PredictionService
+	predSvc port.PredictionService
 }
 
-func NewPredictionHandler(svc repo.PredictionService) predictionHandler {
+func NewPredictionHandler(svc port.PredictionService) predictionHandler {
 	return predictionHandler{predSvc: svc}
 }
 
-func (h predictionHandler) PredictionTomato(c repo.Context) {
+func (h predictionHandler) PredictionTomato(c port.Context) {
 	file, fileHeader, err := c.Request().FormFile("file")
 	if err != nil {
 		log.Error(err)

@@ -8,20 +8,21 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+
+	db "tomato-api/internal/adapters/database"
+	rapi "tomato-api/internal/adapters/restapi"
 	service "tomato-api/internal/core/services"
 	handler "tomato-api/internal/infra/handlers"
 	"tomato-api/internal/infra/repositories/pgsql"
-	database "tomato-api/lib/database/postgres"
-	"tomato-api/lib/router"
 )
 
 func main() {
 
-	r := router.NewGinRouter()
-	middleware := router.NewGinMiddleware()
+	r := rapi.NewGinRouter()
+	middleware := rapi.NewGinMiddleware()
 
-	pg := database.PostgresTomato()
-	pgTx := database.NewPostgresRepo(pg)
+	pg := db.PostgresTomato()
+	pgTx := db.NewPostgresRepo(pg)
 
 	tmtDiseaseRepo := pgsql.NewTomatoDiseaseRepo(pgTx)
 	tmtDiseaseSvc := service.NewTomatoDiseaseServices(tmtDiseaseRepo, pgTx)
@@ -53,8 +54,8 @@ func main() {
 		v1.POST("/prediction", predHandler.PredictionTomato)
 		disease := v1.GROUP("/disease")
 		{
-			disease.GET("/", tmtDiseaseHandler.GetTomatoDiseasesHandler)
-			// disease.GET("/:name")
+			disease.GET("", tmtDiseaseHandler.GetTomatoDiseasesHandler)
+			disease.GET("/:name", tmtDiseaseHandler.GetTomatoDiseaseByNameHandler)
 
 		}
 
@@ -62,17 +63,17 @@ func main() {
 		{
 			farmUUID := farm.GROUP("/:farm_uuid")
 			{
-				farmUUID.GET("/log", tmtLogHandler.GetTomatoLogByFarmUUID)
+				farmUUID.GET("", tmtLogHandler.GetTomatoLogByFarmUUID)
 				farmUUID.POST("/log", tmtLogHandler.CreateTomatoLogByFarmUUID)
 			}
 		}
 
 		log := v1.GROUP("/log", middleware)
 		{
-			log.GET("/", tmtLogHandler.GetTomatoLogByUserUUID)
+			log.GET("", tmtLogHandler.GetTomatoLogByUserUUID)
 			logUUID := log.GROUP("/:log_uuid")
 			{
-				logUUID.GET("/", tmtLogHandler.GetTomatoLogByLogUUID)
+				logUUID.GET("", tmtLogHandler.GetTomatoLogByLogUUID)
 			}
 		}
 	}

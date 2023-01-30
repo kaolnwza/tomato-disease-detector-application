@@ -4,18 +4,18 @@ import (
 	"context"
 	"os"
 	model "tomato-api/internal/core/models"
-	repo "tomato-api/internal/core/repositories"
+	port "tomato-api/internal/ports"
 
-	database "tomato-api/lib/database/postgres"
+	db "tomato-api/internal/adapters/database"
 	"tomato-api/lib/helper"
 )
 
 type tomatoDiseaseServices struct {
-	tdsRepo repo.TomatoDiseaseRepository
-	tx      database.Transactor
+	tdsRepo port.TomatoDiseaseRepository
+	tx      db.Transactor
 }
 
-func NewTomatoDiseaseServices(r repo.TomatoDiseaseRepository, db database.Transactor) repo.TomatoDiseaseService {
+func NewTomatoDiseaseServices(r port.TomatoDiseaseRepository, db db.Transactor) port.TomatoDiseaseService {
 	return &tomatoDiseaseServices{
 		tdsRepo: r,
 		tx:      db,
@@ -62,6 +62,31 @@ func (s *tomatoDiseaseServices) GetTomatoDiseases(ctx context.Context) ([]*model
 	return resp, nil
 }
 
+func (s *tomatoDiseaseServices) GetTomatoDiseaseByName(ctx context.Context, diseaseName string) (*model.TomatoDiseaseResponse, error) {
+	disease := &model.TomatoDisease{}
+	if err := s.tdsRepo.GetByName(ctx, diseaseName, disease); err != nil {
+		return nil, err
+	}
+
+	inform := model.NewTomatoDiseaseInform()
+
+	uri, err := helper.GenerateImageURI(ctx, os.Getenv("GCS_BUCKET_1"), disease.ImagePath)
+	if err != nil {
+		return nil, err
+	}
+
+	informGenerator(disease, inform)
+
+	resp := &model.TomatoDiseaseResponse{
+		ImageURL: uri,
+		Name:     disease.DiseaseName,
+		NameThai: disease.DiseaseNameThai,
+		Inform:   *inform,
+	}
+
+	return resp, nil
+}
+
 // func (inform *tomatoDiseaseInform) informGenerator(disease model.TomatoDisease) {
 func informGenerator(disease *model.TomatoDisease, inform *model.TomatoDiseaseInform) {
 	info := &model.TomatoDiseaseInformData{}
@@ -85,7 +110,7 @@ func (s *tomatoDiseaseServices) CreateTomatoLog(c context.Context) error {
 	// desc := c.Request.FormValue("description")
 	// disease := c.Request.FormValue("disease")
 
-	// tx, err := repo.DB.Beginx()
+	// tx, err := port.DB.Beginx()
 	// if err != nil {
 	// 	c.JSON(http.StatusInternalServerError, err.Error())
 	// 	return

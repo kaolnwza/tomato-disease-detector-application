@@ -2,20 +2,20 @@ package pgsql
 
 import (
 	"context"
+	db "tomato-api/internal/adapters/database"
 	model "tomato-api/internal/core/models"
-	repo "tomato-api/internal/core/repositories"
-	database "tomato-api/lib/database/postgres"
+	port "tomato-api/internal/ports"
 )
 
 type tomatoDiseaseRepo struct {
-	tx database.Transactor
+	tx db.Transactor
 }
 
-// func NewTomatoDiseaseRepo(db database.Transactor) repo.TomatoDiseaseRepository {
+// func NewTomatoDiseaseRepo(db db.Transactor) port.TomatoDiseaseRepository {
 // 	return &tomatoDiseaseRepo{db: db}
 // }
 
-func NewTomatoDiseaseRepo(tx database.Transactor) repo.TomatoDiseaseRepository {
+func NewTomatoDiseaseRepo(tx db.Transactor) port.TomatoDiseaseRepository {
 	return &tomatoDiseaseRepo{
 		tx: tx,
 	}
@@ -84,4 +84,22 @@ func (r *tomatoDiseaseRepo) GetAll(ctx context.Context, disease *[]*model.Tomato
 		LEFT JOIN upload ON upload.upload_uuid = tomato_disease_info.upload_uuid`
 
 	return r.tx.Get(ctx, disease, query)
+}
+
+func (r *tomatoDiseaseRepo) GetByName(ctx context.Context, diseaseName string, disease *model.TomatoDisease) error {
+	query := `
+		SELECT
+			disease_uuid,
+			disease_name,
+			disease_name_th,
+			disease_cause,
+			disease_symptom,
+			disease_epidemic,
+			disease_resolve,
+			path as image_path
+		FROM tomato_disease_info
+		LEFT JOIN upload ON upload.upload_uuid = tomato_disease_info.upload_uuid
+		WHERE disease_name = $1`
+
+	return r.tx.GetOne(ctx, disease, query, diseaseName)
 }

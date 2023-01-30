@@ -53,9 +53,13 @@ func BearerToken(r *http.Request) string {
 func tokenBearer(c *gin.Context) (*jwt.Token, error) {
 	bearToken := c.Request.Header.Get("Authorization")
 
+	if bearToken == "" {
+		return nil, fmt.Errorf("header authorization is null")
+	}
+
 	getToken := strings.Split(bearToken, " ")
-	if len(getToken) != 2 && getToken[0] != strings.ToLower("bearer") {
-		return nil, fmt.Errorf("Header Authorization Failed")
+	if len(getToken) != 2 && strings.ToLower(getToken[0]) != "bearer" {
+		return nil, fmt.Errorf("header authorization fail")
 	}
 
 	token, err := jwt.Parse(getToken[1], func(token *jwt.Token) (interface{}, error) {

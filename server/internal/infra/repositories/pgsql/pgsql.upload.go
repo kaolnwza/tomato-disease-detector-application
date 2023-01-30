@@ -2,16 +2,16 @@ package pgsql
 
 import (
 	"context"
+	db "tomato-api/internal/adapters/database"
 	model "tomato-api/internal/core/models"
-	repo "tomato-api/internal/core/repositories"
-	database "tomato-api/lib/database/postgres"
+	port "tomato-api/internal/ports"
 )
 
 type uploadRepo struct {
-	tx database.Transactor
+	tx db.Transactor
 }
 
-func NewUploadRepo(tx database.Transactor) repo.UploadRepository {
+func NewUploadRepo(tx db.Transactor) port.UploadRepository {
 	return &uploadRepo{tx: tx}
 }
 

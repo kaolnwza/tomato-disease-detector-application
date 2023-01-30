@@ -2,20 +2,20 @@ package service
 
 import (
 	"context"
+	db "tomato-api/internal/adapters/database"
 	model "tomato-api/internal/core/models"
-	repo "tomato-api/internal/core/repositories"
-	database "tomato-api/lib/database/postgres"
+	port "tomato-api/internal/ports"
 	"tomato-api/lib/pkg"
 
 	"github.com/google/uuid"
 )
 
 type userService struct {
-	userRepo repo.UserRepository
-	tx       database.Transactor
+	userRepo port.UserRepository
+	tx       db.Transactor
 }
 
-func NewUserService(r repo.UserRepository, tx database.Transactor) repo.UserService {
+func NewUserService(r port.UserRepository, tx db.Transactor) port.UserService {
 	return &userService{
 		userRepo: r,
 		tx:       tx,

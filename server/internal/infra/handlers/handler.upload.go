@@ -3,19 +3,19 @@ package handler
 import (
 	"net/http"
 	"os"
-	repo "tomato-api/internal/core/repositories"
+	port "tomato-api/internal/ports"
 	log "tomato-api/lib/logs"
 )
 
 type uploadHandler struct {
-	uploadSvc repo.UploadService
+	uploadSvc port.UploadService
 }
 
-func NewUploadHandler(svc repo.UploadService) uploadHandler {
+func NewUploadHandler(svc port.UploadService) uploadHandler {
 	return uploadHandler{uploadSvc: svc}
 }
 
-func (h *uploadHandler) UploadFile(c repo.Context) {
+func (h *uploadHandler) UploadFile(c port.Context) {
 	file, _, err := c.Request().FormFile("file")
 	if err != nil {
 		log.Error(err)

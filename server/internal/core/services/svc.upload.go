@@ -7,9 +7,9 @@ import (
 	"mime/multipart"
 	"net/url"
 	"os"
+	db "tomato-api/internal/adapters/database"
 	model "tomato-api/internal/core/models"
-	repo "tomato-api/internal/core/repositories"
-	database "tomato-api/lib/database/postgres"
+	port "tomato-api/internal/ports"
 
 	"cloud.google.com/go/storage"
 	"github.com/google/uuid"
@@ -21,11 +21,11 @@ var (
 )
 
 type uploadService struct {
-	uploadRepo repo.UploadRepository
-	tx         database.Transactor
+	uploadRepo port.UploadRepository
+	tx         db.Transactor
 }
 
-func NewUploadService(r repo.UploadRepository, tx database.Transactor) repo.UploadService {
+func NewUploadService(r port.UploadRepository, tx db.Transactor) port.UploadService {
 	return &uploadService{uploadRepo: r, tx: tx}
 }
 

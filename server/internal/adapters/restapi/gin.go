@@ -1,10 +1,10 @@
-package router
+package rapi
 
 import (
 	"context"
 	"fmt"
 	"net/http"
-	repo "tomato-api/internal/core/repositories"
+	port "tomato-api/internal/ports"
 	log "tomato-api/lib/logs"
 	"tomato-api/lib/pkg"
 
@@ -44,13 +44,13 @@ func NewGinRouter() *GinRouter {
 	return &GinRouter{r}
 }
 
-func NewGinHandler(handler func(repo.Context)) gin.HandlerFunc {
+func NewGinHandler(handler func(port.Context)) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		handler(NewGinContext(c))
 	}
 }
 
-func NewGinRouterGroup(handler func(repo.Context)) *GinRouterGroup {
+func NewGinRouterGroup(handler func(port.Context)) *GinRouterGroup {
 	return &GinRouterGroup{}
 }
 
@@ -90,23 +90,23 @@ func NewGinMiddleware() gin.HandlerFunc {
 }
 
 // gin method
-func (r *GinRouter) POST(path string, handler func(repo.Context)) {
+func (r *GinRouter) POST(path string, handler func(port.Context)) {
 	r.Engine.POST(path, NewGinHandler(handler))
 }
 
-func (r *GinRouter) GET(path string, handler func(repo.Context)) {
+func (r *GinRouter) GET(path string, handler func(port.Context)) {
 	r.Engine.GET(path, NewGinHandler(handler))
 }
 
-func (r *GinRouter) PUT(path string, handler func(repo.Context)) {
+func (r *GinRouter) PUT(path string, handler func(port.Context)) {
 	r.Engine.PUT(path, NewGinHandler(handler))
 }
 
-func (r *GinRouter) PATCH(path string, handler func(repo.Context)) {
+func (r *GinRouter) PATCH(path string, handler func(port.Context)) {
 	r.Engine.PATCH(path, NewGinHandler(handler))
 }
 
-func (r *GinRouter) DELETE(path string, handler func(repo.Context)) {
+func (r *GinRouter) DELETE(path string, handler func(port.Context)) {
 	r.Engine.DELETE(path, NewGinHandler(handler))
 }
 
@@ -119,23 +119,23 @@ func (r *GinRouterGroup) GROUP(path string, handler ...gin.HandlerFunc) *GinRout
 	return &GinRouterGroup{r.Group(path, handler...)}
 }
 
-func (r *GinRouterGroup) POST(path string, handler func(repo.Context)) {
+func (r *GinRouterGroup) POST(path string, handler func(port.Context)) {
 	r.RouterGroup.POST(path, NewGinHandler(handler))
 }
 
-func (r *GinRouterGroup) GET(path string, handler func(repo.Context)) {
+func (r *GinRouterGroup) GET(path string, handler func(port.Context)) {
 	r.RouterGroup.GET(path, NewGinHandler(handler))
 }
 
-func (r *GinRouterGroup) PUT(path string, handler func(repo.Context)) {
+func (r *GinRouterGroup) PUT(path string, handler func(port.Context)) {
 	r.RouterGroup.PUT(path, NewGinHandler(handler))
 }
 
-func (r *GinRouterGroup) PATCH(path string, handler func(repo.Context)) {
+func (r *GinRouterGroup) PATCH(path string, handler func(port.Context)) {
 	r.RouterGroup.PATCH(path, NewGinHandler(handler))
 }
 
-func (r *GinRouterGroup) DELETE(path string, handler func(repo.Context)) {
+func (r *GinRouterGroup) DELETE(path string, handler func(port.Context)) {
 	r.RouterGroup.DELETE(path, NewGinHandler(handler))
 }
 
@@ -156,7 +156,7 @@ func (c *GinContext) Request() *http.Request {
 	return c.Context.Request
 }
 
-func (c *GinContext) Writer() repo.ResponseWriter {
+func (c *GinContext) Writer() port.ResponseWriter {
 	return c.Context.Writer
 }
 

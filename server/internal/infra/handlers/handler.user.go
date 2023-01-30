@@ -3,7 +3,7 @@ package handler
 import (
 	"net/http"
 	model "tomato-api/internal/core/models"
-	repo "tomato-api/internal/core/repositories"
+	port "tomato-api/internal/ports"
 	log "tomato-api/lib/logs"
 	"tomato-api/lib/pkg"
 
@@ -11,14 +11,14 @@ import (
 )
 
 type userHandler struct {
-	userSvc repo.UserService
+	userSvc port.UserService
 }
 
-func NewUserHandler(svc repo.UserService) *userHandler {
+func NewUserHandler(svc port.UserService) *userHandler {
 	return &userHandler{userSvc: svc}
 }
 
-func (h *userHandler) NewAccessToken(c repo.Context) {
+func (h *userHandler) NewAccessToken(c port.Context) {
 	userUUID, err := uuid.Parse(c.Param("user_uuid"))
 	if err != nil {
 		log.Error(err)
@@ -36,7 +36,7 @@ func (h *userHandler) NewAccessToken(c repo.Context) {
 	c.JSON(http.StatusOK, at)
 }
 
-func (h *userHandler) GoogleLoginHandler(c repo.Context) {
+func (h *userHandler) GoogleLoginHandler(c port.Context) {
 	oauthInfo, err := pkg.GetGoogleCallbackInfo(c.Request().FormValue("oauth2_token"))
 	if err != nil {
 		log.Error(err)

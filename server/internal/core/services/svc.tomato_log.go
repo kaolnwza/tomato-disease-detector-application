@@ -4,9 +4,9 @@ import (
 	"context"
 	"mime/multipart"
 	"os"
+	db "tomato-api/internal/adapters/database"
 	model "tomato-api/internal/core/models"
-	repo "tomato-api/internal/core/repositories"
-	database "tomato-api/lib/database/postgres"
+	port "tomato-api/internal/ports"
 	"tomato-api/lib/helper"
 	log "tomato-api/lib/logs"
 
@@ -14,12 +14,12 @@ import (
 )
 
 type tomatoLogService struct {
-	tlRepo    repo.TomatoLogRepository
-	tx        database.Transactor
-	uploadSvc repo.UploadService
+	tlRepo    port.TomatoLogRepository
+	tx        db.Transactor
+	uploadSvc port.UploadService
 }
 
-func NewTomatoLogService(r repo.TomatoLogRepository, tx database.Transactor, uploadSvc repo.UploadService) repo.TomatoLogService {
+func NewTomatoLogService(r port.TomatoLogRepository, tx db.Transactor, uploadSvc port.UploadService) port.TomatoLogService {
 	return &tomatoLogService{
 		tlRepo:    r,
 		tx:        tx,

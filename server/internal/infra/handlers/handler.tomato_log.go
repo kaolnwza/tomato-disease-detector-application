@@ -4,21 +4,21 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	repo "tomato-api/internal/core/repositories"
+	port "tomato-api/internal/ports"
 	log "tomato-api/lib/logs"
 
 	"github.com/google/uuid"
 )
 
 type tomatoLogHandler struct {
-	tlSvc repo.TomatoLogService
+	tlSvc port.TomatoLogService
 }
 
-func NewTomatoLogHandler(svc repo.TomatoLogService) *tomatoLogHandler {
+func NewTomatoLogHandler(svc port.TomatoLogService) *tomatoLogHandler {
 	return &tomatoLogHandler{tlSvc: svc}
 }
 
-func (h *tomatoLogHandler) GetTomatoLogByFarmUUID(c repo.Context) {
+func (h *tomatoLogHandler) GetTomatoLogByFarmUUID(c port.Context) {
 	farmUUID, err := uuid.Parse(c.Param("farm_uuid"))
 	if err != nil {
 		log.Error(err)
@@ -36,7 +36,7 @@ func (h *tomatoLogHandler) GetTomatoLogByFarmUUID(c repo.Context) {
 	c.JSON(http.StatusOK, logs)
 }
 
-func (h *tomatoLogHandler) GetTomatoLogByUserUUID(c repo.Context) {
+func (h *tomatoLogHandler) GetTomatoLogByUserUUID(c port.Context) {
 	userUUID := c.AccessUserUUID()
 	if userUUID == uuid.Nil {
 		log.Error(fmt.Errorf("user_uuid is nil"))
@@ -54,7 +54,7 @@ func (h *tomatoLogHandler) GetTomatoLogByUserUUID(c repo.Context) {
 	c.JSON(http.StatusOK, logs)
 }
 
-func (h *tomatoLogHandler) GetTomatoLogByLogUUID(c repo.Context) {
+func (h *tomatoLogHandler) GetTomatoLogByLogUUID(c port.Context) {
 	logUUID, err := uuid.Parse(c.Param("log_uuid"))
 	if err != nil {
 		log.Error(err)
@@ -72,7 +72,7 @@ func (h *tomatoLogHandler) GetTomatoLogByLogUUID(c repo.Context) {
 	c.JSON(http.StatusOK, logs)
 }
 
-func (h *tomatoLogHandler) CreateTomatoLogByFarmUUID(c repo.Context) {
+func (h *tomatoLogHandler) CreateTomatoLogByFarmUUID(c port.Context) {
 	farmUUID, err := uuid.Parse(c.Param("farm_uuid"))
 	if err != nil {
 		log.Error(err)

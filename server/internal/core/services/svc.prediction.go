@@ -3,15 +3,15 @@ package service
 import (
 	"context"
 	"mime/multipart"
-	repo "tomato-api/internal/core/repositories"
+	port "tomato-api/internal/ports"
 	"tomato-api/lib/helper"
 )
 
 type predictionService struct {
-	repo.PredictionService
+	port.PredictionService
 }
 
-func NewPredictionService() repo.PredictionService {
+func NewPredictionService() port.PredictionService {
 	return &predictionService{}
 }
 

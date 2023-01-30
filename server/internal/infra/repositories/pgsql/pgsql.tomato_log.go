@@ -2,18 +2,18 @@ package pgsql
 
 import (
 	"context"
+	db "tomato-api/internal/adapters/database"
 	model "tomato-api/internal/core/models"
-	repo "tomato-api/internal/core/repositories"
-	database "tomato-api/lib/database/postgres"
+	port "tomato-api/internal/ports"
 
 	"github.com/google/uuid"
 )
 
 type tomatoLogRepo struct {
-	tx database.Transactor
+	tx db.Transactor
 }
 
-func NewTomatoLogRepo(tx database.Transactor) repo.TomatoLogRepository {
+func NewTomatoLogRepo(tx db.Transactor) port.TomatoLogRepository {
 	return &tomatoLogRepo{tx: tx}
 }
 
