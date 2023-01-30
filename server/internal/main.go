@@ -55,6 +55,7 @@ func main() {
 		disease := v1.GROUP("/disease")
 		{
 			disease.GET("", tmtDiseaseHandler.GetTomatoDiseasesHandler)
+			disease.POST("/", tmtDiseaseHandler.GetTomatoDiseasesHandler)
 			disease.GET("/:name", tmtDiseaseHandler.GetTomatoDiseaseByNameHandler)
 
 		}
@@ -70,7 +71,8 @@ func main() {
 
 		log := v1.GROUP("/log", middleware)
 		{
-			log.GET("", tmtLogHandler.GetTomatoLogByUserUUID)
+			// log.GET("", tmtLogHandler.GetTomatoLogByUserUUID)
+			log.POST("", tmtLogHandler.GetTomatoLogByUserUUID)
 			logUUID := log.GROUP("/:log_uuid")
 			{
 				logUUID.GET("", tmtLogHandler.GetTomatoLogByLogUUID)
