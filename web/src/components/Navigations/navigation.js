@@ -182,13 +182,13 @@ const HomeNavigator = () => (
       component={ResultPage}
       options={({navigation}) => ({
         title: 'ผลลัพธ์',
-        headerTintColor: '#fff',
+        headerTintColor: '#000',
         headerRight: () => (
           <Octicons
             onPress={() => navigation.navigate('Home')}
             name="home"
             size={25}
-            color="#fff"
+            color="#000"
           />
         ),
       })}

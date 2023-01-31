@@ -5,11 +5,14 @@ import {Button} from '@rneui/themed';
 import Ionicons from 'react-native-vector-icons/dist/Ionicons';
 import {font, buttons} from './styles';
 import DiseaseChart from '../components/chart/disease-chart';
+import SummaryMap from '../components/map/summaryMap';
+
 import Modal from 'react-native-modal';
 export const HomeScreen = ({navigation, route}) => {
   const [selectedLanguage, setSelectedLanguage] = useState();
   const [isModalVisible, setModalVisible] = useState(false);
   const pickerRef = useRef();
+
   const [menu, setMenu] = useState([
     {
       name: 'ประวัติการบันทึก',
@@ -56,22 +59,25 @@ export const HomeScreen = ({navigation, route}) => {
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity
+      <View
         style={[styles.card, styles.shadowProp]}
-        onPress={() => {
-          navigation.navigate('Summary');
-        }}>
+        // onPress={() => {
+        //   navigation.navigate('Summary');
+        // }}
+      >
         <Text style={font.kanit}>
           <Text style={{fontSize: 24}}>สรุปข้อมูล</Text> ภาพรวมวันนี้
         </Text>
-        <DiseaseChart
+
+        <SummaryMap date="current" time="currnt" />
+        {/* <DiseaseChart
           date="current"
           time="currnt"
           img={29}
           healthy={85}
           disease={15}
-        />
-      </TouchableOpacity>
+        /> */}
+      </View>
 
       <FlatList
         numColumns={2}
@@ -91,11 +97,7 @@ export const HomeScreen = ({navigation, route}) => {
           />
         )}
       />
-      {/* <Button
-        title="Show modal"
-        onPress={() => setModalVisible(!isModalVisible)}
-      /> */}
-
+      {/* Modal Section */}
       <Modal
         isVisible={isModalVisible}
         style={{justifyContent: 'flex-end'}}
@@ -119,12 +121,7 @@ export const HomeScreen = ({navigation, route}) => {
             <Picker.Item label="FARM 3" value="FARM 3" />
             <Picker.Item label="FARM 4" value="FARM 4" />
           </Picker>
-          <View>
-            {/* <Button
-              title="Hide modal"
-              onPress={() => setModalVisible(!isModalVisible)}
-            /> */}
-          </View>
+          <View></View>
         </View>
       </Modal>
     </View>
@@ -146,7 +143,7 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     paddingHorizontal: 25,
     width: '82%',
-    height: 150,
+    // height: '40%',
   },
   btn: {
     flexDirection: 'column',

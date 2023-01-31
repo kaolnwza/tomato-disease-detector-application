@@ -21,51 +21,31 @@ const Information = ({navigation}) => {
   const getData = async () => {
     // console.log('get Data func');
     // application/json
-    fetch('http://139.59.120.159:8080/v1/disease', {
-      method: 'GET',
-      headers: {
-        Authorization:
-          'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NfdXVpZCI6IjJlNjgxY2MwLTU0ZWQtNGI2MC04NTc1LTFhNzNjNTIzMmFlMCIsImV4cCI6MTg1NDczMTE3MywidXNlcl91dWlkIjoiOGU0ZDgzMjAtOGExOS00NmZjLTgxNTEtN2E2MjI2ZDc2ZjZiIn0.BaqNgWI9boH141SA_5x0_GRW5EqQDwokM8CkI71qv5I',
-      },
-    })
-      .then(response => response.json())
-      .then(data => {
-        console.log(data);
-      });
-
-    // await axios
-    //   .get('http://139.59.120.159:8080/v1/disease', {
-    //     headers: {
-    //       Authorization:
-    //         'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NfdXVpZCI6IjUzYmRhZThlLWMxZTMtNDAzMC1hODVkLWNkMWZhOTNhOWJlNSIsImV4cCI6MTg1MzkyNTA4OCwidXNlcl91dWlkIjoiOGU0ZDgzMjAtOGExOS00NmZjLTgxNTEtN2E2MjI2ZDc2ZjZiIn0.YKjeADsaC5oKaD4bBEkWxTDVbZMH_34j4Vx3bKgeZhc',
-    //     },
-    //   })
-    //   .then(response => {
-    //     console.log(response);
-    //   })
-    //   .catch(error => {
-    //     console.log(error);
-    //   });
-
-    // await RNFetchBlob.fetch('GET', 'http://139.59.120.159:8080/v1/disease', {
-    //   Authorization:
-    //     'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NfdXVpZCI6IjZmM2Y2NTE2LTkyMWYtNGI5Ny05MDk1LWJhNzRkMmNhZmIzNCIsImV4cCI6MTg1NDcyNDYzMywidXNlcl91dWlkIjoiOGU0ZDgzMjAtOGExOS00NmZjLTgxNTEtN2E2MjI2ZDc2ZjZiIn0.EuUmLL2ybSVCVO6_nT732f7VH1a6B4O-fSNtsouliOI',
+    // fetch('http://139.59.120.159:8080/v1/disease', {
+    //   method: 'GET',
+    //   headers: {
+    //     Authorization:
+    //       'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NfdXVpZCI6IjJlNjgxY2MwLTU0ZWQtNGI2MC04NTc1LTFhNzNjNTIzMmFlMCIsImV4cCI6MTg1NDczMTE3MywidXNlcl91dWlkIjoiOGU0ZDgzMjAtOGExOS00NmZjLTgxNTEtN2E2MjI2ZDc2ZjZiIn0.BaqNgWI9boH141SA_5x0_GRW5EqQDwokM8CkI71qv5I',
+    //   },
     // })
-    //   .then(res => {
-    //     let status = res.info().status;
-    //     console.log(status, res.json());
-    //     if (status == 200) {
-    //       let json = res.json();
-    //       setDisease(json);
-    //     } else {
-    //       // handle other status codes
-    //     }
-    //   })
-    //   // Something went wrong:
-    //   .catch((errorMessage, statusCode) => {
-    //     console.log(errorMessage);
-    //     // error handling
+    //   .then(response => response.json())
+    //   .then(data => {
+    //     console.log(data);
     //   });
+
+    axios
+      .get('http://139.59.120.159:8080/v1/disease', {
+        headers: {
+          Authorization:
+            'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NfdXVpZCI6IjUzYmRhZThlLWMxZTMtNDAzMC1hODVkLWNkMWZhOTNhOWJlNSIsImV4cCI6MTg1MzkyNTA4OCwidXNlcl91dWlkIjoiOGU0ZDgzMjAtOGExOS00NmZjLTgxNTEtN2E2MjI2ZDc2ZjZiIn0.YKjeADsaC5oKaD4bBEkWxTDVbZMH_34j4Vx3bKgeZhc',
+        },
+      })
+      .then(response => {
+        setDisease(response.data);
+      })
+      .catch(error => {
+        console.log(error);
+      });
   };
   const keyExtractor = (item, index) => index.toString();
 

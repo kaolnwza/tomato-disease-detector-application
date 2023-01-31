@@ -40,39 +40,39 @@ const History = ({navigation}) => {
 
   const getLog = async () => {
     // console.log('get log');
-    // axios
-    //   .post('http://139.59.120.159:8080/v1/log', {
-    //     headers: {
-    //       Authorization:
-    //         'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NfdXVpZCI6IjUzYmRhZThlLWMxZTMtNDAzMC1hODVkLWNkMWZhOTNhOWJlNSIsImV4cCI6MTg1MzkyNTA4OCwidXNlcl91dWlkIjoiOGU0ZDgzMjAtOGExOS00NmZjLTgxNTEtN2E2MjI2ZDc2ZjZiIn0.YKjeADsaC5oKaD4bBEkWxTDVbZMH_34j4Vx3bKgeZhc',
-    //     },
-    //   })
-    //   .then(response => {
-    //     console.log(response);
-    //   })
-    //   .catch(error => {
-    //     console.log(error);
-    //   });
-    RNFetchBlob.fetch('POST', 'http://139.59.120.159:8080/v1/log', {
-      Authorization:
-        'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NfdXVpZCI6Ijg5ODZlNDBmLTJkOWQtNGUzZS1hODgyLTU3ODMyMjNlOWY5NyIsImV4cCI6MTg1NDcyMzg3NiwidXNlcl91dWlkIjoiOGU0ZDgzMjAtOGExOS00NmZjLTgxNTEtN2E2MjI2ZDc2ZjZiIn0.uveZwPwOIZPsXwjer019ghHNrg8diyXj1W4KW0nFlpk',
-    })
-      .then(res => {
-        let status = res.info().status;
-        console.log(status, res.info());
-        if (status == 200) {
-          let json = res.json();
-          setHistory(json);
-        } else {
-          // handle other status codes
-        }
+    axios
+      .get('http://139.59.120.159:8080/v1/log', {
+        headers: {
+          Authorization:
+            'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NfdXVpZCI6IjUzYmRhZThlLWMxZTMtNDAzMC1hODVkLWNkMWZhOTNhOWJlNSIsImV4cCI6MTg1MzkyNTA4OCwidXNlcl91dWlkIjoiOGU0ZDgzMjAtOGExOS00NmZjLTgxNTEtN2E2MjI2ZDc2ZjZiIn0.YKjeADsaC5oKaD4bBEkWxTDVbZMH_34j4Vx3bKgeZhc',
+        },
       })
-      // Something went wrong:
-      .catch((errorMessage, statusCode) => {
-        console.log(errorMessage);
-
-        // error handling
+      .then(response => {
+        console.log(response);
+      })
+      .catch(error => {
+        console.log(error);
       });
+    // RNFetchBlob.fetch('POST', 'http://139.59.120.159:8080/v1/log', {
+    //   Authorization:
+    //     'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NfdXVpZCI6Ijg5ODZlNDBmLTJkOWQtNGUzZS1hODgyLTU3ODMyMjNlOWY5NyIsImV4cCI6MTg1NDcyMzg3NiwidXNlcl91dWlkIjoiOGU0ZDgzMjAtOGExOS00NmZjLTgxNTEtN2E2MjI2ZDc2ZjZiIn0.uveZwPwOIZPsXwjer019ghHNrg8diyXj1W4KW0nFlpk',
+    // })
+    //   .then(res => {
+    //     let status = res.info().status;
+    //     console.log(status, res.info());
+    //     if (status == 200) {
+    //       let json = res.json();
+    //       setHistory(json);
+    //     } else {
+    //       // handle other status codes
+    //     }
+    //   })
+    //   // Something went wrong:
+    //   .catch((errorMessage, statusCode) => {
+    //     console.log(errorMessage);
+
+    //     // error handling
+    //   });
   };
 
   const keyExtractor = (item, index) => index.toString();
