@@ -1,8 +1,18 @@
 import React, {useEffect, useState, useRef} from 'react';
 import {Picker} from '@react-native-picker/picker';
-import {Text, StyleSheet, FlatList, View, TouchableOpacity} from 'react-native';
+import {
+  Text,
+  StyleSheet,
+  FlatList,
+  View,
+  TouchableOpacity,
+  RefreshControl,
+  ScrollView,
+} from 'react-native';
 import {Button} from '@rneui/themed';
 import Ionicons from 'react-native-vector-icons/dist/Ionicons';
+import Feather from 'react-native-vector-icons/dist/Feather';
+
 import {font, buttons} from './styles';
 import DiseaseChart from '../components/chart/disease-chart';
 import SummaryMap from '../components/map/summaryMap';
@@ -45,6 +55,16 @@ export const HomeScreen = ({navigation, route}) => {
       backgroundColor: options,
     };
   };
+
+  const [refreshing, setRefreshing] = React.useState(false);
+
+  const wait = timeout => {
+    return new Promise(resolve => setTimeout(resolve, timeout));
+  };
+  const onRefresh = React.useCallback(() => {
+    setRefreshing(true);
+    wait(2000).then(() => setRefreshing(false));
+  }, []);
   useEffect(() => {
     if (route.params.handleTitlePress) {
       setModalVisible(true);
@@ -59,24 +79,24 @@ export const HomeScreen = ({navigation, route}) => {
 
   return (
     <View style={styles.container}>
-      <View
-        style={[styles.card, styles.shadowProp]}
-        // onPress={() => {
-        //   navigation.navigate('Summary');
-        // }}
-      >
-        <Text style={font.kanit}>
-          <Text style={{fontSize: 24}}>สรุปข้อมูล</Text> ภาพรวมวันนี้
-        </Text>
+      <View style={[styles.card, styles.shadowProp]}>
+        <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+          <Text style={font.kanit}>
+            <Text style={{fontSize: 24}}>สรุปข้อมูล</Text> ภาพรวมวันนี้
+          </Text>
+          <TouchableOpacity>
+            <Feather
+              onPress={() => {
+                navigation.navigate('Summary');
+              }}
+              name="chevron-right"
+              size={30}
+              color="#000"
+            />
+          </TouchableOpacity>
+        </View>
 
         <SummaryMap date="current" time="currnt" />
-        {/* <DiseaseChart
-          date="current"
-          time="currnt"
-          img={29}
-          healthy={85}
-          disease={15}
-        /> */}
       </View>
 
       <FlatList
@@ -134,7 +154,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'flex-start',
     paddingTop: 100,
-    backgroundColor: '#F0F9F8',
+    backgroundColor: '#f2f2f2',
   },
   card: {
     backgroundColor: 'white',

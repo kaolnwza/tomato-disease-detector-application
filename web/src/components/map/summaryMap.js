@@ -31,28 +31,43 @@ const DiseaseChart = props => {
   }, []);
   return (
     <View style={{flexDirection: 'column', marginTop: 5}}>
-      <View style={(styles.container, {paddingVertical: 10})}>
+      <View style={(styles.container, {paddingBottom: 5})}>
         <MapView
           style={{
-            height: 180,
+            height: 200,
             width: '100%',
             borderRadius: 30,
             // marginTop: -100,
           }}
-          // moveOnMarkerPress={false}
-          // pitchEnabled={false}
-          // scrollEnabled={false}
-          // zoomEnabled={false}
           showsUserLocation={true}
           followsUserLocation={true}
           initialRegion={location}>
-          <Marker coordinate={location} />
-          {/* <Marker
+          {/* <Marker coordinate={location} /> */}
+
+          <Marker
             coordinate={{
-              latitude: location ? location.coords.latitude : 12.736,
-              longitude: location ? location.coords.longitude : 99.778,
+              latitude: 13.731328,
+              longitude: 100.78181,
             }}
-          /> */}
+          />
+          <Marker
+            coordinate={{
+              latitude: 13.7312,
+              longitude: 100.7819,
+            }}
+          />
+          <Marker
+            coordinate={{
+              latitude: 13.7312,
+              longitude: 100.7817,
+            }}
+          />
+          <Marker
+            coordinate={{
+              latitude: 13.731,
+              longitude: 100.7816,
+            }}
+          />
         </MapView>
       </View>
       <View style={{flexDirection: 'row', justifyContent: 'space-around'}}>

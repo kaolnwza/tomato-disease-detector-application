@@ -76,11 +76,11 @@ export const ResultPage = ({route, navigation}) => {
 
   const TABS = [
     {
-      title: 'Biography',
+      title: 'ตำแหน่ง',
       description: text.biography,
     },
     {
-      title: 'Powers and Abilities',
+      title: 'ข้อมูลโรค',
       description: text.powers,
     },
     {
@@ -284,17 +284,6 @@ export const ResultPage = ({route, navigation}) => {
     //     </Button>
     //   </ScrollView>
     <View style={{flex: 1}}>
-      {/* <Image
-        style={{
-          minHeight: Width,
-          width: Width,
-          // height: photo.height,
-          maxHeight: Height,
-        }}
-        source={{
-          uri: photo.path ? 'file://' + photo.path : photo.uri,
-        }}
-      /> */}
       <TabbedHeaderPager
         containerStyle={styles.stretchContainer}
         backgroundImage={{
@@ -319,6 +308,7 @@ export const ResultPage = ({route, navigation}) => {
         tabTextActiveStyle={styles.tabTextActiveStyle}
         tabWrapperStyle={styles.tabWrapperStyle}
         tabsContainerStyle={styles.tabsContainerStyle}
+        parallaxHeight={400}
         onScroll={onScroll}
         renderHeaderBar={() => (
           <View

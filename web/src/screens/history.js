@@ -41,7 +41,7 @@ const History = ({navigation}) => {
   const getLog = async () => {
     // console.log('get log');
     axios
-      .get('http://139.59.120.159:8080/v1/log', {
+      .post('http://139.59.120.159:8080/v1/log', {
         headers: {
           Authorization:
             'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NfdXVpZCI6IjUzYmRhZThlLWMxZTMtNDAzMC1hODVkLWNkMWZhOTNhOWJlNSIsImV4cCI6MTg1MzkyNTA4OCwidXNlcl91dWlkIjoiOGU0ZDgzMjAtOGExOS00NmZjLTgxNTEtN2E2MjI2ZDc2ZjZiIn0.YKjeADsaC5oKaD4bBEkWxTDVbZMH_34j4Vx3bKgeZhc',
