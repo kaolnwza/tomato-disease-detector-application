@@ -71,7 +71,7 @@ func main() {
 
 		log := v1.GROUP("/log", middleware)
 		{
-			// log.GET("", tmtLogHandler.GetTomatoLogByUserUUID)
+			log.GET("", tmtLogHandler.GetTomatoLogByUserUUID)
 			log.POST("/", tmtLogHandler.GetTomatoLogByUserUUID)
 			logUUID := log.GROUP("/:log_uuid")
 			{
