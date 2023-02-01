@@ -52,7 +52,7 @@ func main() {
 	{
 		v1.POST("/upload", uploadHandler.UploadFile)
 		v1.POST("/prediction", predHandler.PredictionTomato)
-		disease := v1.GROUP("/disease")
+		disease := v1.GROUP("/disease", middleware)
 		{
 			disease.GET("", tmtDiseaseHandler.GetTomatoDiseasesHandler)
 			disease.POST("/", tmtDiseaseHandler.GetTomatoDiseasesHandler)
@@ -72,7 +72,7 @@ func main() {
 		log := v1.GROUP("/log", middleware)
 		{
 			// log.GET("", tmtLogHandler.GetTomatoLogByUserUUID)
-			log.POST("", tmtLogHandler.GetTomatoLogByUserUUID)
+			log.POST("/", tmtLogHandler.GetTomatoLogByUserUUID)
 			logUUID := log.GROUP("/:log_uuid")
 			{
 				logUUID.GET("", tmtLogHandler.GetTomatoLogByLogUUID)
