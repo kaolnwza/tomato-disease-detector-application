@@ -6,25 +6,33 @@ import {font, buttons} from './styles';
 
 import DiseaseChart from '../components/chart/disease-chart';
 
-const Summary = () => {
+const Summary = ({navigation}) => {
   const list = [
     {
-      date: '2022-03-25',
+      date: '2023-01-07',
       time: '10.23',
       img: 10,
       healthy: 91,
       disease: 8,
     },
+    {
+      date: '2023-01-06',
+      time: '10.23',
+      img: 13,
+      healthy: 91,
+      disease: 14,
+    },
   ];
   const keyExtractor = (item, index) => index.toString();
 
   const renderItem = ({item}) => (
-    <TouchableOpacity style={[styles.cardSmall, styles.shadowProp]}>
+    <TouchableOpacity
+      onPress={() => navigation.navigate('daily')}
+      style={[styles.cardSmall, styles.shadowProp]}>
       <DiseaseChart
         date={item.date}
         time={item.time}
         img={item.img}
-        healthy={item.healthy}
         disease={item.disease}
       />
     </TouchableOpacity>
@@ -36,11 +44,10 @@ const Summary = () => {
           <Text style={{fontSize: 24}}>ช่วงเวลา</Text>
         </Text>
         <DiseaseChart
-          date={['2022-11-25', '2022-12-19']}
+          date={['2023-01-06', '2023-01-07']}
           time="currnt"
           img={29}
-          healthy={85}
-          disease={15}
+          disease={20}
         />
       </View>
       <FlatList
@@ -58,7 +65,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'flex-start',
     paddingTop: 100,
-    backgroundColor: '#F0F9F8',
   },
   card: {
     backgroundColor: 'white',
@@ -73,8 +79,9 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     borderRadius: 40,
     margin: 5,
-    paddingVertical: 10,
-    paddingHorizontal: 25,
+    paddingTop: 5,
+    paddingBottom: 10,
+    paddingHorizontal: 10,
   },
   shadowProp: {
     shadowOffset: {width: 0, height: 4},

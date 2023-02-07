@@ -5,9 +5,9 @@ import Icon from 'react-native-vector-icons/dist/Ionicons';
 
 import {Button} from '@rneui/themed';
 import {Camera, useCameraDevices} from 'react-native-vision-camera';
-import {launchImageLibrary} from 'react-native-image-picker';
+// import {launchImageLibrary} from 'react-native-image-picker';
 import Geolocation from '@react-native-community/geolocation';
-
+import ImagePicker from 'react-native-image-crop-picker';
 export const CameraScreen = ({navigation}) => {
   const devices = useCameraDevices('wide-angle-camera');
   const device = devices.back;
@@ -26,20 +26,17 @@ export const CameraScreen = ({navigation}) => {
   };
 
   const OpenPhoto = async () => {
-    const result = await launchImageLibrary({
-      mediaType: 'photo',
-      includeBase64: false,
-    });
-    if (result.didCancel) {
-      console.log('You Canceled');
-    } else {
-      const photo = result.assets[0];
+    ImagePicker.openPicker({
+      width: 300,
+      height: 400,
+      cropping: true,
+    }).then(image => {
       Geolocation.getCurrentPosition(info => {
         if (info) {
-          navigation.navigate('ValidatePhoto', {photo, info});
+          navigation.navigate('ValidatePhoto', {photo: image, info});
         }
       });
-    }
+    });
   };
 
   useEffect(() => {

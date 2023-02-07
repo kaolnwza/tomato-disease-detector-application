@@ -84,16 +84,15 @@ export const HomeScreen = ({navigation, route}) => {
           <Text style={font.kanit}>
             <Text style={{fontSize: 24}}>สรุปข้อมูล</Text> ภาพรวมวันนี้
           </Text>
-          <TouchableOpacity>
-            <Feather
-              onPress={() => {
-                navigation.navigate('Summary');
-              }}
-              name="chevron-right"
-              size={30}
-              color="#000"
-            />
-          </TouchableOpacity>
+          <Button
+            style={{marginRight: -15}}
+            type="clear"
+            onPress={() => {
+              navigation.navigate('Summary');
+            }}
+            icon={
+              <Feather name="chevron-right" size={30} color="#000" />
+            }></Button>
         </View>
 
         <SummaryMap date="current" time="currnt" />

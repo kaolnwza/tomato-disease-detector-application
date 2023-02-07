@@ -17,6 +17,7 @@ import Octicons from 'react-native-vector-icons/dist/Octicons';
 import Login from '../../screens/login';
 import Detail from '../../screens/detail.';
 import SelectFarm from '../../screens/selectFarm';
+import Daily from '../../screens/ daily-summary';
 
 const Stack = createNativeStackNavigator();
 const HomeNavigator = () => (
@@ -182,6 +183,22 @@ const HomeNavigator = () => (
       component={ResultPage}
       options={({navigation}) => ({
         title: 'ผลลัพธ์',
+        headerTintColor: '#000',
+        headerRight: () => (
+          <Octicons
+            onPress={() => navigation.navigate('Home')}
+            name="home"
+            size={25}
+            color="#000"
+          />
+        ),
+      })}
+    />
+    <Stack.Screen
+      name="daily"
+      component={Daily}
+      options={({navigation}) => ({
+        title: 'สรุปข้อมูล',
         headerTintColor: '#000',
         headerRight: () => (
           <Octicons

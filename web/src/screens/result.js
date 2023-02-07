@@ -8,12 +8,16 @@ import {
   ScrollView,
   useWindowDimensions,
   StatusBar,
+  ActivityIndicator,
+  TouchableOpacity,
 } from 'react-native';
-// import RNFetchBlob from 'rn-fetch-blob';
+import Modal from 'react-native-modal';
+import Feather from 'react-native-vector-icons/dist/Feather';
+import MaterialIcons from 'react-native-vector-icons/dist/MaterialIcons';
 import {Button, Input, ListItem} from '@rneui/base';
 import {font} from './styles';
 import Entypo from 'react-native-vector-icons/dist/Entypo';
-import MapView, {Marker} from 'react-native-maps';
+import MapView, {Marker, PROVIDER_GOOGLE} from 'react-native-maps';
 import moment from 'moment';
 import {useSharedValue} from 'react-native-reanimated';
 import {
@@ -21,71 +25,46 @@ import {
   DetailsHeaderScrollView,
 } from 'react-native-sticky-parallax-header';
 
-const Width = Dimensions.get('screen').width;
-const Height = Dimensions.get('screen').height;
-
 export const ResultPage = ({route, navigation}) => {
   const {photo, info} = route.params;
   const [loading, setLoading] = useState(true);
   const [result, setResult] = useState(null);
-  const [gps, setGps] = useState(true);
   const [description, setDescription] = useState('');
+  const [isModalVisible, setModalVisible] = useState(false);
+  const [Pin, setPin] = useState({
+    latitude: info.coords.latitude,
+    longitude: info.coords.longitude,
+    latitudeDelta: 0.003,
+    longitudeDelta: 0.003,
+  });
+  const [location, setLocation] = useState({
+    latitude: info.coords.latitude,
+    longitude: info.coords.longitude,
+    latitudeDelta: 0.003,
+    longitudeDelta: 0.003,
+  });
 
-  const {height} = useWindowDimensions();
+  const [editMarker, setEditMarkers] = useState({
+    latitude: info.coords.latitude,
+    longitude: info.coords.longitude,
+  });
+
+  const [ready, setReady] = useState(true);
+
   const scrollValue = useSharedValue(0);
-
-  const text = {
-    biography: `The bounty hunter known as "the Mandalorian" was dispatched by "the Client" and Imperial Dr. Pershing to capture the Child alive, however the Client would allow the Mandalorian to return the Child dead for a lower price.
-    The assassin droid IG-11 was also dispatched to terminate him. After working together to storm the encampment the infant was being held in, the Mandalorian and IG-11 found the Child. IG-11 then attempted to terminate the Child. The Mandalorian shot the droid before the he was able to assassinate the Child.
-    Shortly after, the Mandalorian took the Child back to his ship. On the way they were attacked by a trio of Trandoshan bounty hunters, who attempted to kill the Child. After the Mandalorian defeated them, he and the Child camped out in the desert for the night. While the Mandalorian sat by the fire, the Child ate one of the creatures moving around nearby. He then approached the bounty hunter and attempted to use the Force to heal one of the Mandalorian's wounds. The Mandalorian stopped him and placed him back into his pod. The next day, the pair made it to the Razor Crest only to find it being scavenged by Jawas. The Mandalorian attacked their sandcrawler for the scavenged parts and attempted to climb it while the Child followed in his pod. However, the Mandalorian was knocked down to the ground`,
-    powers:
-      'Grogu was able to harness the mystical energies of the Force on account of being Force-sensitive. One notable display of his power was when he telekinetically lifted a giant mudhorn into the air for a brief time to save Djarin from the charging beast. However, performing this feat was very strenuous for Grogu as he subsequently fell unconscious for several hours afterward. He could also use the Force when he became angry, such as when he telekinetically strangled Cara Dune because he believed she was harming Djarin while they were arm-wrestling. He later revealed the ability to heal serious injuries and even cure poisoning by touching the injury and then using the Force, though the act, much like levitating the mudhorn, was incredibly draining. In another notable display of telekinesis, Grogu created a strong barrier using the Force to protect his companions by both blocking and redirecting a stream of fire from an attacking Incinerator trooper.',
-    appearances: `
-    Star Wars: Galaxy of Heroes
-    Star Wars: Squadrons (as toy) (DLC)
-    The-Mandalorian-logo.png The Mandalorian - "Chapter 1: The Mandalorian" (First appearance)
-    The Mandalorian: Season 1: Volume 1
-    Star Wars: The Mandalorian Junior Novel
-    The Mandalorian 1
-    The-Mandalorian-logo.png The Mandalorian - "Chapter 2: The Child"
-    The Mandalorian 2
-    The-Mandalorian-logo.png The Mandalorian - "Chapter 3: The Sin"
-    The-Mandalorian-logo.png The Mandalorian - "Chapter 4: Sanctuary"
-    The-Mandalorian-logo.png The Mandalorian - "Chapter 5: The Gunslinger"
-    The-Mandalorian-logo.png The Mandalorian - "Chapter 6: The Prisoner"
-    The-Mandalorian-logo.png The Mandalorian - "Chapter 7: The Reckoning"
-    The-Mandalorian-logo.png The Mandalorian - "Chapter 8: Redemption"
-    The Mandalorian: A Clan of Two
-    The Mandalorian: Magnetic Fun
-    The Mandalorian: This is the Way
-    The-Mandalorian-logo.png The Mandalorian - "Chapter 9: The Marshal"
-    Star Wars: The Mandalorian Season 2 Junior Novel
-    The Mandalorian: The Path of the Force
-    The-Mandalorian-logo.png The Mandalorian - "Chapter 10: The Passenger"
-    The-Mandalorian-logo.png The Mandalorian - "Chapter 11: The Heiress"
-    The-Mandalorian-logo.png The Mandalorian - "Chapter 12: The Siege"
-    The-Mandalorian-logo.png The Mandalorian - "Chapter 13: The Jedi" (First identified as Grogu)
-    The-Mandalorian-logo.png The Mandalorian - "Chapter 14: The Tragedy"
-    The-Mandalorian-logo.png The Mandalorian - "Chapter 15: The Believer" (Mentioned only)
-    The-Mandalorian-logo.png The Mandalorian - "Chapter 16: The Rescue"
-    The Book of Boba Fett logo.png The Book of Boba Fett - "Chapter 5: Return of the Mandalorian" (Mentioned only)
-    The Book of Boba Fett logo.png The Book of Boba Fett - "Chapter 6: From the Desert Comes a Stranger"
-    The Book of Boba Fett logo.png The Book of Boba Fett - "Chapter 7: In the Name of Honor"
-    `.trim(),
-  };
 
   const TABS = [
     {
+      title: 'เพิ่มข้อมูล',
+      component: 'form',
+    },
+    {
       title: 'ตำแหน่ง',
-      description: text.biography,
+      component: 'map',
     },
     {
       title: 'ข้อมูลโรค',
-      description: text.powers,
-    },
-    {
-      title: 'Appearances',
-      description: text.appearances,
+      component: 'inform',
     },
   ];
 
@@ -101,10 +80,29 @@ export const ResultPage = ({route, navigation}) => {
       routes: filteredRoutes,
     });
   }, []);
+
   function onScroll(e) {
     'worklet';
     scrollValue.value = e.contentOffset.y;
   }
+
+  const saveEditedPin = () => {
+    setPin(location);
+    setModalVisible(false);
+  };
+
+  const cancelEditedPin = () => {
+    setEditMarkers(Pin);
+    setModalVisible(false);
+  };
+  const addMarker = () => {
+    setEditMarkers(location);
+  };
+
+  const onLocationChange = r => {
+    setReady(true);
+    setLocation(r);
+  };
 
   const getData = async () => {
     const imageUri = photo.path ? 'file://' + photo.path : photo.uri;
@@ -180,12 +178,6 @@ export const ResultPage = ({route, navigation}) => {
     navigation.goBack();
   };
 
-  function check(e) {
-    'worklet';
-    // scrollValue.value = e.contentOffset.y;
-    console.log(e);
-  }
-
   if (loading)
     return (
       <View style={{flex: 1, paddingVertical: 120, paddingHorizontal: 20}}>
@@ -194,95 +186,6 @@ export const ResultPage = ({route, navigation}) => {
     );
 
   return (
-    // <View style={{flex: 1}}>
-    //   <Image
-    //     style={{
-    //       minHeight: Width,
-    //       width: Width,
-    //       // height: photo.height,
-    //       maxHeight: Height,
-    //     }}
-    //     source={{
-    //       uri: photo.path ? 'file://' + photo.path : photo.uri,
-    //     }}
-    //   />
-
-    //   <ScrollView
-    //     style={{
-    //       borderRadius: 20,
-    //       transform: [{translateY: -20}],
-    //       backgroundColor: '#fff',
-    //       padding: 20,
-    //       marginBottom: -20,
-    //     }}>
-    //     <View
-    //       style={{
-    //         flexDirection: 'column',
-    //         alignSelf: 'center',
-    //         alignItems: 'center',
-    //       }}>
-    //       <Text style={[font.kanit, {fontSize: 24}]}>{result}</Text>
-
-    //       <Text style={[font.kanit, {fontSize: 12}]}>
-    //         ความแม่นยำ 97.2 % {description}
-    //       </Text>
-    //     </View>
-    //     <Input
-    //       placeholder="เพิ่มคำอธิบาย"
-    //       onChangeText={newText => setDescription(newText)}
-    //       defaultValue={description}
-    //       inputStyle={[font.kanit]}
-    //       style={{alignSelf: 'center', textAlign: 'center'}}
-    //     />
-    //     <ListItem.Accordion
-    //       bottomDivider
-    //       content={
-    //         <>
-    //           <Entypo name="location-pin" size={20} />
-    //           <ListItem.Content>
-    //             <ListItem.Title style={font.kanit}>ตำแหน่ง</ListItem.Title>
-    //           </ListItem.Content>
-    //         </>
-    //       }
-    //       onPress={() => setGps(!gps)}
-    //       isExpanded={gps}>
-    //       <ListItem>
-    //         <View style={styles.container}>
-    //           <MapView
-    //             style={{
-    //               height: 300,
-    //               width: '100%',
-    //               borderRadius: 30,
-    //               overflow: 'hidden',
-    //             }}
-    //             // moveOnMarkerPress={false}
-    //             // pitchEnabled={false}
-    //             // scrollEnabled={false}
-    //             // zoomEnabled={false}
-    //             initialRegion={{
-    //               latitude: info.coords.latitude,
-    //               longitude: info.coords.longitude,
-    //               latitudeDelta: 0.003,
-    //               longitudeDelta: 0.003,
-    //             }}>
-    //             <Marker
-    //               coordinate={{
-    //                 latitude: info.coords.latitude,
-    //                 longitude: info.coords.longitude,
-    //               }}
-    //             />
-    //           </MapView>
-    //         </View>
-    //       </ListItem>
-    //     </ListItem.Accordion>
-    //     <Button
-    //       size="lg"
-    //       onPress={saveResult}
-    //       style={{marginBottom: 100, marginTop: 30}}
-    //       buttonStyle={{borderRadius: 10, backgroundColor: '#047675'}}>
-    //       <Text style={[font.kanit, {fontSize: 20, color: '#fff'}]}>ตกลง</Text>
-    //     </Button>
-    //   </ScrollView>
     <View style={{flex: 1}}>
       <TabbedHeaderPager
         containerStyle={styles.stretchContainer}
@@ -319,14 +222,190 @@ export const ResultPage = ({route, navigation}) => {
         )}
         tabs={TABS}
         showsVerticalScrollIndicator={false}>
-        {TABS.map((tab, i) => (
-          <View key={i} style={[styles.contentContainer, {height}]}>
-            <Text style={[font.kanit, styles.contentText]}>
-              {tab.description}
-            </Text>
-          </View>
-        ))}
+        {TABS.map((tab, i) => {
+          switch (tab.component) {
+            case 'map':
+              return (
+                <View key={i} style={[{height: 710}]}>
+                  <MapView
+                    region={Pin}
+                    // provider={PROVIDER_GOOGLE}
+                    style={{
+                      height: '70%',
+                      width: '90%',
+                      borderRadius: 30,
+                      alignSelf: 'center',
+                      overflow: 'hidden',
+                      marginVertical: 20,
+                    }}
+                    moveOnMarkerPress={false}
+                    pitchEnabled={false}
+                    scrollEnabled={false}
+                    // zoomEnabled={false}
+                    initialRegion={{
+                      latitude: info.coords.latitude,
+                      longitude: info.coords.longitude,
+                      latitudeDelta: 0.003,
+                      longitudeDelta: 0.003,
+                    }}>
+                    <Marker coordinate={Pin} />
+                  </MapView>
+                  <TouchableOpacity
+                    style={{
+                      alignSelf: 'flex-end',
+                      marginHorizontal: 40,
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                    }}
+                    onPress={() => {
+                      setModalVisible(!isModalVisible);
+                    }}>
+                    <Text style={[font.kanit]}>แก้หมุด</Text>
+                    <Feather name="edit-3" size={30} color="#000" />
+                  </TouchableOpacity>
+                </View>
+              );
+            case 'form':
+              return (
+                <View key={i} style={[styles.contentContainer]}>
+                  <Input
+                    placeholder="เพิ่มคำอธิบาย"
+                    onChangeText={newText => setDescription(newText)}
+                    defaultValue={description}
+                    inputStyle={[font.kanit]}
+                    style={{
+                      alignSelf: 'center',
+                      textAlign: 'center',
+                    }}
+                  />
+                  <Button
+                    size="lg"
+                    onPress={saveResult}
+                    style={{marginHorizontal: 20}}
+                    buttonStyle={{
+                      borderRadius: 10,
+                      backgroundColor: '#047675',
+                    }}>
+                    <Text style={[font.kanit, {fontSize: 20, color: '#fff'}]}>
+                      บันทึก
+                    </Text>
+                  </Button>
+                </View>
+              );
+            case 'inform':
+              return (
+                <View key={i} style={[styles.contentContainer]}>
+                  <Text>Disease Information</Text>
+                </View>
+              );
+            default:
+              return <Text key={i}>No Component</Text>;
+          }
+        })}
       </TabbedHeaderPager>
+      {/* Modal */}
+      <Modal
+        isVisible={isModalVisible}
+        style={{justifyContent: 'flex-end'}}
+        onBackdropPress={cancelEditedPin}
+        onModalHide={() => navigation.setParams({handleTitlePress: false})}>
+        <View
+          style={{
+            margin: -20,
+            borderRadius: 30,
+            padding: 20,
+            height: '75%',
+            backgroundColor: '#fff',
+          }}>
+          {/* <Text>
+            {location.latitude} {location.longitude}
+          </Text> */}
+          <MapView
+            onRegionChange={region => onLocationChange(region)}
+            onRegionChangeComplete={() => setReady(false)}
+            // provider={PROVIDER_GOOGLE}
+            showsUserLocation
+            region={Pin}
+            style={{
+              height: 400,
+              width: '100%',
+              borderRadius: 30,
+              alignSelf: 'center',
+              overflow: 'hidden',
+            }}
+            initialRegion={Pin}>
+            <Marker coordinate={editMarker} />
+            {/* {markers.map((marker, index) => (
+              <Marker key={index} coordinate={marker} />
+            ))} */}
+          </MapView>
+          <View style={{position: 'absolute', top: '38%', left: '50%'}}>
+            <Feather name="crosshair" size={40} color="#000" />
+          </View>
+
+          <Button
+            onPress={addMarker}
+            size="lg"
+            disabled={ready}
+            buttonStyle={{
+              paddingHorizontal: 30,
+              marginHorizontal: 30,
+              marginVertical: 10,
+
+              borderRadius: 10,
+              backgroundColor: '#047675',
+            }}>
+            {/* <ActivityIndicator /> */}
+            <Text style={[font.kanit, {fontSize: 20, color: '#fff'}]}>
+              <MaterialIcons name="location-pin" size={20} color="#fff" />
+              ปักหมุด
+            </Text>
+          </Button>
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-evenly',
+              marginVertical: 10,
+            }}>
+            <Button
+              onPress={cancelEditedPin}
+              size="lg"
+              icon={<Feather name="x" size={20} color="#fff" />}
+              buttonStyle={{
+                paddingHorizontal: 30,
+                borderRadius: 10,
+                backgroundColor: '#E72970',
+              }}>
+              <Text
+                style={[
+                  font.kanit,
+                  {fontSize: 20, color: '#fff', marginLeft: 5},
+                ]}>
+                ยกเลิก
+              </Text>
+            </Button>
+            <Button
+              onPress={saveEditedPin}
+              size="lg"
+              icon={<Feather name="check" size={20} color="#fff" />}
+              buttonStyle={{
+                paddingHorizontal: 30,
+
+                borderRadius: 10,
+                backgroundColor: '#047675',
+              }}>
+              <Text
+                style={[
+                  font.kanit,
+                  {fontSize: 20, color: '#fff', marginLeft: 5},
+                ]}>
+                บันทึก
+              </Text>
+            </Button>
+          </View>
+          <View></View>
+        </View>
+      </Modal>
     </View>
     //</View>
   );
@@ -371,7 +450,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F2f2f2',
   },
   contentContainer: {
-    paddingHorizontal: 10,
+    padding: 10,
   },
   contentText: {
     fontSize: 16,

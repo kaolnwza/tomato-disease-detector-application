@@ -19,20 +19,6 @@ const Information = ({navigation}) => {
   }, []);
 
   const getData = async () => {
-    // console.log('get Data func');
-    // application/json
-    // fetch('http://139.59.120.159:8080/v1/disease', {
-    //   method: 'GET',
-    //   headers: {
-    //     Authorization:
-    //       'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NfdXVpZCI6IjJlNjgxY2MwLTU0ZWQtNGI2MC04NTc1LTFhNzNjNTIzMmFlMCIsImV4cCI6MTg1NDczMTE3MywidXNlcl91dWlkIjoiOGU0ZDgzMjAtOGExOS00NmZjLTgxNTEtN2E2MjI2ZDc2ZjZiIn0.BaqNgWI9boH141SA_5x0_GRW5EqQDwokM8CkI71qv5I',
-    //   },
-    // })
-    //   .then(response => response.json())
-    //   .then(data => {
-    //     console.log(data);
-    //   });
-
     axios
       .get('http://139.59.120.159:8080/v1/disease', {
         headers: {

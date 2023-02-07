@@ -41,14 +41,15 @@ const History = ({navigation}) => {
   const getLog = async () => {
     // console.log('get log');
     axios
-      .post('http://139.59.120.159:8080/v1/log', {
+      .get('http://139.59.120.159:8080/v1/log', {
         headers: {
           Authorization:
             'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NfdXVpZCI6IjUzYmRhZThlLWMxZTMtNDAzMC1hODVkLWNkMWZhOTNhOWJlNSIsImV4cCI6MTg1MzkyNTA4OCwidXNlcl91dWlkIjoiOGU0ZDgzMjAtOGExOS00NmZjLTgxNTEtN2E2MjI2ZDc2ZjZiIn0.YKjeADsaC5oKaD4bBEkWxTDVbZMH_34j4Vx3bKgeZhc',
         },
       })
       .then(response => {
-        console.log(response);
+        // console.log(response);
+        setHistory(response.data);
       })
       .catch(error => {
         console.log(error);
@@ -93,9 +94,11 @@ const History = ({navigation}) => {
         />
       </View>
       <ListItem.Content>
-        <ListItem.Title style={font.kanit}>{item.name}</ListItem.Title>
+        <ListItem.Title style={font.kanit}>
+          {item.disease_name_th}
+        </ListItem.Title>
         <ListItem.Subtitle style={font.kanit}>
-          {item.subtitle}
+          {item.disease_name}
         </ListItem.Subtitle>
       </ListItem.Content>
       <ListItem.Content right>
@@ -107,8 +110,8 @@ const History = ({navigation}) => {
           }}>
           89%
         </ListItem.Title>
-        <ListItem.Subtitle style={font.kanit} right>
-          {moment().format('L')}
+        <ListItem.Subtitle style={[font.kanit, {textAlign: 'right'}]} right>
+          {moment(item.created_at).format('DD/MM/YYYY HH:mm')}
         </ListItem.Subtitle>
       </ListItem.Content>
     </ListItem>
