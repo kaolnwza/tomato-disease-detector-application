@@ -91,9 +91,11 @@ func (h *tomatoLogHandler) CreateTomatoLogByFarmUUID(c port.Context) {
 
 	description := c.Request().FormValue("description")
 	disease := c.Request().FormValue("disease")
+	latitude := c.Request().FormValue("latitude")
+	longtitude := c.Request().FormValue("longtitude")
 	userUUID := c.AccessUserUUID()
 
-	if err := h.tlSvc.Create(c.Ctx(), userUUID, farmUUID, description, disease, file, os.Getenv("GCS_BUCKET_1")); err != nil {
+	if err := h.tlSvc.Create(c.Ctx(), userUUID, farmUUID, description, disease, file, os.Getenv("GCS_BUCKET_1"), latitude, longtitude); err != nil {
 		log.Error(err)
 		c.JSON(http.StatusInternalServerError, err.Error())
 		return

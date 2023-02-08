@@ -16,5 +16,6 @@ type TomatoLogResponse struct {
 	CreatedAt       time.Time `json:"created_at"`
 	UpdatedAt       time.Time `json:"updated_at"`
 	ImageURI        string    `json:"image_uri"`
-	Location        string
+	Latitude        string    `json:"latitude"`
+	Longtitude      string    `json:"longtitude"`
 }

@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"mime/multipart"
 	"os"
 	db "tomato-api/internal/adapters/database"
@@ -79,6 +80,9 @@ func (s *tomatoLogService) GetByUserUUID(ctx context.Context, userUUID uuid.UUID
 	resp := []*model.TomatoLogResponse{}
 
 	for idx, i := range logs {
+		fmt.Println(i.Location.String)
+		lat, long := helper.GeomToLatLong(i.Location.String)
+
 		resp = append(resp, &model.TomatoLogResponse{
 			TomatoLogUUID:   i.TomatoLogUUID,
 			RecorderUUID:    i.RecorderUUID,
@@ -87,6 +91,8 @@ func (s *tomatoLogService) GetByUserUUID(ctx context.Context, userUUID uuid.UUID
 			Description:     &i.Description.String,
 			CreatedAt:       i.CreatedAt,
 			UpdatedAt:       i.UpdatedAt,
+			Latitude:        lat,
+			Longtitude:      long,
 		})
 
 		go func(i *model.TomatoLog, respI *model.TomatoLogResponse) {
@@ -141,6 +147,8 @@ func (s *tomatoLogService) Create(
 	diseaseName string,
 	file multipart.File,
 	bucket string,
+	lat string,
+	long string,
 ) error {
 	// no ACID bcuz need to save uploaded info from gcs to db
 	upload, err := s.uploadSvc.Upload(ctx, userUUID, file, bucket)
@@ -153,8 +161,9 @@ func (s *tomatoLogService) Create(
 	logs.Description.String = description
 	logs.Description.Valid = description != ""
 	logs.UploadUUID = upload.UUID
+	geom := helper.LatLongToGeom(lat, long)
 
-	if err := s.tlRepo.Create(ctx, &logs, farmUUID, diseaseName); err != nil {
+	if err := s.tlRepo.Create(ctx, &logs, farmUUID, diseaseName, geom); err != nil {
 		return err
 	}
 

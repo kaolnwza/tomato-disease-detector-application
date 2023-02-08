@@ -19,5 +19,5 @@ type TomatoLog struct {
 	UploadUUID        uuid.UUID      `db:"upload_uuid" json:"upload_uuid"`
 	UploadPath        string         `db:"upload_path" json:"-"`
 	ImageURI          string         `json:"image_uri"`
-	Location          string
+	Location          sql.NullString `db:"location"`
 }
