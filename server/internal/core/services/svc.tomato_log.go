@@ -47,6 +47,7 @@ func (s *tomatoLogService) GetByFarmUUID(ctx context.Context, farmUUID uuid.UUID
 			Description:     &i.Description.String,
 			CreatedAt:       i.CreatedAt,
 			UpdatedAt:       i.UpdatedAt,
+			Status:          i.Status,
 		})
 
 		go func(i *model.TomatoLog, idx int, respI *model.TomatoLogResponse) {
@@ -92,6 +93,7 @@ func (s *tomatoLogService) GetByUserUUID(ctx context.Context, userUUID uuid.UUID
 			UpdatedAt:       i.UpdatedAt,
 			Latitude:        lat,
 			Longtitude:      long,
+			Status:          i.Status,
 		})
 
 		go func(i *model.TomatoLog, respI *model.TomatoLogResponse) {
@@ -133,6 +135,7 @@ func (s *tomatoLogService) GetByLogUUID(ctx context.Context, logUUID uuid.UUID) 
 		CreatedAt:       logs.CreatedAt,
 		UpdatedAt:       logs.UpdatedAt,
 		ImageURI:        uri,
+		Status:          logs.Status,
 	}
 
 	return resp, nil
