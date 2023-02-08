@@ -2,7 +2,6 @@ package pgsql
 
 import (
 	"context"
-	db "tomato-api/internal/adapters/database"
 	model "tomato-api/internal/core/models"
 	port "tomato-api/internal/ports"
 
@@ -10,10 +9,10 @@ import (
 )
 
 type tomatoLogRepo struct {
-	tx db.Transactor
+	tx port.Transactor
 }
 
-func NewTomatoLogRepo(tx db.Transactor) port.TomatoLogRepository {
+func NewTomatoLogRepo(tx port.Transactor) port.TomatoLogRepository {
 	return &tomatoLogRepo{tx: tx}
 }
 
@@ -27,7 +26,8 @@ func (r *tomatoLogRepo) GetByFarmUUID(ctx context.Context, log *[]*model.TomatoL
 			path AS "upload_path",
 			disease_name "tomato_disease_info.disease_name",
 			disease_name_th "tomato_disease_info.disease_name_th",
-			ST_AsGeoJSON("location")::json->>'coordinates' "location"
+			ST_AsGeoJSON("location")::json->>'coordinates' "location",
+			status
 		FROM tomato_log
 		LEFT JOIN upload ON upload.upload_uuid = tomato_log.upload_uuid
 		LEFT JOIN tomato_disease_info ON tomato_disease_info.disease_uuid = tomato_disease_uuid
@@ -53,7 +53,8 @@ func (r *tomatoLogRepo) GetByUserUUID(ctx context.Context, log *[]*model.TomatoL
 			path AS "upload_path",
 			disease_name "tomato_disease_info.disease_name",
 			disease_name_th "tomato_disease_info.disease_name_th",
-			ST_AsGeoJSON("location")::json->>'coordinates' "location"
+			ST_AsGeoJSON("location")::json->>'coordinates' "location",
+			status
 		FROM tomato_log
 		LEFT JOIN upload ON upload.upload_uuid = tomato_log.upload_uuid
 		LEFT JOIN tomato_disease_info ON tomato_disease_info.disease_uuid = tomato_disease_uuid
@@ -74,7 +75,8 @@ func (r *tomatoLogRepo) GetByLogUUID(ctx context.Context, log *model.TomatoLog, 
 			path AS "upload_path",
 			disease_name "tomato_disease_info.disease_name",
 			disease_name_th "tomato_disease_info.disease_name_th",
-			ST_AsGeoJSON("location")::json->>'coordinates' "location"
+			ST_AsGeoJSON("location")::json->>'coordinates' "location",
+			status
 		FROM tomato_log
 		LEFT JOIN upload ON upload.upload_uuid = tomato_log.upload_uuid
 		LEFT JOIN tomato_disease_info ON tomato_disease_info.disease_uuid = tomato_disease_uuid
@@ -88,25 +90,36 @@ func (r *tomatoLogRepo) GetByLogUUID(ctx context.Context, log *model.TomatoLog, 
 func (r *tomatoLogRepo) Create(
 	ctx context.Context,
 	logs *model.TomatoLog,
-	// recorderUUID uuid.UUID,
 	farmUUID uuid.UUID,
-	// uploadUUID uuid.UUID,
 	diseaseName string,
 	location string,
-	// description string,
-	// location string,
+	status model.TomatoLogStatus,
 ) error {
 	query := `
-		INSERT INTO tomato_log (recorder_uuid, farm_plot_uuid, upload_uuid, tomato_disease_uuid, description, location
-			)
+		INSERT INTO tomato_log (recorder_uuid, farm_plot_uuid, upload_uuid, tomato_disease_uuid, description, location, status)
 		SELECT 
 			$1, 
 			(SELECT farm_plot_uuid FROM farm_plot WHERE farm_uuid = $2 LIMIT 1), 
 			$3,
 			(SELECT disease_uuid FROM tomato_disease_info WHERE disease_name = $4), 
-			$5, $6
+			$5, 
+			$6,
+			$7
 `
 
-	// return r.tx.Insert(ctx, query, logs.RecorderUUID.String(), farmUUID.String(), logs.UploadUUID.String(), diseaseName, logs.Description, logs.Location)
-	return r.tx.Insert(ctx, query, logs.RecorderUUID.String(), farmUUID.String(), logs.UploadUUID.String(), diseaseName, logs.Description, location)
+	return r.tx.Insert(ctx, query, logs.RecorderUUID.String(), farmUUID.String(), logs.UploadUUID.String(), diseaseName, logs.Description, location, status)
+}
+
+func (r *tomatoLogRepo) Update(ctx context.Context, logUUID uuid.UUID, desc string, diseaseName string, location string, status model.TomatoLogStatus) error {
+	query := `
+	UPDATE tomato_log
+	SET
+		description = $2,
+		tomato_disease_uuid = (SELECT disease_uuid FROM tomato_disease_info WHERE disease_name = $3),
+		location = $4,
+		status = $5
+	WHERE tomato_log_uuid = $1
+`
+
+	return r.tx.Insert(ctx, query, logUUID, desc, diseaseName, location, status)
 }

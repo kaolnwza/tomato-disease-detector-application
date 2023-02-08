@@ -103,3 +103,26 @@ func (h *tomatoLogHandler) CreateTomatoLogByFarmUUID(c port.Context) {
 
 	c.JSON(http.StatusCreated, nil)
 }
+
+func (h *tomatoLogHandler) UpdateByLogUUIDHandler(c port.Context) {
+	logUUID, err := uuid.Parse(c.Param("log_uuid"))
+	if err != nil {
+		log.Error(err)
+		c.JSON(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	description := c.Request().FormValue("description")
+	disease := c.Request().FormValue("disease")
+	latitude := c.Request().FormValue("latitude")
+	longtitude := c.Request().FormValue("longtitude")
+	status := c.Request().FormValue("status")
+
+	if err := h.tlSvc.UpdateByLogUUID(c.Ctx(), logUUID, description, disease, status, latitude, longtitude); err != nil {
+		log.Error(err)
+		c.JSON(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, nil)
+}

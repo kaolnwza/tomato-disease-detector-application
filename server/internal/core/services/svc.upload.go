@@ -7,7 +7,6 @@ import (
 	"mime/multipart"
 	"net/url"
 	"os"
-	db "tomato-api/internal/adapters/database"
 	model "tomato-api/internal/core/models"
 	port "tomato-api/internal/ports"
 
@@ -22,10 +21,10 @@ var (
 
 type uploadService struct {
 	uploadRepo port.UploadRepository
-	tx         db.Transactor
+	tx         port.Transactor
 }
 
-func NewUploadService(r port.UploadRepository, tx db.Transactor) port.UploadService {
+func NewUploadService(r port.UploadRepository, tx port.Transactor) port.UploadService {
 	return &uploadService{uploadRepo: r, tx: tx}
 }
 

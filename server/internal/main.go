@@ -76,6 +76,7 @@ func main() {
 			logUUID := log.GROUP("/:log_uuid")
 			{
 				logUUID.GET("", tmtLogHandler.GetTomatoLogByLogUUID)
+				logUUID.PUT("", tmtLogHandler.UpdateByLogUUIDHandler)
 			}
 		}
 	}

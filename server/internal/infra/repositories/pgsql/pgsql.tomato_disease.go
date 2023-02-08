@@ -2,20 +2,19 @@ package pgsql
 
 import (
 	"context"
-	db "tomato-api/internal/adapters/database"
 	model "tomato-api/internal/core/models"
 	port "tomato-api/internal/ports"
 )
 
 type tomatoDiseaseRepo struct {
-	tx db.Transactor
+	tx port.Transactor
 }
 
-// func NewTomatoDiseaseRepo(db db.Transactor) port.TomatoDiseaseRepository {
+// func NewTomatoDiseaseRepo(db port.Transactor) port.TomatoDiseaseRepository {
 // 	return &tomatoDiseaseRepo{db: db}
 // }
 
-func NewTomatoDiseaseRepo(tx db.Transactor) port.TomatoDiseaseRepository {
+func NewTomatoDiseaseRepo(tx port.Transactor) port.TomatoDiseaseRepository {
 	return &tomatoDiseaseRepo{
 		tx: tx,
 	}

@@ -6,16 +6,15 @@ import (
 	model "tomato-api/internal/core/models"
 	port "tomato-api/internal/ports"
 
-	db "tomato-api/internal/adapters/database"
 	"tomato-api/lib/helper"
 )
 
 type tomatoDiseaseServices struct {
 	tdsRepo port.TomatoDiseaseRepository
-	tx      db.Transactor
+	tx      port.Transactor
 }
 
-func NewTomatoDiseaseServices(r port.TomatoDiseaseRepository, db db.Transactor) port.TomatoDiseaseService {
+func NewTomatoDiseaseServices(r port.TomatoDiseaseRepository, db port.Transactor) port.TomatoDiseaseService {
 	return &tomatoDiseaseServices{
 		tdsRepo: r,
 		tx:      db,

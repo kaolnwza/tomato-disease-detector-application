@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"mime/multipart"
 	"os"
-	db "tomato-api/internal/adapters/database"
 	model "tomato-api/internal/core/models"
 	port "tomato-api/internal/ports"
 	"tomato-api/lib/helper"
@@ -16,11 +15,11 @@ import (
 
 type tomatoLogService struct {
 	tlRepo    port.TomatoLogRepository
-	tx        db.Transactor
+	tx        port.Transactor
 	uploadSvc port.UploadService
 }
 
-func NewTomatoLogService(r port.TomatoLogRepository, tx db.Transactor, uploadSvc port.UploadService) port.TomatoLogService {
+func NewTomatoLogService(r port.TomatoLogRepository, tx port.Transactor, uploadSvc port.UploadService) port.TomatoLogService {
 	return &tomatoLogService{
 		tlRepo:    r,
 		tx:        tx,
@@ -81,7 +80,7 @@ func (s *tomatoLogService) GetByUserUUID(ctx context.Context, userUUID uuid.UUID
 
 	for idx, i := range logs {
 		fmt.Println(i.Location.String)
-		lat, long := helper.GeomToLatLong(i.Location.String)
+		lat, long := helper.PointToLatLong(i.Location.String)
 
 		resp = append(resp, &model.TomatoLogResponse{
 			TomatoLogUUID:   i.TomatoLogUUID,
@@ -161,9 +160,22 @@ func (s *tomatoLogService) Create(
 	logs.Description.String = description
 	logs.Description.Valid = description != ""
 	logs.UploadUUID = upload.UUID
-	geom := helper.LatLongToGeom(lat, long)
+	geom := helper.LatLongToPoint(lat, long)
 
-	if err := s.tlRepo.Create(ctx, &logs, farmUUID, diseaseName, geom); err != nil {
+	status := helper.TomatoLogStatusVal(diseaseName, false)
+
+	if err := s.tlRepo.Create(ctx, &logs, farmUUID, diseaseName, geom, status); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *tomatoLogService) UpdateByLogUUID(ctx context.Context, logUUID uuid.UUID, desc string, diseaseName string, status string, lat string, long string) error {
+	statusType := helper.TomatoLogStatusVal(diseaseName, status == "cured")
+	location := helper.LatLongToPoint(lat, long)
+
+	if err := s.tlRepo.Update(ctx, logUUID, desc, diseaseName, location, statusType); err != nil {
 		return err
 	}
 
