@@ -67,6 +67,7 @@ func main() {
 				farmUUID.GET("", tmtLogHandler.GetTomatoLogByFarmUUID)
 				farmUUID.POST("/log", tmtLogHandler.CreateTomatoLogByFarmUUID)
 				farmUUID.GET("/summary", tmtLogHandler.GetClusterByFarmUUIDHandler)
+				farmUUID.GET("/percentage", tmtLogHandler.GetLogsPercentageByFarmUUIDHandler)
 			}
 		}
 

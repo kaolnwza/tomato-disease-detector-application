@@ -125,6 +125,23 @@ func (r *tomatoLogRepo) Update(ctx context.Context, logUUID uuid.UUID, desc stri
 }
 
 func (r *tomatoLogRepo) GetClusterByFarmUUID(ctx context.Context, logs *[]*model.TomatoSummary, farmUUID uuid.UUID, condition map[string]string) error {
+	dateCond := ``
+	if condition["start_time"] != "" && condition["end_time"] != "" {
+		dateCond = `
+		AND created_at BETWEEN '` + condition["start_time"] + `' AND '` + condition["end_time"] + `' `
+	}
+
+	diseaseCond := ``
+	if condition["disease_name"] != "" {
+		diseaseCond += `
+		AND EXISTS (
+			SELECT 1
+			FROM tomato_disease_info
+			WHERE disease_uuid = tomato_disease_uuid
+			AND disease_name = '` + condition["disease_name"] + `'
+		) `
+	}
+
 	query := `
 	WITH freq AS (
 		SELECT 
@@ -140,22 +157,8 @@ func (r *tomatoLogRepo) GetClusterByFarmUUID(ctx context.Context, logs *[]*model
 			FROM farm_plot
 			WHERE farm_uuid = $1
 		)
-		AND "location" IS NOT NULL`
-	if condition["start_time"] != "" && condition["end_time"] != "" {
-		query += `
-		AND created_at BETWEEN '` + condition["start_time"] + `' AND '` + condition["end_time"] + `'`
-	}
-	if condition["disease_name"] != "" {
-		query += `
-		AND EXISTS (
-			SELECT 1
-			FROM tomato_disease_info
-			WHERE disease_uuid = tomato_disease_uuid
-			AND disease_name = '` + condition["disease_name"] + `'
-		)`
-	}
-	query +=
-		`),
+		AND "location" IS NOT NULL ` + dateCond + diseaseCond + `
+	),
 	most_freq AS (
 			SELECT cid FROM freq
 			GROUP BY cid
@@ -187,6 +190,55 @@ func (r *tomatoLogRepo) GetClusterByFarmUUID(ctx context.Context, logs *[]*model
 		FROM most_freq
 		WHERE most_freq.cid = freq.cid
 		)
+	`
+
+	return r.tx.Get(ctx, logs, query, farmUUID)
+}
+
+func (r *tomatoLogRepo) GetLogsPercentageByFarmUUID(ctx context.Context, logs *[]*model.TomatoLogPercentage, farmUUID uuid.UUID, condition map[string]string) error {
+	dateCond := ``
+	if condition["start_time"] != "" && condition["end_time"] != "" {
+		dateCond = `
+		AND created_at BETWEEN '` + condition["start_time"] + `' AND '` + condition["end_time"] + `'`
+	}
+
+	query := `
+	WITH disease AS (
+		SELECT
+			tomato_disease_uuid,
+			status
+		FROM tomato_log
+		WHERE farm_plot_uuid = (
+			SELECT farm_plot_uuid
+			FROM farm_plot
+			WHERE farm_uuid = $1
+		)
+		` + dateCond + `
+	)
+	
+	SELECT 
+		tomato_disease_uuid,
+		disease_name,
+		(SELECT 100.00/count(1) AS total_log FROM disease) * COUNT(1) log_percentage,
+		COUNT(1) total_log,
+		COUNT(1) FILTER(WHERE status = 'cured') total_cured,
+		100 / CASE 
+			WHEN COUNT(1) = 0 
+			THEN 1
+			ELSE COUNT(1) 
+		END 
+		*
+		CASE 
+			WHEN COUNT(1) FILTER(WHERE status = 'cured') = 0 
+			THEN COUNT(1)
+			ELSE COUNT(1) FILTER(WHERE status = 'cured') 
+		END 
+		disease_percentage,
+		upload."path"
+	FROM disease
+	LEFT JOIN tomato_disease_info ON tomato_disease_uuid = disease_uuid
+	LEFT JOIN upload ON upload.upload_uuid = tomato_disease_info.upload_uuid
+	GROUP BY tomato_disease_uuid, disease_name, upload."path"
 	`
 
 	return r.tx.Get(ctx, logs, query, farmUUID)

@@ -74,3 +74,15 @@ type TomatoSummaryInfo struct {
 	Status      string    `json:"status"`
 	CreatedAt   time.Time `json:"created_at"`
 }
+
+type TomatoLogPercentage struct {
+	TomatoDiseaseUUID uuid.UUID `db:"tomato_disease_uuid" json:"tomato_disease_uuid"`
+	DiseaseName       string    `db:"disease_name" json:"disease_name"`
+	LogPercentage     float32   `db:"log_percentage" json:"log_percentage"`
+	DiseasePercentage float32   `db:"disease_percentage" json:"disease_percentage"`
+	TotalLog          int       `db:"total_log" json:"total_log"`
+	TotalDisease      int       `db:"total_disease" json:"total_disease"`
+	TotalCured        int       `db:"total_cured" json:"total_cured"`
+	Path              string    `db:"path" json:"-"`
+	ImageUrl          string    `json:"image_url"`
+}

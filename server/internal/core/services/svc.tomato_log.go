@@ -227,3 +227,34 @@ func (s *tomatoLogService) GetClusterByFarmUUID(ctx context.Context, farmUUID uu
 
 	return &resp, nil
 }
+
+func (s *tomatoLogService) GetLogsPercentageByFarmUUID(ctx context.Context, farmUUID uuid.UUID, startTime string, endTime string) (*[]*model.TomatoLogPercentage, error) {
+	condition := map[string]string{
+		"start_time": startTime,
+		"end_time":   endTime,
+	}
+
+	logs := []*model.TomatoLogPercentage{}
+	if err := s.tlRepo.GetLogsPercentageByFarmUUID(ctx, &logs, farmUUID, condition); err != nil {
+		return nil, err
+	}
+
+	imgErr := make(chan error)
+	for _, item := range logs {
+		go func(item *model.TomatoLogPercentage) {
+			url, err := helper.GenerateImageURI(ctx, os.Getenv("GCS_BUCKET_1"), item.Path)
+			imgErr <- err
+
+			item.ImageUrl = url
+		}(item)
+	}
+
+	for i := 0; i < len(logs); i++ {
+		if err := <-imgErr; err != nil {
+			return nil, err
+		}
+	}
+
+	return &logs, nil
+
+}

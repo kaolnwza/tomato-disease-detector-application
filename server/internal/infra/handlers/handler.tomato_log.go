@@ -147,3 +147,23 @@ func (h *tomatoLogHandler) GetClusterByFarmUUIDHandler(c port.Context) {
 
 	c.JSON(http.StatusOK, resp)
 }
+
+func (h *tomatoLogHandler) GetLogsPercentageByFarmUUIDHandler(c port.Context) {
+	farmUUID, err := uuid.Parse(c.Param("farm_uuid"))
+	if err != nil {
+		log.Error(err)
+		c.JSON(http.StatusInternalServerError, err.Error())
+		return
+	}
+	startTime := c.FormValue("start_time")
+	endTime := c.FormValue("end_time")
+
+	resp, err := h.tlSvc.GetLogsPercentageByFarmUUID(c.Ctx(), farmUUID, startTime, endTime)
+	if err != nil {
+		log.Error(err)
+		c.JSON(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, resp)
+}
