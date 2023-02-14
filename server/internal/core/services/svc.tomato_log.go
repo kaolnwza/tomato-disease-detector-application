@@ -184,3 +184,46 @@ func (s *tomatoLogService) UpdateByLogUUID(ctx context.Context, logUUID uuid.UUI
 
 	return nil
 }
+
+func (s *tomatoLogService) GetClusterByFarmUUID(ctx context.Context, farmUUID uuid.UUID, startTime string, endTime string, diseaseName string) (*model.TomatoSummaryResponse, error) {
+
+	condition := map[string]string{
+		"start_time":   startTime,
+		"end_time":     endTime,
+		"disease_name": diseaseName,
+	}
+
+	logs := []*model.TomatoSummary{}
+	if err := s.tlRepo.GetClusterByFarmUUID(ctx, &logs, farmUUID, condition); err != nil {
+		return nil, err
+	}
+
+	if len(logs) < 1 {
+		return nil, nil
+	}
+
+	centerLat, centerLong := helper.PointToLatLong(logs[0].CenterLocation.String)
+
+	resp := model.TomatoSummaryResponse{}
+	resp.Latitude = centerLat
+	resp.Longtitude = centerLong
+
+	respInfo := []*model.TomatoSummaryInfo{}
+	for _, item := range logs {
+		lat, long := helper.PointToLatLong(item.Location.String)
+
+		info := model.TomatoSummaryInfo{}
+		info.Latitude = lat
+		info.Longtitude = long
+		info.Status = item.Status
+		info.CreatedAt = item.CreatedAt
+		info.TomatoLogUUID = item.TomatoLogUUID
+		info.DiseaseName = item.DiseaseName
+
+		respInfo = append(respInfo, &info)
+	}
+
+	resp.Info = respInfo
+
+	return &resp, nil
+}

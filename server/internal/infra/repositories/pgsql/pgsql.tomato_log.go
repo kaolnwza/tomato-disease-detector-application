@@ -123,3 +123,71 @@ func (r *tomatoLogRepo) Update(ctx context.Context, logUUID uuid.UUID, desc stri
 
 	return r.tx.Insert(ctx, query, logUUID, desc, diseaseName, location, status)
 }
+
+func (r *tomatoLogRepo) GetClusterByFarmUUID(ctx context.Context, logs *[]*model.TomatoSummary, farmUUID uuid.UUID, condition map[string]string) error {
+	query := `
+	WITH freq AS (
+		SELECT 
+			ST_CLUSTERKMEANS(location, 3) OVER() AS cid, 
+			tomato_log_uuid, 
+			"location",
+			tomato_disease_uuid,
+			status,
+			created_at
+		FROM tomato_log
+		WHERE farm_plot_uuid = (
+			SELECT farm_plot_uuid
+			FROM farm_plot
+			WHERE farm_uuid = $1
+		)
+		AND "location" IS NOT NULL`
+	if condition["start_time"] != "" && condition["end_time"] != "" {
+		query += `
+		AND created_at BETWEEN '` + condition["start_time"] + `' AND '` + condition["end_time"] + `'`
+	}
+	if condition["disease_name"] != "" {
+		query += `
+		AND EXISTS (
+			SELECT 1
+			FROM tomato_disease_info
+			WHERE disease_uuid = tomato_disease_uuid
+			AND disease_name = '` + condition["disease_name"] + `'
+		)`
+	}
+	query +=
+		`),
+	most_freq AS (
+			SELECT cid FROM freq
+			GROUP BY cid
+			ORDER BY COUNT(1) DESC
+			LIMIT 1
+	),
+	center_of_freq AS (
+		SELECT 
+			ST_AsGeoJSON(st_centroid(st_union("location")))::json->>'coordinates' AS center
+		FROM freq
+		WHERE EXISTS (
+			SELECT 1 
+			FROM most_freq
+			WHERE most_freq.cid = freq.cid
+			)
+	)
+
+	SELECT
+		tomato_log_uuid, 
+		(SELECT center FROM center_of_freq) "center_location",
+		ST_AsGeoJSON("location")::json->>'coordinates' AS "location",
+		disease_name,
+		status,
+		created_at
+	FROM tomato_disease_info
+	LEFT JOIN freq ON tomato_disease_uuid = disease_uuid
+	WHERE EXISTS (
+		SELECT 1 
+		FROM most_freq
+		WHERE most_freq.cid = freq.cid
+		)
+	`
+
+	return r.tx.Get(ctx, logs, query, farmUUID)
+}

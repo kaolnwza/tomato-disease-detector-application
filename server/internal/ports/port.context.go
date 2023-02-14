@@ -16,6 +16,7 @@ type Context interface {
 	AccessUserUUID() uuid.UUID
 	Ctx() context.Context
 	Param(string) string
+	FormValue(string) string
 }
 
 type ResponseWriter interface {

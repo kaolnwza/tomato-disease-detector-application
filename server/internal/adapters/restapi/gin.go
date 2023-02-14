@@ -179,6 +179,10 @@ func (c *GinContext) AccessUserUUID() uuid.UUID {
 	return userUUID
 }
 
+func (c *GinContext) FormValue(key string) string {
+	return c.Context.Request.FormValue(key)
+}
+
 func (c *GinContext) Param(key string) string {
 	return c.Context.Params.ByName(key)
 }

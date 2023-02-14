@@ -52,3 +52,25 @@ type TomatoLogResponse struct {
 	Longtitude      string    `json:"longtitude"`
 	Status          string    `json:"status"`
 }
+
+type TomatoSummary struct {
+	TomatoLogUUID  uuid.UUID      `db:"tomato_log_uuid"`
+	CenterLocation sql.NullString `db:"center_location"`
+	Location       sql.NullString `db:"location"`
+	DiseaseName    string         `db:"disease_name"`
+	Status         string         `db:"status"`
+	CreatedAt      time.Time      `db:"created_at"`
+}
+
+type TomatoSummaryResponse struct {
+	LineString `json:"center_location"`
+	Info       []*TomatoSummaryInfo `json:"info"`
+}
+
+type TomatoSummaryInfo struct {
+	TomatoLogUUID uuid.UUID `json:"tomato_log_uuid"`
+	LineString
+	DiseaseName string    `json:"disease_name"`
+	Status      string    `json:"status"`
+	CreatedAt   time.Time `json:"created_at"`
+}

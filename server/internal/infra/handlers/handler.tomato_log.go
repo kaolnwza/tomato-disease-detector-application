@@ -126,3 +126,24 @@ func (h *tomatoLogHandler) UpdateByLogUUIDHandler(c port.Context) {
 
 	c.JSON(http.StatusOK, nil)
 }
+
+func (h *tomatoLogHandler) GetClusterByFarmUUIDHandler(c port.Context) {
+	farmUUID, err := uuid.Parse(c.Param("farm_uuid"))
+	if err != nil {
+		log.Error(err)
+		c.JSON(http.StatusInternalServerError, err.Error())
+		return
+	}
+	startTime := c.FormValue("start_time")
+	endTime := c.FormValue("end_time")
+	diseaseName := c.FormValue("disease_name")
+
+	resp, err := h.tlSvc.GetClusterByFarmUUID(c.Ctx(), farmUUID, startTime, endTime, diseaseName)
+	if err != nil {
+		log.Error(err)
+		c.JSON(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, resp)
+}
