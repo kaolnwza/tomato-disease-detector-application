@@ -50,7 +50,7 @@ model_dir = "../ptmodel/"
 model.load_state_dict(torch.load(
     # "resnet18-lr0.001-10 ithink0.0001.pt", map_location='cpu'))
     # model_dir + "dense-lr0.001-10.pt", map_location='cpu'))
-    model_dir + "gnet555.pt", map_location='cpu'))
+    model_dir + "gnet555eiei.pt", map_location='cpu'))
 
 model.eval()
 
