@@ -42,6 +42,7 @@ transformer = transforms.Compose([
     transforms.Resize((224, 224)),
     transforms.ToTensor(),
     # transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))
+    # transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
 ])
 
 model_dir = "../ptmodel/"
@@ -59,12 +60,38 @@ def predictionImg(image):
     image_tensor = transformer(image)
     image_tensor = image_tensor.unsqueeze_(0)
     input_img = Variable(image_tensor)
-    output = model(input_img)
-    index = output.data.numpy().argmax()
-    pred = classes[index]
+    with torch.no_grad():
+        output = model(input_img)
+
+        
+        index = output.data.numpy().argmax()
+        pred = classes[index]
     # labels = torch.tensor(classes[index])
     # print(labels)
     return pred
+
+def predictionImgV2(image):
+    image_tensor = transformer(image)
+    image_tensor = image_tensor.unsqueeze_(0)
+    input_img = Variable(image_tensor)
+    with torch.no_grad():
+        output = model(input_img)
+        # z, predicted = torch.max(output.data, 1)
+        # scores, indices = torch.topk(output, 4)
+        # print(scores, indices)
+        # print(classes[1], classes[0])
+        
+        probs = torch.nn.functional.softmax(output, dim=1)
+        conf, cc = torch.max(probs, 1)
+        # print(conf, conf.item(), cc.item())
+        
+        # print(classes[indices[0])
+        # index = output.data.numpy().argmax()
+        # pred = classes[index]
+    # labels = torch.tensor(classes[index])
+    # print(labels)
+        # print(float(conf.item()))
+    return classes[cc.item()], float(conf.item())
 
 
 class Img(BaseModel):
@@ -115,15 +142,30 @@ async def imgpred(item: Img):
     return resp
 
 
-@app.post("/imgpred2")
+@app.post("/imgpred")
 async def imgpred2(file: bytes = File(...)):
     # img = Image.open(io.BytesIO(file))
     img = Image.open(io.BytesIO(file)).convert('RGB')
     # img.show()
 
     resp = predictionImg(img)
-    print("-------------", resp)
     return resp
+
+    # request_object_content = await file.read()
+    # Image.open(io.BytesIO(request_object_content))
+
+    # return resp
+    
+@app.post("/imgpred2")
+async def imgpred2(file: bytes = File(...)):
+    # img = Image.open(io.BytesIO(file))
+    img = Image.open(io.BytesIO(file)).convert('RGB')
+    # img.show()
+
+    # resp = predictionImg(img)
+    resp, score = predictionImgV2(img)
+    # print("-------------", resp)
+    return resp + "," + str(score)
 
     # request_object_content = await file.read()
     # Image.open(io.BytesIO(request_object_content))

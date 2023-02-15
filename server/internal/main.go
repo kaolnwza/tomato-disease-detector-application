@@ -48,7 +48,7 @@ func main() {
 	farmSvc := service.NewFarmService(pgTx, farmRepo)
 	farmHdr := handler.NewFarmHandler(farmSvc)
 
-	predSvc := service.NewPredictionService()
+	predSvc := service.NewPredictionService(tmtDiseaseSvc)
 	predHandler := handler.NewPredictionHandler(predSvc)
 
 	r.GET("/jwt/:user_uuid", userHandler.NewAccessToken)
