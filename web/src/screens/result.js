@@ -155,6 +155,8 @@ export const ResultPage = ({route, navigation}) => {
 
     data.append('disease', result.replaceAll('"', ''));
     data.append('description', description);
+    data.append('latitude', Pin.latitude);
+    data.append('longtitude', Pin.longitude);
 
     fetch(
       'http://139.59.120.159:8080/v1/farm/e621bea6-1143-4a15-ad84-9048f80183b3/log',
@@ -280,6 +282,7 @@ export const ResultPage = ({route, navigation}) => {
                   />
                   <Button
                     size="lg"
+                    disabled={!result}
                     onPress={saveResult}
                     style={{marginHorizontal: 20}}
                     buttonStyle={{
@@ -414,16 +417,12 @@ const styles = StyleSheet.create({
   titleStyle: {
     backgroundColor: 'rgba(52, 52, 52, 0.5)',
     color: '#fff',
-
-    // width: '100%',
   },
   tabTextContainerStyle: {
     borderRadius: 18,
   },
   tabTextContainerActiveStyle: {
     backgroundColor: '#047675',
-
-    // color: '#fff',
   },
   tabText: {
     color: '#000',
@@ -457,23 +456,12 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-
     paddingHorizontal: 24,
     alignItems: 'center',
     marginBottom: 25,
   },
-
-  // darkBackground: {
-  //   backgroundColor: colors.black,
-  // },
-  // lightBackground: {
-  //   backgroundColor: colors.white,
-  // },
-
   stretchContainer: {
     alignSelf: 'stretch',
     flex: 1,
-    // marginTop: -47,
-    // paddingTop: 10,
   },
 });

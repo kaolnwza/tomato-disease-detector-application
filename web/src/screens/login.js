@@ -6,6 +6,10 @@ import {
   View,
   ActivityIndicator,
 } from 'react-native';
+import {
+  GoogleSignin,
+  statusCodes,
+} from '@react-native-google-signin/google-signin';
 
 import {Button, Avatar} from '@rneui/themed';
 import {font, buttons} from './styles';
@@ -16,6 +20,29 @@ const image = {
   uri: 'https://www.gardendesign.com/pictures/images/900x705Max/site_3/goodhearted-tomatoes-on-vine-red-and-green-tomatoes-goodhearted-tomato-proven-winners_15786.jpg',
 };
 const Login = ({navigation}) => {
+  GoogleSignin.configure({
+    iosClientId:
+      '79142185056-8hliasgjdru3aoq5b024c0o8s8jg9pjg.apps.googleusercontent.com',
+  });
+
+  const signIn = async () => {
+    console.log('login');
+    try {
+      await GoogleSignin.hasPlayServices();
+      const userInfo = await GoogleSignin.signIn();
+      console.log(userInfo);
+    } catch (error) {
+      if (error.code === statusCodes.SIGN_IN_CANCELLED) {
+        // user cancelled the login flow
+      } else if (error.code === statusCodes.IN_PROGRESS) {
+        // operation (e.g. sign in) is in progress already
+      } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+        // play services not available or outdated
+      } else {
+        // some other error happened
+      }
+    }
+  };
   return (
     <View style={styles.container}>
       <ImageBackground source={image} style={styles.image}></ImageBackground>
@@ -58,9 +85,11 @@ const Login = ({navigation}) => {
               end: {x: 1, y: 0.5},
             }}
             icon={<AntDesign name="arrowright" size={50} color="#fFF" />}
-            onPress={() => {
-              navigation.navigate('SelectFarm');
-            }}></Button>
+            onPress={signIn}
+            // onPress={() => {
+            //   navigation.navigate('SelectFarm');
+            // }}
+          />
         </View>
       </View>
     </View>

@@ -12,6 +12,7 @@
   "dependencies": {
     "@react-native-camera-roll/camera-roll": "^5.0.4",
     "@react-native-community/geolocation": "^3.0.5",
+    "@react-native-google-signin/google-signin": "^9.0.2",
     "@react-native-picker/picker": "^2.4.8",
     "@react-navigation/native": "^6.0.13",
     "@react-navigation/native-stack": "^6.9.1",
