@@ -31,15 +31,20 @@ const Login = ({navigation}) => {
       await GoogleSignin.hasPlayServices();
       const userInfo = await GoogleSignin.signIn();
       console.log(userInfo);
+      navigation.navigate('SelectFarm', {userInfo});
     } catch (error) {
       if (error.code === statusCodes.SIGN_IN_CANCELLED) {
         // user cancelled the login flow
+        console.log('User Cancel');
       } else if (error.code === statusCodes.IN_PROGRESS) {
         // operation (e.g. sign in) is in progress already
+        console.log('Progressing');
       } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
         // play services not available or outdated
+        console.log('Service Not Avalible');
       } else {
         // some other error happened
+        console.log(error);
       }
     }
   };
@@ -87,7 +92,6 @@ const Login = ({navigation}) => {
             icon={<AntDesign name="arrowright" size={50} color="#fFF" />}
             onPress={signIn}
             // onPress={() => {
-            //   navigation.navigate('SelectFarm');
             // }}
           />
         </View>

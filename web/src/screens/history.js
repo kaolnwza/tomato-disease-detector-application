@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   TouchableOpacity,
   Image,
+  ScrollView,
 } from 'react-native';
 import Modal from 'react-native-modal';
 import {useSharedValue} from 'react-native-reanimated';
@@ -24,8 +25,42 @@ import {font, buttons} from './styles';
 import RNFetchBlob from 'rn-fetch-blob';
 import axios from 'axios';
 import moment from 'moment';
+import HistoryMap from '../components/map/historyMap';
+import DiseaseDetail from '../components/list/disease-detail';
+
+const Detail = props => {
+  const [info, setInfo] = useState([]);
+
+  useEffect(() => {
+    axios
+      .get(
+        `http://139.59.120.159:8080/v1/disease/${props.detail.disease_name}`,
+        {
+          headers: {
+            Authorization:
+              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NfdXVpZCI6IjUzYmRhZThlLWMxZTMtNDAzMC1hODVkLWNkMWZhOTNhOWJlNSIsImV4cCI6MTg1MzkyNTA4OCwidXNlcl91dWlkIjoiOGU0ZDgzMjAtOGExOS00NmZjLTgxNTEtN2E2MjI2ZDc2ZjZiIn0.YKjeADsaC5oKaD4bBEkWxTDVbZMH_34j4Vx3bKgeZhc',
+          },
+        },
+      )
+      .then(response => {
+        setInfo(response.data.inform);
+      })
+      .catch(error => {
+        console.log(error);
+      });
+  }, []);
+
+  return (
+    <FlatList
+      data={info.inform_data}
+      renderItem={({item, index}) => <DiseaseDetail item={item} />}
+      keyExtractor={item => item.title.toString()}
+    />
+  );
+};
+
 const History = ({navigation}) => {
-  const TABS = [
+  const [TABS, setTABS] = useState([
     {
       title: 'ตำแหน่ง',
       component: 'map',
@@ -34,7 +69,11 @@ const History = ({navigation}) => {
       title: 'ข้อมูลโรค',
       component: 'inform',
     },
-  ];
+    {
+      title: 'รักษา',
+      component: 'fix',
+    },
+  ]);
   const scrollValue = useSharedValue(0);
 
   const [modalIndex, setModalIndex] = useState(-1);
@@ -57,7 +96,6 @@ const History = ({navigation}) => {
         },
       })
       .then(response => {
-        console.log(response.data);
         setHistory(response.data);
       })
       .catch(error => {
@@ -67,16 +105,43 @@ const History = ({navigation}) => {
 
   const keyExtractor = (item, index) => index.toString();
 
-  const onSelect = item => {
-    setModalIndex(item);
+  const onSelect = (item, index) => {
+    if (item == 'Healthy') {
+      setTABS([
+        {
+          title: 'ตำแหน่ง',
+          component: 'map',
+        },
+      ]);
+    } else {
+      setTABS([
+        {
+          title: 'ตำแหน่ง',
+          component: 'map',
+        },
+        {
+          title: 'ข้อมูลโรค',
+          component: 'inform',
+        },
+        {
+          title: 'รักษา',
+          component: 'fix',
+        },
+      ]);
+    }
+
+    setModalIndex(index);
   };
 
   const renderItem = ({item, index}) => (
-    <TouchableOpacity key={index} onPress={() => onSelect(index)}>
+    <TouchableOpacity
+      key={index}
+      onPress={() => onSelect(item.disease_name, index)}>
       <ListItem bottomDivider containerStyle={{backgroundColor: '#00000000'}}>
         <View
           style={{
-            backgroundColor: item.subtitle == 'Healthy' ? '#047675' : '#E72970',
+            backgroundColor:
+              item.disease_name == 'Healthy' ? '#047675' : '#E72970',
             borderRadius: 50,
             padding: 5,
           }}>
@@ -92,7 +157,7 @@ const History = ({navigation}) => {
             {item.disease_name_th}
           </ListItem.Title>
           <ListItem.Subtitle style={font.kanit}>
-            {item.disease_name} {item.latitude} {item.longtitude}
+            {item.disease_name}
           </ListItem.Subtitle>
         </ListItem.Content>
         <ListItem.Content right>
@@ -111,6 +176,7 @@ const History = ({navigation}) => {
       </ListItem>
     </TouchableOpacity>
   );
+
   return (
     <View style={styles.container}>
       <FlatList
@@ -139,7 +205,7 @@ const History = ({navigation}) => {
               <Text
                 style={[font.kanit, {color: '#fff', fontSize: 13, margin: 0}]}>
                 {' '}
-                ความแม่นยำ 97.2 %
+                {history[modalIndex] ? history[modalIndex].description : ''}
               </Text>
             </View>
           }
@@ -150,7 +216,8 @@ const History = ({navigation}) => {
           tabTextActiveStyle={styles.tabTextActiveStyle}
           tabWrapperStyle={styles.tabWrapperStyle}
           tabsContainerStyle={styles.tabsContainerStyle}
-          parallaxHeight={400}
+          parallaxHeight={300}
+          snapStartThreshold={50}
           onScroll={onScroll}
           renderHeaderBar={() => (
             <View
@@ -164,7 +231,7 @@ const History = ({navigation}) => {
                   type="clear"
                   onPress={() => setModalIndex(-1)}
                   icon={
-                    <Feather name="x-circle" size={30} color="#000" />
+                    <Feather name="x-circle" size={30} color="#fff" />
                   }></Button>
               </Text>
             </View>
@@ -174,48 +241,16 @@ const History = ({navigation}) => {
           {TABS.map((tab, i) => {
             switch (tab.component) {
               case 'map':
-                return (
-                  <MapView
-                    key={i}
-                    // provider={PROVIDER_GOOGLE}
-                    style={{
-                      height: '70%',
-                      width: '100%',
-                      borderRadius: 30,
-                      alignSelf: 'center',
-                      overflow: 'hidden',
-                    }}
-                    // moveOnMarkerPress={false}
-                    // pitchEnabled={false}
-                    // scrollEnabled={false}
-                    // zoomEnabled={false}
-                    showsUserLocation={true}
-                    initialRegion={{
-                      latitude: history[modalIndex]
-                        ? history[modalIndex].latitude
-                        : '',
-                      longitude: history[modalIndex]
-                        ? history[modalIndex].longtitude
-                        : '',
-                      latitudeDelta: 0.003,
-                      longitudeDelta: 0.003,
-                    }}>
-                    <Marker
-                      coordinate={{
-                        latitude: history[modalIndex]
-                          ? history[modalIndex].latitude
-                          : '',
-                        longitude: history[modalIndex]
-                          ? history[modalIndex].longtitude
-                          : '',
-                      }}
-                    />
-                  </MapView>
-                );
-              case 'image':
-                return <View key={i}></View>;
+                return <HistoryMap key={i} detail={history[modalIndex]} />;
               case 'inform':
-                return <View key={i}></View>;
+                return (
+                  <ScrollView
+                    key={i}
+                    scrollEnabled={true}
+                    style={{height: 500}}>
+                    <Detail detail={history[modalIndex]} />
+                  </ScrollView>
+                );
               default:
                 return <Text key={i}>No Component</Text>;
             }
@@ -261,9 +296,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
   },
-  tabWrapperStyle: {
-    paddingVertical: 5,
-  },
   tabsContainerStyle: {
     backgroundColor: '#F2f2f2',
   },
@@ -283,7 +315,6 @@ const styles = StyleSheet.create({
   stretchContainer: {
     alignSelf: 'stretch',
     height: 100,
-    padding: 15,
 
     backgroundColor: '#F2f2f2',
     borderRadius: 20,

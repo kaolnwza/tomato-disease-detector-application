@@ -12,24 +12,9 @@ import MaterialCommunityIcons from 'react-native-vector-icons/dist/MaterialCommu
 
 import Ionicons from 'react-native-vector-icons/dist/Ionicons';
 import {font, buttons} from './styles';
+import DiseaseDetail from '../components/list/disease-detail';
 const Detail = props => {
-  const detail = props.route.params.item;
-
   const {name_th, image_url, name, inform} = props.route.params.item;
-  // const [disease, setDisease] = useState(true);
-  // const [protect, setProtect] = useState(true);
-  const [cause, setCause] = useState(false);
-  // const [symptom, setSymptom] = useState(false);
-  // const [virus, setVirus] = useState(false);
-  const [expandedItems, setExpandedItems] = useState([]);
-
-  const handlePress = id => {
-    if (expandedItems.includes(id)) {
-      setExpandedItems(expandedItems.filter(item => item !== id));
-    } else {
-      setExpandedItems([...expandedItems, id]);
-    }
-  };
 
   return (
     <View style={styles.container}>
@@ -51,83 +36,7 @@ const Detail = props => {
 
       <FlatList
         data={inform.inform_data}
-        renderItem={({item, index}) => (
-          <ListItem.Accordion
-            topDivider
-            content={
-              <>
-                <MaterialCommunityIcons
-                  name={item.icon}
-                  size={20}
-                  style={{margin: 0}}
-                />
-
-                <ListItem.Content style={{marginHorizontal: 20}}>
-                  <ListItem.Title style={font.kanit}>
-                    {item.title}
-                  </ListItem.Title>
-                </ListItem.Content>
-              </>
-            }
-            onPress={() => handlePress(item.title)}
-            isExpanded={expandedItems.includes(item.title)}>
-            <ListItem>
-              <ListItem.Content>
-                <ListItem.Subtitle
-                  style={[font.kanit, {paddingHorizontal: 30}]}>
-                  {item.data}
-                </ListItem.Subtitle>
-              </ListItem.Content>
-            </ListItem>
-
-            {/* {index == 0 ? (
-              <FlatList
-                data={item.inform_data}
-                renderItem={({item}) => (
-                  <ListItem.Accordion
-                    containerStyle={{paddingHorizontal: 30}}
-                    content={
-                      <>
-                        <MaterialCommunityIcons
-                          name={item.icon}
-                          size={20}
-                          style={{margin: 0}}
-                        />
-
-                        <ListItem.Content style={{marginHorizontal: 20}}>
-                          <ListItem.Title style={font.kanit}>
-                            {item.title}
-                          </ListItem.Title>
-                        </ListItem.Content>
-                      </>
-                    }
-                    onPress={() => handlePress(item.title)}
-                    isExpanded={expandedItems.includes(item.title)}>
-                    <ListItem bottomDivider>
-                      <ListItem.Content>
-                        <ListItem.Subtitle
-                          style={[font.kanit, {paddingHorizontal: 30}]}>
-                          {item.data}
-                        </ListItem.Subtitle>
-                      </ListItem.Content>
-                    </ListItem>
-                  </ListItem.Accordion>
-                )}
-                keyExtractor={item => item.title.toString()}
-              />
-            ) : (
-              inform[1].data.map((l, i) => (
-                <ListItem key={i}>
-                  <ListItem.Content>
-                    <ListItem.Subtitle style={font.kanit}>
-                      {l}
-                    </ListItem.Subtitle>
-                  </ListItem.Content>
-                </ListItem>
-              ))
-            )} */}
-          </ListItem.Accordion>
-        )}
+        renderItem={({item, index}) => <DiseaseDetail item={item} />}
         keyExtractor={item => item.title.toString()}
       />
 
