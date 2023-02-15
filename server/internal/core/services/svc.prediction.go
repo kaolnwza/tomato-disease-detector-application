@@ -39,7 +39,7 @@ func (s predictionService) PredictTomato(ctx context.Context, file multipart.Fil
 
 	pred := model.PredictionResponse{
 		PredictionResult: diseaseName,
-		PredictionScore:  score,
+		PredictionScore:  score * 100,
 	}
 
 	disease, err := s.diseaseSvc.GetTomatoDiseaseByName(ctx, diseaseName)
