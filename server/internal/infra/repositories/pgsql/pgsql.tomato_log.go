@@ -43,7 +43,7 @@ func (r *tomatoLogRepo) GetByFarmUUID(ctx context.Context, log *[]*model.TomatoL
 	return r.tx.Get(ctx, log, query, farmUUID.String())
 }
 
-func (r *tomatoLogRepo) GetByUserUUID(ctx context.Context, log *[]*model.TomatoLog, userUUID uuid.UUID) error {
+func (r *tomatoLogRepo) GetByUserUUID(ctx context.Context, log *[]*model.TomatoLog, userUUID uuid.UUID, farmUUID uuid.UUID) error {
 	query := `
 		SELECT 
 			tomato_log_uuid,
@@ -59,10 +59,16 @@ func (r *tomatoLogRepo) GetByUserUUID(ctx context.Context, log *[]*model.TomatoL
 		LEFT JOIN upload ON upload.upload_uuid = tomato_log.upload_uuid
 		LEFT JOIN tomato_disease_info ON tomato_disease_info.disease_uuid = tomato_disease_uuid
 		WHERE recorder_uuid = $1
+		AND EXISTS (
+			SELECT 1 
+			FROM farm_plot
+			WHERE farm_uuid = $2
+			AND farm_plot.farm_plot_uuid = tomato_log.farm_plot_uuid
+		)
 		ORDER BY created_at DESC
  `
 
-	return r.tx.Get(ctx, log, query, userUUID.String())
+	return r.tx.Get(ctx, log, query, userUUID.String(), farmUUID)
 }
 
 func (r *tomatoLogRepo) GetByLogUUID(ctx context.Context, log *model.TomatoLog, logUUID uuid.UUID) error {

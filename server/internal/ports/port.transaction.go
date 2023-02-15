@@ -6,6 +6,7 @@ type Transactor interface {
 	Get(ctx context.Context, dest interface{}, query string, args ...interface{}) error
 	GetOne(ctx context.Context, dest interface{}, query string, args ...interface{}) error
 	Insert(ctx context.Context, query string, args ...interface{}) error
+	Update(ctx context.Context, query string, args ...interface{}) error
 	InsertWithReturning(ctx context.Context, dest interface{}, query string, args ...interface{}) error
 	InsertWithReturningOne(ctx context.Context, dest interface{}, query string, args ...interface{}) error
 

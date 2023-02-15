@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"fmt"
 	"net/http"
 	"os"
 	port "tomato-api/internal/ports"
@@ -26,7 +25,7 @@ func (h *tomatoLogHandler) GetTomatoLogByFarmUUID(c port.Context) {
 		return
 	}
 
-	logs, err := h.tlSvc.GetByFarmUUID(c.Ctx(), farmUUID)
+	logs, err := h.tlSvc.GetByFarmUUID(c.Ctx(), farmUUID, c.AccessUserUUID())
 	if err != nil {
 		log.Error(err)
 		c.JSON(http.StatusInternalServerError, err.Error())
@@ -36,23 +35,25 @@ func (h *tomatoLogHandler) GetTomatoLogByFarmUUID(c port.Context) {
 	c.JSON(http.StatusOK, logs)
 }
 
-func (h *tomatoLogHandler) GetTomatoLogByUserUUID(c port.Context) {
-	userUUID := c.AccessUserUUID()
-	if userUUID == uuid.Nil {
-		log.Error(fmt.Errorf("user_uuid is nil"))
-		c.JSON(http.StatusInternalServerError, fmt.Errorf("user_uuid is nil"))
-		return
-	}
+// func (h *tomatoLogHandler) GetTomatoLogByUserUUID(c port.Context) {
+// 	userUUID := c.AccessUserUUID()
+// 	if userUUID == uuid.Nil {
+// 		log.Error(fmt.Errorf("user_uuid is nil"))
+// 		c.JSON(http.StatusInternalServerError, fmt.Errorf("user_uuid is nil"))
+// 		return
+// 	}
 
-	logs, err := h.tlSvc.GetByUserUUID(c.Ctx(), userUUID)
-	if err != nil {
-		log.Error(err)
-		c.JSON(http.StatusInternalServerError, err.Error())
-		return
-	}
+// 	farmUUID
 
-	c.JSON(http.StatusOK, logs)
-}
+// 	logs, err := h.tlSvc.GetByUserUUID(c.Ctx(), userUUID)
+// 	if err != nil {
+// 		log.Error(err)
+// 		c.JSON(http.StatusInternalServerError, err.Error())
+// 		return
+// 	}
+
+// 	c.JSON(http.StatusOK, logs)
+// }
 
 func (h *tomatoLogHandler) GetTomatoLogByLogUUID(c port.Context) {
 	logUUID, err := uuid.Parse(c.Param("log_uuid"))

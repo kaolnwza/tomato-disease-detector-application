@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"fmt"
 	"mime/multipart"
 	"os"
 	model "tomato-api/internal/core/models"
@@ -14,25 +13,41 @@ import (
 )
 
 type tomatoLogService struct {
-	tlRepo    port.TomatoLogRepository
-	tx        port.Transactor
-	uploadSvc port.UploadService
+	tlRepo     port.TomatoLogRepository
+	tx         port.Transactor
+	uploadSvc  port.UploadService
+	usrFarmSvc port.UserFarmService
 }
 
-func NewTomatoLogService(r port.TomatoLogRepository, tx port.Transactor, uploadSvc port.UploadService) port.TomatoLogService {
+func NewTomatoLogService(r port.TomatoLogRepository, tx port.Transactor, uploadSvc port.UploadService, usrFarmSvc port.UserFarmService) port.TomatoLogService {
 	return &tomatoLogService{
-		tlRepo:    r,
-		tx:        tx,
-		uploadSvc: uploadSvc,
+		tlRepo:     r,
+		tx:         tx,
+		uploadSvc:  uploadSvc,
+		usrFarmSvc: usrFarmSvc,
 	}
 }
 
-func (s *tomatoLogService) GetByFarmUUID(ctx context.Context, farmUUID uuid.UUID) ([]*model.TomatoLogResponse, error) {
+func (s *tomatoLogService) GetByFarmUUID(ctx context.Context, farmUUID uuid.UUID, userUUID uuid.UUID) ([]*model.TomatoLogResponse, error) {
 	logs := []*model.TomatoLog{}
 
-	if err := s.tlRepo.GetByFarmUUID(ctx, &logs, farmUUID); err != nil {
-		log.Error(err)
+	isOwner, err := s.usrFarmSvc.IsUserFarmOwner(ctx, userUUID, farmUUID)
+	if err != nil {
 		return nil, err
+	}
+
+	if *isOwner {
+		if err := s.tlRepo.GetByFarmUUID(ctx, &logs, farmUUID); err != nil {
+			return nil, err
+		}
+	} else {
+		if err := s.tlRepo.GetByUserUUID(ctx, &logs, userUUID, farmUUID); err != nil {
+			return nil, err
+		}
+	}
+
+	if len(logs) < 1 {
+		return nil, nil
 	}
 
 	resp := []*model.TomatoLogResponse{}
@@ -69,50 +84,50 @@ func (s *tomatoLogService) GetByFarmUUID(ctx context.Context, farmUUID uuid.UUID
 	return resp, nil
 }
 
-func (s *tomatoLogService) GetByUserUUID(ctx context.Context, userUUID uuid.UUID) ([]*model.TomatoLogResponse, error) {
-	logs := []*model.TomatoLog{}
-	if err := s.tlRepo.GetByUserUUID(ctx, &logs, userUUID); err != nil {
-		log.Error(err)
-		return nil, err
-	}
+// func (s *tomatoLogService) GetByUserUUID(ctx context.Context, userUUID uuid.UUID, farmUUID uuid.UUID) ([]*model.TomatoLogResponse, error) {
+// 	logs := []*model.TomatoLog{}
+// 	if err := s.tlRepo.GetByUserUUID(ctx, &logs, userUUID, farmUUID); err != nil {
+// 		log.Error(err)
+// 		return nil, err
+// 	}
 
-	errCh := make(chan error)
-	resp := []*model.TomatoLogResponse{}
+// 	errCh := make(chan error)
+// 	resp := []*model.TomatoLogResponse{}
 
-	for idx, i := range logs {
-		fmt.Println(i.Location.String)
-		lat, long := helper.PointToLatLong(i.Location.String)
+// 	for idx, i := range logs {
+// 		fmt.Println(i.Location.String)
+// 		lat, long := helper.PointToLatLong(i.Location.String)
 
-		resp = append(resp, &model.TomatoLogResponse{
-			TomatoLogUUID:   i.TomatoLogUUID,
-			RecorderUUID:    i.RecorderUUID,
-			DiseaseName:     i.TomatoDiseaseInfo.DiseaseName,
-			DiseaseNameThai: i.TomatoDiseaseInfo.DiseaseNameThai,
-			Description:     &i.Description.String,
-			CreatedAt:       i.CreatedAt,
-			UpdatedAt:       i.UpdatedAt,
-			Latitude:        lat,
-			Longtitude:      long,
-			Status:          i.Status,
-		})
+// 		resp = append(resp, &model.TomatoLogResponse{
+// 			TomatoLogUUID:   i.TomatoLogUUID,
+// 			RecorderUUID:    i.RecorderUUID,
+// 			DiseaseName:     i.TomatoDiseaseInfo.DiseaseName,
+// 			DiseaseNameThai: i.TomatoDiseaseInfo.DiseaseNameThai,
+// 			Description:     &i.Description.String,
+// 			CreatedAt:       i.CreatedAt,
+// 			UpdatedAt:       i.UpdatedAt,
+// 			Latitude:        lat,
+// 			Longtitude:      long,
+// 			Status:          i.Status,
+// 		})
 
-		go func(i *model.TomatoLog, respI *model.TomatoLogResponse) {
-			uri, err := helper.GenerateImageURI(ctx, os.Getenv("GCS_BUCKET_1"), i.UploadPath)
-			errCh <- err
+// 		go func(i *model.TomatoLog, respI *model.TomatoLogResponse) {
+// 			uri, err := helper.GenerateImageURI(ctx, os.Getenv("GCS_BUCKET_1"), i.UploadPath)
+// 			errCh <- err
 
-			respI.ImageURI = uri
-		}(i, resp[idx])
-	}
+// 			respI.ImageURI = uri
+// 		}(i, resp[idx])
+// 	}
 
-	for i := 0; i < len(logs); i++ {
-		err := <-errCh
-		if err != nil {
-			return nil, err
-		}
-	}
+// 	for i := 0; i < len(logs); i++ {
+// 		err := <-errCh
+// 		if err != nil {
+// 			return nil, err
+// 		}
+// 	}
 
-	return resp, nil
-}
+// 	return resp, nil
+// }
 
 func (s *tomatoLogService) GetByLogUUID(ctx context.Context, logUUID uuid.UUID) (*model.TomatoLogResponse, error) {
 	var logs model.TomatoLog

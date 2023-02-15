@@ -36,9 +36,17 @@ func main() {
 	uploadSvc := service.NewUploadService(uploadRepo, pgTx)
 	uploadHandler := handler.NewUploadHandler(uploadSvc)
 
+	usrFarmRepo := pgsql.NewUserFarmRepository(pgTx)
+	usrFarmSvc := service.NewUserFarmService(pgTx, usrFarmRepo)
+	usrFarmHdr := handler.NewUserFarmHandler(usrFarmSvc)
+
 	tmtLogRepo := pgsql.NewTomatoLogRepo(pgTx)
-	tmtLogSvc := service.NewTomatoLogService(tmtLogRepo, pgTx, uploadSvc)
+	tmtLogSvc := service.NewTomatoLogService(tmtLogRepo, pgTx, uploadSvc, usrFarmSvc)
 	tmtLogHandler := handler.NewTomatoLogHandler(tmtLogSvc)
+
+	farmRepo := pgsql.NewFarmRepository(pgTx)
+	farmSvc := service.NewFarmService(pgTx, farmRepo)
+	farmHdr := handler.NewFarmHandler(farmSvc)
 
 	predSvc := service.NewPredictionService()
 	predHandler := handler.NewPredictionHandler(predSvc)
@@ -62,19 +70,32 @@ func main() {
 
 		farm := v1.GROUP("/farm", middleware)
 		{
+			farm.GET("", farmHdr.GetAllFarmHandler)
+			farm.POST("", farmHdr.CreateFarmHandler)
+			// farm.PUT("", farmHdr.UpdateFarmHandler)
 			farmUUID := farm.GROUP("/:farm_uuid")
 			{
 				farmUUID.GET("", tmtLogHandler.GetTomatoLogByFarmUUID)
 				farmUUID.POST("/log", tmtLogHandler.CreateTomatoLogByFarmUUID)
 				farmUUID.GET("/summary", tmtLogHandler.GetClusterByFarmUUIDHandler)
 				farmUUID.GET("/percentage", tmtLogHandler.GetLogsPercentageByFarmUUIDHandler)
+				farmUUID.GET("/role", usrFarmHdr.FetchFarmRoleHandler)
+
+				farmUser := farmUUID.GROUP("/users")
+				{
+					farmUser.POST("", usrFarmHdr.AddUserFarmHandler)
+					farmUser.GET("", usrFarmHdr.GetAllFarmUserHandler)
+					farmUserUUID := farmUser.GROUP("/:user_uuid")
+					{
+						farmUserUUID.PUT("/status", usrFarmHdr.ActivateUserFarmHandler)
+						farmUserUUID.PUT("/role", usrFarmHdr.UpdateUserFarmRoleHandler)
+					}
+				}
 			}
 		}
 
 		log := v1.GROUP("/log", middleware)
 		{
-			log.GET("", tmtLogHandler.GetTomatoLogByUserUUID)
-			log.POST("/", tmtLogHandler.GetTomatoLogByUserUUID)
 			logUUID := log.GROUP("/:log_uuid")
 			{
 				logUUID.GET("", tmtLogHandler.GetTomatoLogByLogUUID)

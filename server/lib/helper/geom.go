@@ -42,3 +42,7 @@ func LineToLatLong(line string) []model.LineString {
 
 	return ls
 }
+
+// func LineSliceToLine(lineSlice string) string {
+
+// }

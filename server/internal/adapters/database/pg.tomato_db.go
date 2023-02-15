@@ -72,6 +72,17 @@ func (db *postgresRepo) Insert(ctx context.Context, query string, args ...interf
 	return err
 }
 
+func (db *postgresRepo) Update(ctx context.Context, query string, args ...interface{}) error {
+	tx := extractTx(ctx)
+	if tx != nil {
+		_, err := tx.ExecContext(ctx, query, args...)
+		return err
+	}
+
+	_, err := db.conn.ExecContext(ctx, query, args...)
+	return err
+}
+
 func (db *postgresRepo) InsertWithReturning(ctx context.Context, dest interface{}, query string, args ...interface{}) error {
 	tx := extractTx(ctx)
 	if tx != nil {
