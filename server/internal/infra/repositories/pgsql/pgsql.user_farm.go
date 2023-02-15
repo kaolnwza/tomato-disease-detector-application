@@ -49,13 +49,13 @@ func (r *usrFarmRepo) GetAll(ctx context.Context, users *[]*model.UserFarm, farm
 	return r.tx.Get(ctx, users, query, farmUUID)
 }
 
-func (r *usrFarmRepo) AddUserFarm(ctx context.Context, farmUUID uuid.UUID, newUserUUID uuid.UUID) error {
+func (r *usrFarmRepo) AddUserFarm(ctx context.Context, farmUUID uuid.UUID, newUserUUID uuid.UUID, role model.UserFarmRole) error {
 	query := `
-		INSERT INTO user_farm (user_uuid, farm_uuid)
-		SELECT $1, $2
+		INSERT INTO user_farm (user_uuid, farm_uuid, user_farm_role)
+		SELECT $1, $2, $3
 	`
 
-	return r.tx.Insert(ctx, query, newUserUUID, farmUUID)
+	return r.tx.Insert(ctx, query, newUserUUID, farmUUID, role)
 }
 
 func (r *usrFarmRepo) UpdateUserFarmRole(ctx context.Context, farmUUID uuid.UUID, userUUID uuid.UUID, role model.UserFarmRole) error {
@@ -74,7 +74,7 @@ func (r *usrFarmRepo) ActivateUserFarm(ctx context.Context, farmUUID uuid.UUID, 
 	query := `
 		UPDATE user_farm
 		SET
-			user_farm_role = $1
+			is_active = $1
 		WHERE farm_uuid = $2
 		AND user_uuid = $3
 `

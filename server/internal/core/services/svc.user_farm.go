@@ -48,8 +48,9 @@ func (s *usrFarmSvc) GetAll(ctx context.Context, farmUUID uuid.UUID) (*[]*model.
 	return &users, nil
 }
 
-func (s *usrFarmSvc) AddUserFarm(ctx context.Context, farmUUID uuid.UUID, newUserUUID uuid.UUID) error {
-	if err := s.usrFarmRepo.AddUserFarm(ctx, farmUUID, newUserUUID); err != nil {
+func (s *usrFarmSvc) AddUserFarm(ctx context.Context, farmUUID uuid.UUID, newUserUUID uuid.UUID, role string) error {
+	newRole := model.UserFarmRoleMap[role]
+	if err := s.usrFarmRepo.AddUserFarm(ctx, farmUUID, newUserUUID, newRole); err != nil {
 		return err
 	}
 

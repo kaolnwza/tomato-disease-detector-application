@@ -240,7 +240,7 @@ func (r *tomatoLogRepo) GetLogsPercentageByFarmUUID(ctx context.Context, logs *[
 			ELSE COUNT(1) FILTER(WHERE status = 'cured') 
 		END 
 		disease_percentage,
-		upload."path"
+		COALESCE(upload."path", '') AS path
 	FROM disease
 	LEFT JOIN tomato_disease_info ON tomato_disease_uuid = disease_uuid
 	LEFT JOIN upload ON upload.upload_uuid = tomato_disease_info.upload_uuid

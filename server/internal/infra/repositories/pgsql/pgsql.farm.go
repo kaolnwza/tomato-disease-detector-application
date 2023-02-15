@@ -19,8 +19,8 @@ func NewFarmRepository(tx port.Transactor) port.FarmRepository {
 func (r *farmRepo) Create(ctx context.Context, farmName string, userUUID uuid.UUID, location string) error {
 	query := `
 		WITH farm_create AS (
-			INSERT INTO farm (farm_name, location)
-			SELECT $1, $2
+			INSERT INTO farm (farm_name, farm_location)
+			SELECT $1, ` + location + `
 			RETURNING farm_uuid
 		),
 		farm_plot_create AS (
@@ -29,10 +29,10 @@ func (r *farmRepo) Create(ctx context.Context, farmName string, userUUID uuid.UU
 		)
 
 		INSERT INTO user_farm (user_uuid, farm_uuid, user_farm_role)
-		SELECT $3, (SELECT farm_uuid FROM farm_create), 'owner'
+		SELECT $2, (SELECT farm_uuid FROM farm_create), 'owner'
 	`
 
-	return r.tx.Insert(ctx, query, farmName, location, userUUID)
+	return r.tx.Insert(ctx, query, farmName, userUUID)
 }
 
 func (r *farmRepo) GetAll(ctx context.Context, farm *[]*model.Farm, userUUID uuid.UUID) error {

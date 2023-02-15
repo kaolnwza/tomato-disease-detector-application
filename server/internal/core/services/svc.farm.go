@@ -19,7 +19,10 @@ func NewFarmService(tx port.Transactor, farmRepo port.FarmRepository) port.FarmS
 
 func (s *farmSvc) Create(ctx context.Context, farmName string, userUUID uuid.UUID, linestring string) error {
 	// location :=helper.LatLongToPoint(latitude, longtitude)
-	location := linestring
+	location := "NULL"
+	if linestring != "" {
+		location = "'" + linestring + "'"
+	}
 
 	if err := s.farmRepo.Create(ctx, farmName, userUUID, location); err != nil {
 		return err

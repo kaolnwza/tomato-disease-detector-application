@@ -74,6 +74,8 @@ func (h *usrFarmHdr) AddUserFarmHandler(c port.Context) {
 		return
 	}
 
+	role := c.FormValue("user_farm_role")
+
 	accessUUID := c.AccessUserUUID()
 	isOwner, err := h.svc.IsUserFarmOwner(c.Ctx(), accessUUID, farmUUID)
 	if err != nil {
@@ -90,7 +92,7 @@ func (h *usrFarmHdr) AddUserFarmHandler(c port.Context) {
 
 	}
 
-	if err := h.svc.AddUserFarm(c.Ctx(), farmUUID, newUserUUID); err != nil {
+	if err := h.svc.AddUserFarm(c.Ctx(), farmUUID, newUserUUID, role); err != nil {
 		log.Error(err)
 		c.JSON(http.StatusInternalServerError, err.Error())
 		return

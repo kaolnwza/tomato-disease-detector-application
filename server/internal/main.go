@@ -68,14 +68,14 @@ func main() {
 
 		}
 
-		farm := v1.GROUP("/farm", middleware)
+		farm := v1.GROUP("/farms", middleware)
 		{
 			farm.GET("", farmHdr.GetAllFarmHandler)
 			farm.POST("", farmHdr.CreateFarmHandler)
 			// farm.PUT("", farmHdr.UpdateFarmHandler)
 			farmUUID := farm.GROUP("/:farm_uuid")
 			{
-				farmUUID.GET("", tmtLogHandler.GetTomatoLogByFarmUUID)
+				farmUUID.GET("/log", tmtLogHandler.GetTomatoLogByFarmUUID)
 				farmUUID.POST("/log", tmtLogHandler.CreateTomatoLogByFarmUUID)
 				farmUUID.GET("/summary", tmtLogHandler.GetClusterByFarmUUIDHandler)
 				farmUUID.GET("/percentage", tmtLogHandler.GetLogsPercentageByFarmUUIDHandler)
@@ -94,7 +94,7 @@ func main() {
 			}
 		}
 
-		log := v1.GROUP("/log", middleware)
+		log := v1.GROUP("/logs", middleware)
 		{
 			logUUID := log.GROUP("/:log_uuid")
 			{
