@@ -10,6 +10,7 @@ import {
   StatusBar,
   ActivityIndicator,
   TouchableOpacity,
+  FlatList,
 } from 'react-native';
 import Modal from 'react-native-modal';
 import Feather from 'react-native-vector-icons/dist/Feather';
@@ -24,11 +25,16 @@ import {
   TabbedHeaderPager,
   DetailsHeaderScrollView,
 } from 'react-native-sticky-parallax-header';
+import DiseaseDetail from '../components/list/disease-detail';
 
 export const ResultPage = ({route, navigation}) => {
   const {photo, info} = route.params;
   const [loading, setLoading] = useState(true);
   const [result, setResult] = useState(null);
+  const [percentage, setPercentage] = useState(null);
+  const [inform, setInform] = useState([]);
+  const [nameTh, setNameTh] = useState('');
+
   const [description, setDescription] = useState('');
   const [isModalVisible, setModalVisible] = useState(false);
   const [Pin, setPin] = useState({
@@ -130,8 +136,11 @@ export const ResultPage = ({route, navigation}) => {
     })
       .then(response => response.json())
       .then(responseData => {
-        console.log('response:', responseData);
-        setResult(responseData);
+        console.log('response:', responseData.disease_info);
+        setResult(responseData.prediction_result);
+        setPercentage(Number(responseData.prediction_score));
+        setInform(responseData.disease_info.inform);
+        setNameTh(responseData.disease_info.name_th);
       })
       .catch(error => {
         console.log('error:', error);
@@ -159,7 +168,7 @@ export const ResultPage = ({route, navigation}) => {
     data.append('longtitude', Pin.longitude);
 
     fetch(
-      'http://139.59.120.159:8080/v1/farm/e621bea6-1143-4a15-ad84-9048f80183b3/log',
+      'http://139.59.120.159:8080/v1/farms/e621bea6-1143-4a15-ad84-9048f80183b3/log',
       {
         method: 'POST',
         headers: {
@@ -202,7 +211,7 @@ export const ResultPage = ({route, navigation}) => {
             <Text
               style={[font.kanit, {color: '#fff', fontSize: 13, margin: 0}]}>
               {' '}
-              ความแม่นยำ 97.2 %
+              ความแม่นยำ {percentage} %
             </Text>
           </View>
         }
@@ -282,7 +291,7 @@ export const ResultPage = ({route, navigation}) => {
                   />
                   <Button
                     size="lg"
-                    disabled={!result}
+                    loading={!result}
                     onPress={saveResult}
                     style={{marginHorizontal: 20}}
                     buttonStyle={{
@@ -297,8 +306,23 @@ export const ResultPage = ({route, navigation}) => {
               );
             case 'inform':
               return (
-                <View key={i} style={[styles.contentContainer]}>
-                  <Text>Disease Information</Text>
+                <View key={i} style={{backgroundColor: '#fff'}}>
+                  <Text
+                    style={[
+                      font.kanit,
+                      {alignSelf: 'center', fontSize: 24, paddingVertical: 15},
+                    ]}>
+                    {nameTh}
+                  </Text>
+                  <ScrollView scrollEnabled={true} style={{height: 600}}>
+                    <FlatList
+                      data={inform.inform_data}
+                      renderItem={({item, index}) => (
+                        <DiseaseDetail item={item} />
+                      )}
+                      keyExtractor={item => item.title.toString()}
+                    />
+                  </ScrollView>
                 </View>
               );
             default:

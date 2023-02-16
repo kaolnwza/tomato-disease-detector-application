@@ -14,7 +14,7 @@ import {
 import {Button, Avatar} from '@rneui/themed';
 import {font, buttons} from './styles';
 import AntDesign from 'react-native-vector-icons/dist/AntDesign';
-
+import axios from 'axios';
 import LinearGradient from 'react-native-linear-gradient';
 const image = {
   uri: 'https://www.gardendesign.com/pictures/images/900x705Max/site_3/goodhearted-tomatoes-on-vine-red-and-green-tomatoes-goodhearted-tomato-proven-winners_15786.jpg',
@@ -26,11 +26,21 @@ const Login = ({navigation}) => {
   });
 
   const signIn = async () => {
-    console.log('login');
     try {
       await GoogleSignin.hasPlayServices();
       const userInfo = await GoogleSignin.signIn();
       console.log(userInfo);
+      axios
+        .post('http://139.59.120.159:8080/oauth/login', {
+          oauth2_token: userInfo.idToken,
+        })
+        .then(response => {
+          console.log(response.data);
+        })
+        .catch(error => {
+          console.log(error);
+        });
+
       navigation.navigate('SelectFarm', {userInfo});
     } catch (error) {
       if (error.code === statusCodes.SIGN_IN_CANCELLED) {
