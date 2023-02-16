@@ -54,6 +54,8 @@ func (s *tomatoLogService) GetByFarmUUID(ctx context.Context, farmUUID uuid.UUID
 	errCh := make(chan error)
 
 	for idx, i := range logs {
+		lat, long := helper.PointToLatLong(i.Location.String)
+
 		resp = append(resp, &model.TomatoLogResponse{
 			TomatoLogUUID:   i.TomatoLogUUID,
 			RecorderUUID:    i.RecorderUUID,
@@ -62,6 +64,8 @@ func (s *tomatoLogService) GetByFarmUUID(ctx context.Context, farmUUID uuid.UUID
 			Description:     &i.Description.String,
 			CreatedAt:       i.CreatedAt,
 			UpdatedAt:       i.UpdatedAt,
+			Latitude:        lat,
+			Longtitude:      long,
 			Status:          i.Status,
 		})
 
