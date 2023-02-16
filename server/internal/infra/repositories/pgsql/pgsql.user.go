@@ -31,7 +31,7 @@ func (r *userRepo) Create(tx context.Context, user *model.User, provider model.P
 	RETURNING user_uuid
 	`
 
-	return r.tx.InsertWithReturning(tx, &user, query, user.FirstName, user.LastName, user.Email, provider, providerID)
+	return r.tx.InsertWithReturningOne(tx, user, query, user.FirstName, user.LastName, user.Email, provider, providerID)
 }
 
 func (r *userRepo) GetUserByProviderID(ctx context.Context, user *model.User, providerType model.ProviderType, providerID string) error {
@@ -49,5 +49,5 @@ func (r *userRepo) GetUserByProviderID(ctx context.Context, user *model.User, pr
 	)
 	`
 
-	return r.tx.GetOne(ctx, &user, query, providerType, providerID)
+	return r.tx.GetOne(ctx, user, query, providerType, providerID)
 }

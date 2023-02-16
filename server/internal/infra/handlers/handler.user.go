@@ -52,6 +52,6 @@ func (h *userHandler) GoogleLoginHandler(c port.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, &accessToken)
+	c.JSON(http.StatusOK, accessToken)
 
 }
