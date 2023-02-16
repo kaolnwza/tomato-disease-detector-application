@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"database/sql"
+	"strings"
 	model "tomato-api/internal/core/models"
 	port "tomato-api/internal/ports"
 	"tomato-api/lib/pkg"
@@ -31,7 +32,7 @@ func (s userService) GetUserByProviderID(ctx context.Context, providerType model
 	return user, nil
 }
 
-func (s userService) GoogleLogin(ctx context.Context, providerType model.ProviderType, providerID string) (*string, error) {
+func (s userService) GoogleLogin(ctx context.Context, providerType model.ProviderType, providerID string, email string, name string) (*string, error) {
 	user := model.User{}
 	if err := s.tx.WithinTransaction(ctx, func(tx context.Context) error {
 		if err := s.userRepo.GetUserByProviderID(tx, &user, providerType, providerID); err != nil && err != sql.ErrNoRows {
@@ -39,6 +40,14 @@ func (s userService) GoogleLogin(ctx context.Context, providerType model.Provide
 		}
 
 		if user.UserUUID == uuid.Nil {
+			user.Email.String = email
+			user.Email.Valid = email != ""
+			if name != "" {
+				name := strings.Split(name, " ")
+				user.FirstName = name[0]
+				user.LastName = name[1]
+			}
+
 			if err := s.userRepo.Create(tx, &user, providerType, providerID); err != nil {
 				return err
 			}

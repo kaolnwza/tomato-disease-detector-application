@@ -12,7 +12,7 @@ type UserRepository interface {
 
 type UserService interface {
 	GetUserByProviderID(context.Context, model.ProviderType, string) (*model.User, error)
-	GoogleLogin(context.Context, model.ProviderType, string) (*string, error)
+	GoogleLogin(context.Context, model.ProviderType, string, string, string) (*string, error)
 	// RegisterUser(uuid.UUID)
 }
 

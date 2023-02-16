@@ -45,7 +45,7 @@ func (h *userHandler) GoogleLoginHandler(c port.Context) {
 		return
 	}
 
-	accessToken, err := h.userSvc.GoogleLogin(c.Ctx(), model.PROVIDER_TYPE_OAUTH2, oauthInfo.ID)
+	accessToken, err := h.userSvc.GoogleLogin(c.Ctx(), model.PROVIDER_TYPE_OAUTH2, oauthInfo.ID, oauthInfo.Email, oauthInfo.Name)
 	if err != nil {
 		log.Error(err)
 		c.JSON(http.StatusInternalServerError, err.Error())
