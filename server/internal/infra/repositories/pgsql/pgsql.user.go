@@ -41,7 +41,7 @@ func (r *userRepo) GetUserByProviderID(ctx context.Context, user *model.User, pr
 		first_name,
 		last_name,
 		email
-	FROM users
+	FROM "user"
 	WHERE user_uuid = (
 		SELECT user_uuid
 		FROM user_provider
