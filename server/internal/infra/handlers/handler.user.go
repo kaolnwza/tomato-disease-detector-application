@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"net/http"
 	model "tomato-api/internal/core/models"
 	port "tomato-api/internal/ports"
@@ -37,15 +38,26 @@ func (h *userHandler) NewAccessToken(c port.Context) {
 }
 
 func (h *userHandler) GoogleLoginHandler(c port.Context) {
-	oauthInfo, err := pkg.GetGoogleCallbackInfo(c.Request().FormValue("oauth2_token"))
-	if err != nil {
+	// oauthInfo, err := pkg.GetGoogleCallbackInfo(c.Request().FormValue("oauth2_token"))
+	// if err != nil {
+	// 	log.Error(err)
+	// 	// http.Redirect(c.Writer(), c.Request(), "/oauth/", http.StatusTemporaryRedirect)
+	// 	c.JSON(http.StatusBadRequest, err.Error())
+	// 	return
+	// }
+
+	email := c.FormValue("email")
+	name := c.FormValue("name")
+	authId := c.FormValue("auth_id")
+
+	if email == "" {
+		err := errors.New("email is empty")
 		log.Error(err)
-		// http.Redirect(c.Writer(), c.Request(), "/oauth/", http.StatusTemporaryRedirect)
 		c.JSON(http.StatusBadRequest, err.Error())
 		return
 	}
 
-	accessToken, err := h.userSvc.GoogleLogin(c.Ctx(), model.PROVIDER_TYPE_OAUTH2, oauthInfo.ID, oauthInfo.Email, oauthInfo.Name)
+	accessToken, err := h.userSvc.GoogleLogin(c.Ctx(), model.PROVIDER_TYPE_OAUTH2, authId, email, name)
 	if err != nil {
 		log.Error(err)
 		c.JSON(http.StatusInternalServerError, err.Error())
