@@ -40,7 +40,7 @@ func (r *farmRepo) GetAll(ctx context.Context, farm *[]*model.Farm, userUUID uui
 		SELECT
 			farm_uuid,
 			farm_name,
-			farm_location,
+			ST_AsGeoJSON("farm_location")::json->>'coordinates' AS "farm_location",
 			is_active,
 			created_at
 		FROM farm

@@ -1,6 +1,9 @@
 package helper
 
-import model "tomato-api/internal/core/models"
+import (
+	"encoding/json"
+	model "tomato-api/internal/core/models"
+)
 
 func TomatoLogStatusVal(ds string, isCured bool) model.TomatoLogStatus {
 	val := model.TOMATO_LOG_STATUS_UNDIFINED
@@ -15,4 +18,8 @@ func TomatoLogStatusVal(ds string, isCured bool) model.TomatoLogStatus {
 	}
 
 	return val
+}
+
+func JsonToStruct(jsonStr string, v interface{}) error {
+	return json.Unmarshal([]byte(jsonStr), &v)
 }

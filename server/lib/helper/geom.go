@@ -20,27 +20,43 @@ func LatLongToPoint(lat string, long string) string {
 	return fmt.Sprintf("POINT(%s %s)", lat, long)
 }
 
-func LineToLatLong(line string) []model.LineString {
-	ls := []model.LineString{}
+func JsonToLineString(linestring []*model.LineString) string {
+	newLs := "'LINESTRING("
+	for idx, str := range linestring {
+		newLs += fmt.Sprintf("%s %s", str.Latitude, str.Longtitude)
+
+		if idx != len(linestring)-1 {
+			newLs += ","
+		}
+	}
+	return newLs + ")'"
+}
+
+func LineToLatLong(line string) *[]*model.LineString {
+	ls := []*model.LineString{}
 
 	temp := ""
-	for _, rune := range line[2 : len(line)-1] {
+	gotcha := false
+
+	for _, rune := range line[2:] {
 		str := string(rune)
-		if str == "[" {
+		if str == "[" || gotcha {
 			temp = ""
+			gotcha = false
 			continue
 		}
 
 		if str == "]" {
+			gotcha = true
 			spl := strings.Split(temp, ",")
-			ls = append(ls, model.LineString{spl[0], spl[1]})
+			ls = append(ls, &model.LineString{spl[0], spl[1]})
 			continue
 		}
 
 		temp += str
 	}
 
-	return ls
+	return &ls
 }
 
 // func LineSliceToLine(lineSlice string) string {

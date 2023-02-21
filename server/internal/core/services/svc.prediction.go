@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"math"
 	"mime/multipart"
 	"strconv"
 	"strings"
@@ -39,7 +40,7 @@ func (s predictionService) PredictTomato(ctx context.Context, file multipart.Fil
 
 	pred := model.PredictionResponse{
 		PredictionResult: diseaseName,
-		PredictionScore:  score * 100,
+		PredictionScore:  math.Ceil(score*100*100) / 100,
 	}
 
 	disease, err := s.diseaseSvc.GetTomatoDiseaseByName(ctx, diseaseName)

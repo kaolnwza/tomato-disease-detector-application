@@ -16,8 +16,8 @@ type Farm struct {
 }
 
 type FarmResponse struct {
-	FarmUUID     uuid.UUID `json:"farm_uuid"`
-	FarmName     string    `json:"farm_name"`
-	FarmLocation string    `json:"farm_location"`
-	CreatedAt    time.Time `json:"created_at"`
+	FarmUUID     uuid.UUID     `json:"farm_uuid"`
+	FarmName     string        `json:"farm_name"`
+	CreatedAt    time.Time     `json:"created_at"`
+	FarmLocation []*LineString `json:"farm_location"`
 }
