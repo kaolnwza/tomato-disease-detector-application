@@ -21,7 +21,7 @@ func NewFarmService(tx port.Transactor, farmRepo port.FarmRepository) port.FarmS
 func (s *farmSvc) Create(ctx context.Context, farmName string, userUUID uuid.UUID, jsonStr string) error {
 	location := "NULL"
 	if jsonStr != "" {
-		linestring := []*model.LineString{}
+		linestring := []*model.LineStringFloat{}
 		if err := helper.JsonToStruct(jsonStr, &linestring); err != nil {
 			return err
 		}

@@ -20,10 +20,10 @@ func LatLongToPoint(lat string, long string) string {
 	return fmt.Sprintf("POINT(%s %s)", lat, long)
 }
 
-func JsonToLineString(linestring []*model.LineString) string {
+func JsonToLineString(linestring []*model.LineStringFloat) string {
 	newLs := "'LINESTRING("
 	for idx, str := range linestring {
-		newLs += fmt.Sprintf("%s %s", str.Latitude, str.Longtitude)
+		newLs += fmt.Sprintf("%f %f", str.Latitude, str.Longtitude)
 
 		if idx != len(linestring)-1 {
 			newLs += ","
