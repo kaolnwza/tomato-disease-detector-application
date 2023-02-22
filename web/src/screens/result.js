@@ -222,7 +222,7 @@ export const ResultPage = ({route, navigation}) => {
         tabTextActiveStyle={styles.tabTextActiveStyle}
         tabWrapperStyle={styles.tabWrapperStyle}
         tabsContainerStyle={styles.tabsContainerStyle}
-        parallaxHeight={400}
+        parallaxHeight={300}
         onScroll={onScroll}
         renderHeaderBar={() => (
           <View
@@ -242,7 +242,7 @@ export const ResultPage = ({route, navigation}) => {
                     region={Pin}
                     // provider={PROVIDER_GOOGLE}
                     style={{
-                      height: '70%',
+                      height: 300,
                       width: '90%',
                       borderRadius: 30,
                       alignSelf: 'center',

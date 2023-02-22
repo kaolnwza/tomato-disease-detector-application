@@ -29,19 +29,24 @@ const Login = ({navigation}) => {
     try {
       await GoogleSignin.hasPlayServices();
       const userInfo = await GoogleSignin.signIn();
-      console.log(userInfo);
+      const data = new FormData();
+      data.append('email', userInfo.user.email);
+      data.append('name', userInfo.user.name);
+      data.append('auth_id', userInfo.user.id);
+
       axios
-        .post('http://139.59.120.159:8080/oauth/login', {
-          oauth2_token: userInfo.idToken,
+        .post('http://139.59.120.159:8080/oauth/login', data, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
         })
         .then(response => {
           console.log(response.data);
+          navigation.navigate('SelectFarm', {userInfo});
         })
         .catch(error => {
           console.log(error);
         });
-
-      navigation.navigate('SelectFarm', {userInfo});
     } catch (error) {
       if (error.code === statusCodes.SIGN_IN_CANCELLED) {
         // user cancelled the login flow

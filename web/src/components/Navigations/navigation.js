@@ -18,6 +18,7 @@ import Login from '../../screens/login';
 import Detail from '../../screens/detail.';
 import SelectFarm from '../../screens/selectFarm';
 import Daily from '../../screens/ daily-summary';
+import CreateFarm from '../../screens/create-farm';
 
 const Stack = createNativeStackNavigator();
 const HomeNavigator = () => (
@@ -113,6 +114,14 @@ const HomeNavigator = () => (
             size={25}
           />
         ),
+      })}
+    />
+    <Stack.Screen
+      name="CreateFarm"
+      component={CreateFarm}
+      options={({navigation}) => ({
+        title: 'กำหนดพื้นที่ไร่',
+        headerTintColor: '#fff',
       })}
     />
     <Stack.Screen
