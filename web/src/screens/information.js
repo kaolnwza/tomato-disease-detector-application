@@ -8,6 +8,8 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import {Button, ListItem, Avatar} from '@rneui/themed';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 import RNFetchBlob from 'rn-fetch-blob';
 import axios from 'axios';
 
@@ -19,11 +21,12 @@ const Information = ({navigation}) => {
   }, []);
 
   const getData = async () => {
+    const value = await AsyncStorage.getItem('user_token');
+    console.log(value);
     axios
-      .get('http://139.59.120.159:8080/v1/disease', {
+      .get('http://35.197.128.239.nip.io/v1/disease', {
         headers: {
-          Authorization:
-            'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NfdXVpZCI6IjUzYmRhZThlLWMxZTMtNDAzMC1hODVkLWNkMWZhOTNhOWJlNSIsImV4cCI6MTg1MzkyNTA4OCwidXNlcl91dWlkIjoiOGU0ZDgzMjAtOGExOS00NmZjLTgxNTEtN2E2MjI2ZDc2ZjZiIn0.YKjeADsaC5oKaD4bBEkWxTDVbZMH_34j4Vx3bKgeZhc',
+          Authorization: `Bearer ${value}`,
         },
       })
       .then(response => {

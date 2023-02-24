@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import Modal from 'react-native-modal';
 import {useSharedValue} from 'react-native-reanimated';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import MapView, {Marker, PROVIDER_GOOGLE} from 'react-native-maps';
 import Feather from 'react-native-vector-icons/dist/Feather';
@@ -34,7 +35,7 @@ const Detail = props => {
   useEffect(() => {
     axios
       .get(
-        `http://139.59.120.159:8080/v1/disease/${props.detail.disease_name}`,
+        `http://35.197.128.239.nip.io/v1/disease/${props.detail.disease_name}`,
         {
           headers: {
             Authorization:
@@ -70,7 +71,7 @@ const History = ({navigation}) => {
       component: 'inform',
     },
     {
-      title: 'รักษา',
+      title: 'จัดการ',
       component: 'fix',
     },
   ]);
@@ -87,14 +88,17 @@ const History = ({navigation}) => {
     scrollValue.value = e.contentOffset.y;
   }
   const getLog = async () => {
+    const token = await AsyncStorage.getItem('user_token');
+
+    const current_farm = JSON.parse(await AsyncStorage.getItem('user_farm'));
+
     // console.log('get log');
     axios
       .get(
-        'http://139.59.120.159:8080/v1/farms/e621bea6-1143-4a15-ad84-9048f80183b3/log',
+        `http://35.197.128.239.nip.io/v1/farms/${current_farm.farm_uuid}/log`,
         {
           headers: {
-            Authorization:
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NfdXVpZCI6IjUzYmRhZThlLWMxZTMtNDAzMC1hODVkLWNkMWZhOTNhOWJlNSIsImV4cCI6MTg1MzkyNTA4OCwidXNlcl91dWlkIjoiOGU0ZDgzMjAtOGExOS00NmZjLTgxNTEtN2E2MjI2ZDc2ZjZiIn0.YKjeADsaC5oKaD4bBEkWxTDVbZMH_34j4Vx3bKgeZhc',
+            Authorization: `Bearer ${token}`,
           },
         },
       )
@@ -128,7 +132,7 @@ const History = ({navigation}) => {
           component: 'inform',
         },
         {
-          title: 'รักษา',
+          title: 'จัดการ',
           component: 'fix',
         },
       ]);

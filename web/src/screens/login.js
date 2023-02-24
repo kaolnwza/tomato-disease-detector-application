@@ -10,7 +10,7 @@ import {
   GoogleSignin,
   statusCodes,
 } from '@react-native-google-signin/google-signin';
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {Button, Avatar} from '@rneui/themed';
 import {font, buttons} from './styles';
 import AntDesign from 'react-native-vector-icons/dist/AntDesign';
@@ -35,13 +35,15 @@ const Login = ({navigation}) => {
       data.append('auth_id', userInfo.user.id);
 
       axios
-        .post('http://139.59.120.159:8080/oauth/login', data, {
+        .post('http://35.197.128.239.nip.io/oauth/login', data, {
           headers: {
             'Content-Type': 'multipart/form-data',
+            // Authorization: 'Bearer',
           },
         })
-        .then(response => {
-          console.log(response.data);
+        .then(async response => {
+          await AsyncStorage.setItem('user_token', response.data);
+
           navigation.navigate('SelectFarm', {userInfo});
         })
         .catch(error => {

@@ -1,12 +1,52 @@
 import React, {useEffect, useState} from 'react';
-import {Text, StyleSheet, FlatList, View, TouchableOpacity} from 'react-native';
+import {Text, StyleSheet, FlatList, View, RefreshControl} from 'react-native';
 import {Button, SpeedDial} from '@rneui/themed';
 import MaterialCommunityIcons from 'react-native-vector-icons/dist/MaterialCommunityIcons';
 import {font, buttons} from './styles';
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const SelectFarm = ({navigation}) => {
   const [open, setOpen] = useState(false);
   const [farm, setFarm] = useState([]);
+  const [refreshing, setRefreshing] = useState(true);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    // Put your refresh logic here
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 2000); // Simulate a delay before refreshing completes
+  };
+  useEffect(() => {
+    getFarm();
+  }, [refreshing]);
+
+  const getFarm = async () => {
+    const value = await AsyncStorage.getItem('user_token');
+
+    axios
+      .get('http://35.197.128.239.nip.io/v1/farms', {
+        headers: {
+          Authorization: `Bearer ${value}`,
+          'Content-Type': 'multipart/form-data',
+        },
+      })
+      .then(response => {
+        // console.log(response.data);
+        setFarm(response.data);
+        setRefreshing(false);
+      })
+      .catch(error => {
+        console.log(error);
+      });
+  };
+
+  const onSelectFarm = async item => {
+    await AsyncStorage.setItem('user_farm', JSON.stringify(item));
+
+    navigation.navigate('Home', {name: item.farm_name});
+  };
   return (
     <View style={styles.container}>
       <SpeedDial
@@ -27,7 +67,7 @@ const SelectFarm = ({navigation}) => {
           }}
         />
       </SpeedDial>
-      {farm.length <= 0 ? (
+      {(farm.length <= 0) & !refreshing ? (
         <View
           style={{
             flex: 1,
@@ -50,15 +90,18 @@ const SelectFarm = ({navigation}) => {
           numColumns={2}
           // contentContainerStyle={{alignItems: 'center', justifyContent: 'center'}}
           contentContainerStyle={{
-            flex: 1,
             alignItems: 'center',
             justifyContent: 'center',
+            marginBottom: 100,
           }}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
           data={farm}
           renderItem={({item}) => (
             <Button
               type="clear"
-              title={item.name}
+              title={item.farm_name}
               titleStyle={[{color: '#000'}, font.kanit]}
               style={[styles.btn, styles.shadowProp, {backgroundColor: '#fff'}]}
               icon={
@@ -105,7 +148,7 @@ const SelectFarm = ({navigation}) => {
               }
               iconPosition="top"
               onPress={() => {
-                navigation.navigate('Home', {name: item.name});
+                onSelectFarm(item);
               }}
             />
           )}

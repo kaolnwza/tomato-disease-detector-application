@@ -8,8 +8,9 @@ import Feather from 'react-native-vector-icons/dist/Feather';
 import AntDesign from 'react-native-vector-icons/dist/AntDesign';
 import Modal from 'react-native-modal';
 import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const MapScreen = () => {
+const MapScreen = ({navigation}) => {
   const [coordinates, setCoordinates] = useState([]);
   const [currentRegion, setCurrentRegion] = useState(null);
   const [toolTip, setToolTip] = useState(true);
@@ -51,19 +52,22 @@ const MapScreen = () => {
     setCoordinates(coordinates.slice(0, -1));
   };
 
-  const handleSaveFarm = () => {
-    console.log(farmName.trim(), coordinates);
+  const handleSaveFarm = async () => {
+    const value = await AsyncStorage.getItem('user_token');
     const data = new FormData();
-    data.append('farm_name', farmName.trim());
-    data.append('location', coordinates);
+    data.append('farm_name', farmName);
+    data.append('location', JSON.stringify(coordinates));
+
     axios
-      .post('http://139.59.120.159:8080/v1/farms', data, {
+      .post('http://35.197.128.239.nip.io/v1/farms', data, {
         headers: {
+          Authorization: `Bearer ${value}`,
           'Content-Type': 'multipart/form-data',
         },
       })
       .then(response => {
         console.log(response.data);
+        navigation.navigate('SelectFarm');
       })
       .catch(error => {
         console.log(error);

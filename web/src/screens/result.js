@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useRef} from 'react';
 import {
   Text,
   StyleSheet,
@@ -12,12 +12,14 @@ import {
   TouchableOpacity,
   FlatList,
 } from 'react-native';
+import {Picker} from '@react-native-picker/picker';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import Modal from 'react-native-modal';
 import Feather from 'react-native-vector-icons/dist/Feather';
 import MaterialIcons from 'react-native-vector-icons/dist/MaterialIcons';
 import {Button, Input, ListItem} from '@rneui/base';
 import {font} from './styles';
-import Entypo from 'react-native-vector-icons/dist/Entypo';
+
 import MapView, {Marker, PROVIDER_GOOGLE} from 'react-native-maps';
 import moment from 'moment';
 import {useSharedValue} from 'react-native-reanimated';
@@ -34,6 +36,8 @@ export const ResultPage = ({route, navigation}) => {
   const [percentage, setPercentage] = useState(null);
   const [inform, setInform] = useState([]);
   const [nameTh, setNameTh] = useState('');
+  const pickerRef = useRef();
+  const [selectedDisease, setSelectedDisease] = useState();
 
   const [description, setDescription] = useState('');
   const [isModalVisible, setModalVisible] = useState(false);
@@ -56,6 +60,7 @@ export const ResultPage = ({route, navigation}) => {
   });
 
   const [ready, setReady] = useState(true);
+  const [isEdit, setEdit] = useState(false);
 
   const scrollValue = useSharedValue(0);
 
@@ -125,7 +130,7 @@ export const ResultPage = ({route, navigation}) => {
       name: fileName,
     });
 
-    fetch('http://139.59.120.159:8080/v1/prediction', {
+    fetch('http://35.197.128.239.nip.io/v1/prediction', {
       method: 'POST',
       headers: {
         'Content-Type': 'multipart/form-data',
@@ -148,11 +153,12 @@ export const ResultPage = ({route, navigation}) => {
     setLoading(false);
   };
 
-  const saveResult = () => {
+  const saveResult = async () => {
     const imageUri = photo.path ? 'file://' + photo.path : photo.uri;
     const fileName = photo.fileName
       ? photo.fileName
       : photo.path.split('/').pop();
+    const current_farm = JSON.parse(await AsyncStorage.getItem('user_farm'));
 
     const data = new FormData();
 
@@ -161,6 +167,7 @@ export const ResultPage = ({route, navigation}) => {
       type: 'image/jpeg',
       name: fileName,
     });
+    console.log(result);
 
     data.append('disease', result.replaceAll('"', ''));
     data.append('description', description);
@@ -168,7 +175,7 @@ export const ResultPage = ({route, navigation}) => {
     data.append('longtitude', Pin.longitude);
 
     fetch(
-      'http://139.59.120.159:8080/v1/farms/e621bea6-1143-4a15-ad84-9048f80183b3/log',
+      `http://35.197.128.239.nip.io/v1/farms/${current_farm.farm_uuid}/log`,
       {
         method: 'POST',
         headers: {
@@ -204,16 +211,18 @@ export const ResultPage = ({route, navigation}) => {
           uri: photo.path ? 'file://' + photo.path : photo.uri,
         }}
         title={
-          <View style={{flexDirection: 'column', paddingHorizontal: 10}}>
+          <TouchableOpacity
+            style={{flexDirection: 'column', paddingHorizontal: 10}}>
             <Text style={[font.kanit, {color: '#fff', fontSize: 40}]}>
-              {result}
+              {nameTh}
             </Text>
+
             <Text
               style={[font.kanit, {color: '#fff', fontSize: 13, margin: 0}]}>
               {' '}
-              ความแม่นยำ {percentage} %
+              ความแม่นยำ {percentage ? percentage.toFixed(2) : ''} %
             </Text>
-          </View>
+          </TouchableOpacity>
         }
         titleStyle={styles.titleStyle}
         tabTextContainerStyle={styles.tabTextContainerStyle}
@@ -222,7 +231,7 @@ export const ResultPage = ({route, navigation}) => {
         tabTextActiveStyle={styles.tabTextActiveStyle}
         tabWrapperStyle={styles.tabWrapperStyle}
         tabsContainerStyle={styles.tabsContainerStyle}
-        parallaxHeight={300}
+        parallaxHeight={280}
         onScroll={onScroll}
         renderHeaderBar={() => (
           <View
@@ -279,6 +288,17 @@ export const ResultPage = ({route, navigation}) => {
             case 'form':
               return (
                 <View key={i} style={[styles.contentContainer]}>
+                  <Text
+                    style={[
+                      font.kanit,
+                      {fontSize: 25, alignSelf: 'center', marginBottom: 10},
+                    ]}>
+                    {nameTh}
+                    <TouchableOpacity onPress={() => setEdit(true)}>
+                      <Feather name="edit-3" size={30} color="#000" />
+                    </TouchableOpacity>
+                  </Text>
+
                   <Input
                     placeholder="เพิ่มคำอธิบาย"
                     onChangeText={newText => setDescription(newText)}
@@ -307,13 +327,12 @@ export const ResultPage = ({route, navigation}) => {
             case 'inform':
               return (
                 <View key={i} style={{backgroundColor: '#fff'}}>
-                  <Text
-                    style={[
-                      font.kanit,
-                      {alignSelf: 'center', fontSize: 24, paddingVertical: 15},
-                    ]}>
-                    {nameTh}
-                  </Text>
+                  <View style={{alignSelf: 'center', paddingVertical: 15}}>
+                    <Text style={[font.kanit, {fontSize: 24}]}>{nameTh}</Text>
+                    <Text style={[font.kanit, {alignSelf: 'center'}]}>
+                      {result}
+                    </Text>
+                  </View>
                   <ScrollView scrollEnabled={true} style={{height: 600}}>
                     <FlatList
                       data={inform.inform_data}
@@ -433,6 +452,41 @@ export const ResultPage = ({route, navigation}) => {
           <View></View>
         </View>
       </Modal>
+      <Modal
+        isVisible={isEdit}
+        style={{justifyContent: 'flex-end'}}
+        onBackdropPress={() => setEdit(false)}
+        onModalHide={() => setEdit(false)}>
+        <View
+          style={{
+            margin: -20,
+            borderRadius: 30,
+            padding: 20,
+            height: '35%',
+            backgroundColor: '#fff',
+          }}>
+          <Picker
+            ref={pickerRef}
+            selectedValue={selectedDisease}
+            onValueChange={(itemValue, itemIndex) =>
+              setSelectedDisease(itemValue)
+            }>
+            <Picker.Item label="ใบสุขภาพดี" value="Healthy" />
+
+            <Picker.Item label="โรคใบจุด" value="Bacterial Spot" />
+            <Picker.Item
+              label="โรคใบหงิกเหลือง"
+              value="Yellow Leaf Curl Virus"
+            />
+            <Picker.Item label="โรคไรสองจุด" value="Spider Mites" />
+            <Picker.Item label="โรคใบจุดวงกลม" value="Septoria Leaf Spot" />
+            <Picker.Item label="โรคใบด่าง" value="Mosaic Virus" />
+            <Picker.Item label="โรคใบไหม้" value="Late Blight" />
+            <Picker.Item label="โรคใบจุดวง" value="Early Blight" />
+            <Picker.Item label="โรครากำมะหยี่" value="Leaf Mold" />
+          </Picker>
+        </View>
+      </Modal>
     </View>
     //</View>
   );
@@ -441,6 +495,9 @@ const styles = StyleSheet.create({
   titleStyle: {
     backgroundColor: 'rgba(52, 52, 52, 0.5)',
     color: '#fff',
+    position: 'absolute',
+    zIndex: 99,
+    marginTop: -50,
   },
   tabTextContainerStyle: {
     borderRadius: 18,

@@ -39,6 +39,7 @@ const HomeNavigator = () => (
       component={Login}
       options={{
         headerShown: false,
+        gestureEnabled: false,
       }}
     />
     <Stack.Screen
