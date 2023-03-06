@@ -66,7 +66,6 @@ const MapScreen = ({navigation}) => {
         },
       })
       .then(response => {
-        console.log(response.data);
         navigation.navigate('SelectFarm');
       })
       .catch(error => {

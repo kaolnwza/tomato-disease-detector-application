@@ -103,7 +103,6 @@ const History = ({navigation}) => {
         },
       )
       .then(response => {
-        console.log(response.data);
         setHistory(response.data);
       })
       .catch(error => {

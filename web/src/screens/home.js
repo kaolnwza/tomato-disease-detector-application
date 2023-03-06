@@ -18,8 +18,8 @@ import Feather from 'react-native-vector-icons/dist/Feather';
 import {font, buttons} from './styles';
 import DiseaseChart from '../components/chart/disease-chart';
 import SummaryMap from '../components/map/summaryMap';
-
 import Modal from 'react-native-modal';
+
 export const HomeScreen = ({navigation, route}) => {
   const [selectedLanguage, setSelectedLanguage] = useState();
   const [isModalVisible, setModalVisible] = useState(false);
@@ -44,12 +44,6 @@ export const HomeScreen = ({navigation, route}) => {
       color: '#3ED48D',
       page: 'Information',
       icon: 'leaf-outline',
-    },
-    {
-      name: 'ตั้งค่า',
-      color: '#FCC93A',
-      page: 'Setting',
-      icon: 'settings-outline',
     },
   ]);
 
@@ -79,7 +73,7 @@ export const HomeScreen = ({navigation, route}) => {
   const getSummery = async () => {
     const token = await AsyncStorage.getItem('user_token');
     const current_farm = JSON.parse(await AsyncStorage.getItem('user_farm'));
-
+    console.log(current_farm);
     axios
       .get(
         `http://35.197.128.239.nip.io/v1/farms/${current_farm.farm_uuid}/summary`,
@@ -90,7 +84,7 @@ export const HomeScreen = ({navigation, route}) => {
         },
       )
       .then(response => {
-        console.log(response.data);
+        console.log('summary', response.data);
         // setFarmList(response.data);
         // setRefreshing(false);
       })
@@ -99,9 +93,12 @@ export const HomeScreen = ({navigation, route}) => {
       });
   };
 
-  const changeFarm = item => {
+  const changeFarm = async item => {
+    let farm = farmList[farmList.findIndex(x => x.farm_name === item)];
+    await AsyncStorage.setItem('user_farm', JSON.stringify(farm));
     setSelectedLanguage(item);
     navigation.setParams({name: item});
+    getSummery();
   };
   const getFarm = async () => {
     const value = await AsyncStorage.getItem('user_token');

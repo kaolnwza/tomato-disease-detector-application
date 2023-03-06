@@ -141,7 +141,6 @@ export const ResultPage = ({route, navigation}) => {
     })
       .then(response => response.json())
       .then(responseData => {
-        console.log('response:', responseData.disease_info);
         setResult(responseData.prediction_result);
         setPercentage(Number(responseData.prediction_score));
         setInform(responseData.disease_info.inform);

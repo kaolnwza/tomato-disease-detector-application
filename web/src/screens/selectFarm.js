@@ -1,5 +1,13 @@
 import React, {useEffect, useState} from 'react';
-import {Text, StyleSheet, FlatList, View, RefreshControl} from 'react-native';
+import {
+  Text,
+  StyleSheet,
+  FlatList,
+  View,
+  RefreshControl,
+  SafeAreaView,
+  ScrollView,
+} from 'react-native';
 import {Button, SpeedDial} from '@rneui/themed';
 import MaterialCommunityIcons from 'react-native-vector-icons/dist/MaterialCommunityIcons';
 import {font, buttons} from './styles';
@@ -68,23 +76,31 @@ const SelectFarm = ({navigation}) => {
         />
       </SpeedDial>
       {(farm.length <= 0) & !refreshing ? (
-        <View
-          style={{
-            flex: 1,
-            alignItems: 'center',
-            justifyContent: 'center',
-            marginBottom: 100,
-          }}>
-          <MaterialCommunityIcons
-            size={60}
-            color="#00000066"
-            name="window-close"
-          />
+        <SafeAreaView style={styles.container}>
+          <ScrollView
+            contentContainerStyle={styles.scrollView}
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            }>
+            <View
+              style={{
+                flex: 1,
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: 100,
+              }}>
+              <MaterialCommunityIcons
+                size={60}
+                color="#00000066"
+                name="window-close"
+              />
 
-          <Text style={[font.kanit, {fontSize: 20, color: '#00000066'}]}>
-            ไม่มีไร่
-          </Text>
-        </View>
+              <Text style={[font.kanit, {fontSize: 20, color: '#00000066'}]}>
+                ไม่มีไร่
+              </Text>
+            </View>
+          </ScrollView>
+        </SafeAreaView>
       ) : (
         <FlatList
           numColumns={2}
@@ -161,9 +177,13 @@ const SelectFarm = ({navigation}) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
     paddingTop: 100,
-    backgroundColor: '#F0F9F8',
+  },
+  scrollView: {
+    flex: 1,
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   card: {
     backgroundColor: 'white',

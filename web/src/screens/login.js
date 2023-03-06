@@ -24,11 +24,24 @@ const Login = ({navigation}) => {
     iosClientId:
       '79142185056-8hliasgjdru3aoq5b024c0o8s8jg9pjg.apps.googleusercontent.com',
   });
+  useEffect(() => {
+    checkUser();
+  }, []);
+
+  const checkUser = async () => {
+    const user = await AsyncStorage.getItem('user_data');
+    console.log(await AsyncStorage.getAllKeys());
+    if (user) {
+      navigation.navigate('SelectFarm');
+    }
+  };
 
   const signIn = async () => {
     try {
       await GoogleSignin.hasPlayServices();
       const userInfo = await GoogleSignin.signIn();
+      await AsyncStorage.setItem('user_data', JSON.stringify(userInfo.user));
+
       const data = new FormData();
       data.append('email', userInfo.user.email);
       data.append('name', userInfo.user.name);
@@ -44,7 +57,7 @@ const Login = ({navigation}) => {
         .then(async response => {
           await AsyncStorage.setItem('user_token', response.data);
 
-          navigation.navigate('SelectFarm', {userInfo});
+          navigation.navigate('SelectFarm');
         })
         .catch(error => {
           console.log(error);
