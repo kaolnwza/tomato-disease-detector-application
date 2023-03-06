@@ -191,11 +191,11 @@ func (r *tomatoLogRepo) GetClusterByFarmUUID(ctx context.Context, logs *[]*model
 		created_at
 	FROM freq
 	LEFT JOIN tomato_disease_info ON tomato_disease_uuid = disease_uuid
-	WHERE EXISTS (
-		SELECT 1 
-		FROM most_freq
-		WHERE most_freq.cid = freq.cid
-		)
+	-- WHERE EXISTS (
+	-- 	SELECT 1 
+	-- 	FROM most_freq
+	-- 	WHERE most_freq.cid = freq.cid
+	-- 	)
 	`
 
 	return r.tx.Get(ctx, logs, query, farmUUID)
