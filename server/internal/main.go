@@ -51,7 +51,10 @@ func main() {
 	predSvc := service.NewPredictionService(tmtDiseaseSvc)
 	predHandler := handler.NewPredictionHandler(predSvc)
 
+	health := handler.NewHealthHandler()
+
 	r.GET("/jwt/:user_uuid", userHandler.NewAccessToken)
+	r.GET("/health", health.HealthCheck)
 
 	oauth := r.GROUP("/oauth")
 	oauth.POST("/login", userHandler.GoogleLoginHandler)

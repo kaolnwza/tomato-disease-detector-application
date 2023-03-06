@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tomato
+  namespace: tomato-ns
+  labels:
+    app: tomato
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tomato
+  template:
+    metadata:
+      labels:
+        app: tomato
+    spec:
+      containers:
+      - name: tomato
+        image: asia.gcr.io/long-sonar-371616/tomato:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8765
+          name: web-port
+          protocol: TCP
+        # livenessProbe:
+        #   httpGet:
+        #     path: /health
+        #     port: 8765
+        #     scheme: HTTP
+        # readinessProbe:
+        #   httpGet:
+        #     path: /health
+        #     port: 8765
+        #     scheme: HTTP
+        env:
+        
+        - name: TZ
+          value: Asia/Bangkok
+          
+      # imagePullSecrets:
+      # - name: registry-..

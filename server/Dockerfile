@@ -20,5 +20,7 @@ WORKDIR /app
 COPY --from=builder /go/app/internal/main .
 COPY --from=builder /go/app/lib/credentials/long-sonar-371616-80145143437f.json .
 
+ENV TZ=Asia/Bangkok
+
 # CMD ["./go/app/apisrv/main"]
 CMD ["./main"]
