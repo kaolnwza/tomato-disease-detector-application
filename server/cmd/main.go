@@ -14,6 +14,8 @@ import (
 	service "tomato-api/internal/core/services"
 	handler "tomato-api/internal/infra/handlers"
 	"tomato-api/internal/infra/repositories/pgsql"
+
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
@@ -53,7 +55,12 @@ func main() {
 
 	health := handler.NewHealthHandler()
 
+	r.Use(gin.LoggerWithConfig(gin.LoggerConfig{
+		SkipPaths: []string{"/health"},
+	}))
+
 	r.GET("/jwt/:user_uuid", userHandler.NewAccessToken)
+
 	r.GET("/health", health.HealthCheck)
 
 	oauth := r.GROUP("/oauth")

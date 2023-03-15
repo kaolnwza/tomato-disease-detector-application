@@ -16,7 +16,7 @@ func PostRequestImage(file multipart.File, fileHeader *multipart.FileHeader) (*[
 	io.Copy(part, file)
 	writer.Close()
 
-	requestURL := "http://" + os.Getenv("HOST_URL") + ":1234" + "/imgpred2"
+	requestURL := "http://" + os.Getenv("FASTAPI_HOST_URL") + ":1234" + "/imgpred2"
 	// requestURL := "http://kao.monster:1234" + "/imgpred2"
 	req, err := http.NewRequest(http.MethodPost, requestURL, body)
 	if err != nil {

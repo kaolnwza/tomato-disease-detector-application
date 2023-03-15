@@ -2,3 +2,179 @@
 
 
 pm2 start main.py --interpreter=python3
+
+
+K8S
+restart 
+kubectl rollout restart deployment tomato -n tomato
+
+---
+<br />
+
+# Tomato App's Kubenetes installation guild
+
+## Part 0: Introduction
+- installation guild has not completed yet.
+- this part maybe helping IT KMITL 18++ (รุ่นน้อนๆ) in final project(final project is no need) or everybody who need to starting k8s...
+- this repository deploying api server(go) in GKE
+- images to storage is using GCS
+- k8s yaml is inside folder /k8s
+- convert your env values into configmap (for deploying part) | (tmt-k8s-config.yaml) <- (it was hide)
+- you can try this on GCP free trial (3 month)
+
+---
+<br />
+
+## Part 1: Docker Images
+ > build image from some where (this repo build in local macbook)
+
+ > firstly u need to register dockerhub
+
+    ```
+    docker login -u $DOCKER_USERNAME
+    docker build -t tomato/api:latest . 
+    docker tag tomato/api:latest $DOCKER_USERNAME/tomato-api
+    ```
+    
+
+> push to docker hub (on this repo will be publish)
+
+    docker push $DOCKER_USERNAME/tomato
+---
+<br />
+
+## Part 2: GKE starter
+
+### First meet
+---
+> welcome message that mean u can't do everything
+
+    The connection to the server localhost:8080 was refused - did you specify the right host or port?
+
+> you need to setup k8s config
+    ```
+    gcloud container clusters get-credentials <K8S_CLUSTER_NAME> --project <PROJECT_ID> --zone <K8S_ZONE>
+    ```
+
+    ```
+    gcloud container clusters get-credentials tomato-k8s --project able-stock-380702 --zone asia-southeast1
+    ```
+
+> where do i find above values?
+- K8S_CLUSTER_NAME is cluster name that u create k8s
+- PROJECT_ID is GCP project id
+- K8S_ZONE is zone that u select when created 
+
+you can find them in Google Console/Kubenetes Engine/Clusters/$CLUSTER_NAME
+
+> install nginx-ingress
+
+     ```
+    kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.34.1/deploy/static/provider/cloud/deploy.yaml
+    ```
+
+> Ingress pod
+
+    ```
+    kubectl get pods --all-namespaces -l app.kubernetes.io/name=ingress-nginx
+    ```
+
+> Check ingress controller ingo
+
+    ```
+    kubectl get services ingress-nginx-controller --namespace=ingress-nginx
+    ```
+
+
+## Part 3: k8s Images Install
+> pull image from docker hub
+
+    ```
+    docker pull kaowasabi/tomato-api:latest
+    ```
+
+> push install GCR (it's like docker hub)
+
+    ```
+	docker tag kaowasabi/tomato-api:latest asia.gcr.io/able-stock-380702/tomato-api
+    
+	docker push asia.gcr.io/able-stock-380702/tomato-api
+    ```
+
+---
+
+<br />
+
+## Part 4: k8s Deployment
+### Create namespace
+
+> create namespace
+
+    ```
+    kubectl create namespaces tomato-api
+    ```
+
+> show created namespace
+
+    ```
+    kubectl get namespace tomato-api
+    ```
+
+> teleport to name space
+
+    ```
+    kubectl config set-context $(kubectl config current-context) --namespace=tomato-api-ns
+    ```
+
+---
+### ยาแมว
+
+#### you can view .yaml inside folder /k8s
+
+> make folder for first services
+
+    ```
+    mkdir api-k8s
+    ```
+
+    ```
+    touch deployment.yaml
+    touch service.yaml
+    touch ingress.yaml
+    touch config.yaml (.env values is here)
+    ```
+
+> Create Configmap
+
+    ```
+    kubectl create -f ./api-k8s/config.yaml
+    ```
+
+> Check all configmap in namespace 
+
+    ```
+    kubectl get configmap
+    ```
+
+> > if you not found your configmap (that mean you are not in this namespace)
+
+    ```
+    kubectl get configmap -n tomato-api-ns
+    ```
+
+
+> View Configmap
+
+    ```
+    kubectl get configmap api-config -o yaml
+    ```
+
+---
+
+> Deployment
+
+    ```
+    kubectl apply -f ./api-k8s/deployment.yaml
+    kubectl apply -f ./api-k8s/service.yaml
+    kubectl apply -f ./api-k8s/ingress.yaml
+    ```

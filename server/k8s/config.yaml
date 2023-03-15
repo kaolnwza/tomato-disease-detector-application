@@ -1,0 +1,10 @@
+#exam
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: api-config
+  namespace: tomato-api-ns
+data:
+  DATABASE_URL: eiei
+  BUCKET: tomato-bucket

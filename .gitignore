@@ -1,2 +1,3 @@
 .envrc
 credentials
+tmt-k8s-config.yaml

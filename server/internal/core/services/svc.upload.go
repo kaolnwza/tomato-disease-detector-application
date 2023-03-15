@@ -36,7 +36,7 @@ func (s uploadService) Upload(ctx context.Context, userUUID uuid.UUID, file mult
 		return nil, err
 	}
 
-	objectLocation := fmt.Sprintf(`image/%s`, uuid.New())
+	objectLocation := fmt.Sprintf(`images/%s`, uuid.New())
 
 	sw := storageClient.Bucket(bucket).Object(objectLocation).NewWriter(ctx)
 
