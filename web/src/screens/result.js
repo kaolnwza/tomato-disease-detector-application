@@ -130,7 +130,7 @@ export const ResultPage = ({route, navigation}) => {
       name: fileName,
     });
 
-    fetch('http://35.197.128.239.nip.io/v1/prediction', {
+    fetch('http://35.244.169.189.nip.io/v1/prediction', {
       method: 'POST',
       headers: {
         'Content-Type': 'multipart/form-data',
@@ -174,7 +174,7 @@ export const ResultPage = ({route, navigation}) => {
     data.append('longtitude', Pin.longitude);
 
     fetch(
-      `http://35.197.128.239.nip.io/v1/farms/${current_farm.farm_uuid}/log`,
+      `http://35.244.169.189.nip.io/v1/farms/${current_farm.farm_uuid}/log`,
       {
         method: 'POST',
         headers: {

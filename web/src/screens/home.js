@@ -5,7 +5,7 @@ import {
   StyleSheet,
   FlatList,
   View,
-  TouchableOpacity,
+  SafeAreaView,
   RefreshControl,
   ScrollView,
 } from 'react-native';
@@ -19,12 +19,17 @@ import {font, buttons} from './styles';
 import DiseaseChart from '../components/chart/disease-chart';
 import SummaryMap from '../components/map/summaryMap';
 import Modal from 'react-native-modal';
+import moment from 'moment';
+import MapView, {Marker, PROVIDER_GOOGLE} from 'react-native-maps';
+import Geolocation from '@react-native-community/geolocation';
 
 export const HomeScreen = ({navigation, route}) => {
   const [selectedLanguage, setSelectedLanguage] = useState();
   const [isModalVisible, setModalVisible] = useState(false);
   const pickerRef = useRef();
   const [farmList, setFarmList] = useState([]);
+  const [markers, setMarkers] = useState([]);
+  const [location, setLocation] = useState();
 
   const [menu, setMenu] = useState([
     {
@@ -73,10 +78,10 @@ export const HomeScreen = ({navigation, route}) => {
   const getSummery = async () => {
     const token = await AsyncStorage.getItem('user_token');
     const current_farm = JSON.parse(await AsyncStorage.getItem('user_farm'));
-    console.log(current_farm);
+
     axios
       .get(
-        `http://35.197.128.239.nip.io/v1/farms/${current_farm.farm_uuid}/summary`,
+        `http://35.244.169.189.nip.io/v1/farms/${current_farm.farm_uuid}/summary`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -84,19 +89,46 @@ export const HomeScreen = ({navigation, route}) => {
         },
       )
       .then(response => {
-        console.log('summary', response.data);
-        // setFarmList(response.data);
-        // setRefreshing(false);
+        // setCentered(response.data.center_location);
+        setMarkers(response.data.info);
+        Geolocation.getCurrentPosition(
+          position => {
+            setLocation({
+              latitude:
+                (position.coords.latitude +
+                  parseFloat(response.data.center_location.latitude)) /
+                2,
+              longitude:
+                (position.coords.longitude +
+                  parseFloat(response.data.center_location.longitude)) /
+                2,
+              latitudeDelta:
+                Math.abs(
+                  position.coords.latitude -
+                    parseFloat(response.data.center_location.latitude),
+                ) * 2,
+              longitudeDelta:
+                Math.abs(
+                  position.coords.longitude -
+                    parseFloat(response.data.center_location.longitude),
+                ) * 2,
+            });
+          },
+          error => console.log(error),
+          {enableHighAccuracy: true, timeout: 20000, maximumAge: 1000},
+        );
       })
       .catch(error => {
-        console.log(error);
+        console.log('error summary', error);
+        setLocation(null);
       });
   };
 
   const changeFarm = async item => {
     let farm = farmList[farmList.findIndex(x => x.farm_name === item)];
-    await AsyncStorage.setItem('user_farm', JSON.stringify(farm));
     setSelectedLanguage(item);
+
+    await AsyncStorage.setItem('user_farm', JSON.stringify(farm));
     navigation.setParams({name: item});
     getSummery();
   };
@@ -104,7 +136,7 @@ export const HomeScreen = ({navigation, route}) => {
     const value = await AsyncStorage.getItem('user_token');
 
     axios
-      .get('http://35.197.128.239.nip.io/v1/farms', {
+      .get('http://35.244.169.189.nip.io/v1/farms', {
         headers: {
           Authorization: `Bearer ${value}`,
         },
@@ -114,7 +146,7 @@ export const HomeScreen = ({navigation, route}) => {
         setRefreshing(false);
       })
       .catch(error => {
-        console.log(error);
+        console.log('error farm', error);
       });
   };
 
@@ -126,85 +158,144 @@ export const HomeScreen = ({navigation, route}) => {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={[styles.card, styles.shadowProp]}>
-        <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
-          <Text style={font.kanit}>
-            <Text style={{fontSize: 24}}>สรุปข้อมูล</Text> ภาพรวมวันนี้
-          </Text>
-          <Button
-            style={{marginRight: -15}}
-            type="clear"
-            onPress={() => {
-              navigation.navigate('Summary');
-            }}
-            icon={
-              <Feather name="chevron-right" size={30} color="#000" />
-            }></Button>
+    <SafeAreaView style={styles.container}>
+      <ScrollView
+        contentContainerStyle={styles.scrollView}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }>
+        <View style={[styles.card, styles.shadowProp]}>
+          <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+            <Text style={font.kanit}>
+              <Text style={{fontSize: 24}}>สรุปข้อมูล</Text> ภาพรวมวันนี้
+            </Text>
+            <Button
+              style={{marginRight: -15}}
+              type="clear"
+              onPress={() => {
+                navigation.navigate('Summary');
+              }}
+              icon={
+                <Feather name="chevron-right" size={30} color="#000" />
+              }></Button>
+          </View>
+          {/* <Text>{JSON.stringify(location)}</Text> */}
+
+          {location ? (
+            <View style={(styles.container, {paddingBottom: 5})}>
+              <MapView
+                // provider={PROVIDER_GOOGLE}
+                style={{
+                  height: 200,
+                  width: '100%',
+                  borderRadius: 30,
+                }}
+                showsUserLocation={true}
+                initialRegion={location}>
+                {markers.map((coordinate, index) => (
+                  <Marker key={index} coordinate={coordinate} />
+                ))}
+              </MapView>
+            </View>
+          ) : null}
+
+          <View style={{flexDirection: 'row', justifyContent: 'space-around'}}>
+            <Text style={styles.info}>
+              {moment().format('DD/MM/YYYY')}
+              {/* {'  '}
+          00.00 -{' '}
+          {props.time == 'currnt'
+            ? time
+              ? time.substring(0, 5)
+              : moment().format(' HH:mm')
+            : props.time}{' '}
+          น. */}
+            </Text>
+            <Text style={styles.info}>โรคใบไหม้ 10%</Text>
+            <Text style={styles.info}>เกิดขึ้นมากที่สุดในไร่</Text>
+          </View>
         </View>
-
-        <SummaryMap date="current" time="currnt" />
-      </View>
-
-      <FlatList
-        numColumns={2}
-        columnWrapperStyle={{justifyContent: 'space-between'}}
-        data={menu}
-        renderItem={({item}) => (
-          <Button
-            type="clear"
-            title={item.name}
-            titleStyle={[{color: '#fff'}, font.kanit]}
-            style={[styles.btn, styles.shadowProp, jewelStyle(item.color)]}
-            icon={<Ionicons name={item.icon} size={60} color="#fff" />}
-            iconPosition="top"
-            onPress={() => {
-              navigation.navigate(item.page);
-            }}
-          />
-        )}
-      />
-      {/* Modal Section */}
-      <Modal
-        isVisible={isModalVisible}
-        onModalWillShow={() => shownModal()}
-        style={{justifyContent: 'flex-end'}}
-        onBackdropPress={() => setModalVisible(false)}
-        onModalHide={() => navigation.setParams({handleTitlePress: false})}>
         <View
           style={{
-            margin: -20,
-            borderRadius: 30,
-            padding: 20,
-            height: '40%',
-            backgroundColor: '#fff',
+            flex: 1,
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+            justifyContent: 'space-between',
+            paddingHorizontal: 20,
           }}>
-          <Picker
-            style={{height: -80}}
-            ref={pickerRef}
-            selectedValue={selectedLanguage}
-            onValueChange={(itemValue, itemIndex) => changeFarm(itemValue)}>
-            {farmList.map((item, index) => (
-              <Picker.Item
-                key={index}
-                label={item.farm_name}
-                value={item.farm_name}
-              />
-            ))}
-          </Picker>
-          <View></View>
+          {menu.map((item, index) => (
+            <Button
+              key={index}
+              type="clear"
+              title={item.name}
+              titleStyle={[{color: '#fff'}, font.kanit]}
+              style={[styles.btn, styles.shadowProp, jewelStyle(item.color)]}
+              icon={<Ionicons name={item.icon} size={60} color="#fff" />}
+              iconPosition="top"
+              onPress={() => {
+                navigation.navigate(item.page);
+              }}
+            />
+          ))}
         </View>
-      </Modal>
-    </View>
+        {/* <FlatList
+          numColumns={2}
+          columnWrapperStyle={{justifyContent: 'space-between'}}
+          data={menu}
+          renderItem={({item}) => (
+            <Button
+              type="clear"
+              title={item.name}
+              titleStyle={[{color: '#fff'}, font.kanit]}
+              style={[styles.btn, styles.shadowProp, jewelStyle(item.color)]}
+              icon={<Ionicons name={item.icon} size={60} color="#fff" />}
+              iconPosition="top"
+              onPress={() => {
+                navigation.navigate(item.page);
+              }}
+            />
+          )}
+        /> */}
+        {/* Modal Section */}
+        <Modal
+          isVisible={isModalVisible}
+          onModalWillShow={() => shownModal()}
+          style={{justifyContent: 'flex-end'}}
+          onBackdropPress={() => setModalVisible(false)}
+          onModalHide={() => navigation.setParams({handleTitlePress: false})}>
+          <View
+            style={{
+              margin: -20,
+              borderRadius: 30,
+              padding: 20,
+              height: '40%',
+              backgroundColor: '#fff',
+            }}>
+            <Picker
+              style={{height: -80}}
+              ref={pickerRef}
+              selectedValue={selectedLanguage}
+              onValueChange={(itemValue, itemIndex) => changeFarm(itemValue)}>
+              {farmList.map((item, index) => (
+                <Picker.Item
+                  key={index}
+                  label={item.farm_name}
+                  value={item.farm_name}
+                />
+              ))}
+            </Picker>
+            <View></View>
+          </View>
+        </Modal>
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-    paddingTop: 100,
+
     backgroundColor: '#f2f2f2',
   },
   card: {
@@ -231,5 +322,16 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.5,
     shadowRadius: 5,
     elevation: 14,
+  },
+  info: {
+    fontSize: 12,
+    color: '#696969',
+    fontFamily: 'Kanit-Regular',
+  },
+  scrollView: {
+    flex: 1,
+    paddingTop: 50,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

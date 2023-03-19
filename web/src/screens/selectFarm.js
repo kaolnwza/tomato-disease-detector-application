@@ -34,7 +34,7 @@ const SelectFarm = ({navigation}) => {
     const value = await AsyncStorage.getItem('user_token');
 
     axios
-      .get('http://35.197.128.239.nip.io/v1/farms', {
+      .get('http://35.244.169.189.nip.io/v1/farms', {
         headers: {
           Authorization: `Bearer ${value}`,
           'Content-Type': 'multipart/form-data',

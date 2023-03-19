@@ -6,13 +6,14 @@ import {
   View,
   ActivityIndicator,
   TouchableOpacity,
-  Image,
+  SafeAreaView,
   ScrollView,
+  RefreshControl,
 } from 'react-native';
 import Modal from 'react-native-modal';
 import {useSharedValue} from 'react-native-reanimated';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import MaterialCommunityIcons from 'react-native-vector-icons/dist/MaterialCommunityIcons';
 import MapView, {Marker, PROVIDER_GOOGLE} from 'react-native-maps';
 import Feather from 'react-native-vector-icons/dist/Feather';
 import Geolocation from '@react-native-community/geolocation';
@@ -35,7 +36,7 @@ const Detail = props => {
   useEffect(() => {
     axios
       .get(
-        `http://35.197.128.239.nip.io/v1/disease/${props.detail.disease_name}`,
+        `http://35.244.169.189.nip.io/v1/disease/${props.detail.disease_name}`,
         {
           headers: {
             Authorization:
@@ -79,9 +80,18 @@ const History = ({navigation}) => {
 
   const [modalIndex, setModalIndex] = useState(-1);
   const [history, setHistory] = useState([]);
+  const [refreshing, setRefreshing] = useState(true);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    // Put your refresh logic here
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 2000); // Simulate a delay before refreshing completes
+  };
   useEffect(() => {
     getLog();
-  }, []);
+  }, [refreshing]);
 
   function onScroll(e) {
     'worklet';
@@ -95,7 +105,7 @@ const History = ({navigation}) => {
     // console.log('get log');
     axios
       .get(
-        `http://35.197.128.239.nip.io/v1/farms/${current_farm.farm_uuid}/log`,
+        `http://35.244.169.189.nip.io/v1/farms/${current_farm.farm_uuid}/log`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -104,9 +114,11 @@ const History = ({navigation}) => {
       )
       .then(response => {
         setHistory(response.data);
+        setRefreshing(false);
       })
       .catch(error => {
         console.log(error);
+        setRefreshing(false);
       });
   };
 
@@ -183,6 +195,35 @@ const History = ({navigation}) => {
       </ListItem>
     </TouchableOpacity>
   );
+  if (!history) {
+    return (
+      <SafeAreaView style={{flex: 1, paddingTop: 100}}>
+        <ScrollView
+          contentContainerStyle={styles.scrollView}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }>
+          <View
+            style={{
+              flex: 1,
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginBottom: 100,
+            }}>
+            <MaterialCommunityIcons
+              size={60}
+              color="#00000066"
+              name="window-close"
+            />
+
+            <Text style={[font.kanit, {fontSize: 20, color: '#00000066'}]}>
+              ไม่มีข้อมูล
+            </Text>
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -200,7 +241,9 @@ const History = ({navigation}) => {
         <TabbedHeaderPager
           containerStyle={styles.stretchContainer}
           backgroundImage={{
-            uri: history[modalIndex] ? history[modalIndex].image_uri : null,
+            uri: history[modalIndex]
+              ? history[modalIndex].image_uri
+              : 'https://developers.elementor.com/docs/assets/img/elementor-placeholder-image.png',
           }}
           title={
             <View style={{flexDirection: 'column', paddingHorizontal: 10}}>
@@ -274,6 +317,11 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     paddingTop: 100,
     backgroundColor: '#F0F9F8',
+  },
+  scrollView: {
+    flex: 1,
+
+    alignItems: 'center',
   },
   titleStyle: {
     backgroundColor: 'rgba(52, 52, 52, 0.5)',

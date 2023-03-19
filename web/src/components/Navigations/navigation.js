@@ -109,7 +109,7 @@ function HomeDrawer(item) {
               onPress={() => navigation.setParams({handleTitlePress: true})}
               style={{flexDirection: 'row', alignItems: 'center'}}>
               <Text style={[font.kanit, {marginRight: 5, fontSize: 18}]}>
-                {item.route.params.name}
+                {route.params.name}
               </Text>
               <Octicons name="chevron-down" />
             </TouchableOpacity>

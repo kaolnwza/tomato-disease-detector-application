@@ -57,16 +57,16 @@ const MapScreen = ({navigation}) => {
     const data = new FormData();
     data.append('farm_name', farmName);
     data.append('location', JSON.stringify(coordinates));
-
+    console.log(coordinates);
     axios
-      .post('http://35.197.128.239.nip.io/v1/farms', data, {
+      .post('http://35.244.169.189.nip.io/v1/farms', data, {
         headers: {
           Authorization: `Bearer ${value}`,
           'Content-Type': 'multipart/form-data',
         },
       })
       .then(response => {
-        navigation.navigate('SelectFarm');
+        navigation.goBack();
       })
       .catch(error => {
         console.log(error);

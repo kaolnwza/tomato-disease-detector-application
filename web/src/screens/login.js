@@ -48,7 +48,7 @@ const Login = ({navigation}) => {
       data.append('auth_id', userInfo.user.id);
 
       axios
-        .post('http://35.197.128.239.nip.io/oauth/login', data, {
+        .post('http://35.244.169.189.nip.io/oauth/login', data, {
           headers: {
             'Content-Type': 'multipart/form-data',
             // Authorization: 'Bearer',

@@ -3,7 +3,6 @@ import {Text, StyleSheet, FlatList, View, TouchableOpacity} from 'react-native';
 import Ionicons from 'react-native-vector-icons/dist/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/dist/MaterialCommunityIcons';
 import moment from 'moment';
-import {ProgressChart} from 'react-native-chart-kit';
 import MapView, {Marker, PROVIDER_GOOGLE} from 'react-native-maps';
 import Geolocation from '@react-native-community/geolocation';
 
@@ -17,6 +16,7 @@ const DiseaseChart = props => {
   const [location, setLocation] = useState();
 
   useEffect(() => {
+    console.log('Summery');
     Geolocation.getCurrentPosition(
       position => {
         setUserLocation({
@@ -36,7 +36,11 @@ const DiseaseChart = props => {
       error => console.log(error),
       {enableHighAccuracy: true, timeout: 20000, maximumAge: 1000},
     );
-  }, [userLocation, markerLocation]);
+  }, [
+    // userLocation,
+    markerLocation,
+  ]);
+
   return (
     <View style={{flexDirection: 'column', marginTop: 5}}>
       <View style={(styles.container, {paddingBottom: 5})}>
