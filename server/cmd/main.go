@@ -47,7 +47,7 @@ func main() {
 	tmtLogHandler := handler.NewTomatoLogHandler(tmtLogSvc)
 
 	farmRepo := pgsql.NewFarmRepository(pgTx)
-	farmSvc := service.NewFarmService(pgTx, farmRepo)
+	farmSvc := service.NewFarmService(pgTx, farmRepo, usrFarmRepo)
 	farmHdr := handler.NewFarmHandler(farmSvc)
 
 	predSvc := service.NewPredictionService(tmtDiseaseSvc)
@@ -90,6 +90,8 @@ func main() {
 				farmUUID.GET("/summary", tmtLogHandler.GetClusterByFarmUUIDHandler)
 				farmUUID.GET("/percentage", tmtLogHandler.GetLogsPercentageByFarmUUIDHandler)
 				farmUUID.GET("/role", usrFarmHdr.FetchFarmRoleHandler)
+				farmUUID.DELETE("/", farmHdr.DeleteFarmByUUIDHandler)
+				farmUUID.PATCH("/", farmHdr.UpdateFarmByUUID)
 
 				farmUser := farmUUID.GROUP("/users")
 				{

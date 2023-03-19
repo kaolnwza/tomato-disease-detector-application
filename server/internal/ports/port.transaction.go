@@ -9,6 +9,7 @@ type Transactor interface {
 	Update(ctx context.Context, query string, args ...interface{}) error
 	InsertWithReturning(ctx context.Context, dest interface{}, query string, args ...interface{}) error
 	InsertWithReturningOne(ctx context.Context, dest interface{}, query string, args ...interface{}) error
+	Delete(ctx context.Context, query string, args ...interface{}) error
 
 	WithinTransaction(ctx context.Context, tx func(ctx context.Context) error) error
 }

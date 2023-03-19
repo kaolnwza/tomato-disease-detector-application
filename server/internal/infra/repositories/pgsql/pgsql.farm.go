@@ -56,3 +56,41 @@ func (r *farmRepo) GetAll(ctx context.Context, farm *[]*model.Farm, userUUID uui
 
 	return r.tx.Get(ctx, farm, query, userUUID)
 }
+
+func (r *farmRepo) GetByUUID(ctx context.Context, farm *model.Farm, farmUUID uuid.UUID) error {
+	query := `
+		SELECT
+			farm_uuid,
+			farm_name,
+			ST_AsGeoJSON("farm_location")::json->>'coordinates' AS "farm_location",
+			is_active,
+			created_at
+		FROM farm
+		WHERE is_active IS TRUE
+		AND farm_uuid = $1
+	`
+
+	return r.tx.GetOne(ctx, farm, query, farmUUID)
+}
+
+func (r *farmRepo) Delete(ctx context.Context, farmUUID uuid.UUID) error {
+	query := `
+		UPDATE farm
+		SET is_active = false
+		WHERE farm_uuid = $1
+	`
+
+	return r.tx.Delete(ctx, query, farmUUID)
+}
+
+func (r *farmRepo) Update(ctx context.Context, farmUUID uuid.UUID, farmName string, location string) error {
+	query := `
+		UPDATE farm
+		SET 
+			farm_name = $1
+			location = ` + location + `
+		WHERE farm_uuid = $2
+	`
+
+	return r.tx.Update(ctx, query, farmName, farmUUID)
+}

@@ -101,6 +101,17 @@ func (db *postgresRepo) InsertWithReturningOne(ctx context.Context, dest interfa
 	return db.conn.GetContext(ctx, dest, query, args...)
 }
 
+func (db *postgresRepo) Delete(ctx context.Context, query string, args ...interface{}) error {
+	tx := extractTx(ctx)
+	if tx != nil {
+		_, err := tx.ExecContext(ctx, query, args...)
+		return err
+	}
+
+	_, err := db.conn.ExecContext(ctx, query, args...)
+	return err
+}
+
 type postgresRepo struct {
 	conn *sqlx.DB
 }
