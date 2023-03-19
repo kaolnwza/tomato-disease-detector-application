@@ -225,7 +225,7 @@ func (s *tomatoLogService) GetClusterByFarmUUID(ctx context.Context, farmUUID uu
 
 	resp := model.TomatoSummaryResponse{}
 	resp.Latitude = centerLat
-	resp.Longtitude = centerLong
+	resp.Longitude = centerLong
 
 	respInfo := []*model.TomatoSummaryInfo{}
 	for _, item := range logs {
@@ -233,7 +233,7 @@ func (s *tomatoLogService) GetClusterByFarmUUID(ctx context.Context, farmUUID uu
 
 		info := model.TomatoSummaryInfo{}
 		info.Latitude = lat
-		info.Longtitude = long
+		info.Longitude = long
 		info.Status = item.Status
 		info.CreatedAt = item.CreatedAt
 		info.TomatoLogUUID = item.TomatoLogUUID

@@ -23,7 +23,7 @@ func LatLongToPoint(lat string, long string) string {
 func JsonToLineString(linestring []*model.LineStringFloat) string {
 	newLs := "'LINESTRING("
 	for idx, str := range linestring {
-		newLs += fmt.Sprintf("%f %f", str.Latitude, str.Longtitude)
+		newLs += fmt.Sprintf("%f %f", str.Latitude, str.Longitude)
 
 		if idx != len(linestring)-1 {
 			newLs += ","
