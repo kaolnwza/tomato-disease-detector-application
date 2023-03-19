@@ -4,8 +4,8 @@ metadata:
   name: tomato-api
   namespace: tomato-api-ns
 spec:
-  # type: ClusterIP
-  type: LoadBalancer
+  type: ClusterIP
+  # type: LoadBalancer
   ports:
   - port: 8765
   selector:
