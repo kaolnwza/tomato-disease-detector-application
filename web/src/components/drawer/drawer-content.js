@@ -68,7 +68,7 @@ const DrawerContent = props => {
                 fontFamily: 'Kanit',
                 marginRight: 5,
               }}>
-              {user.email}
+              {user.email} (ลูกจ้าง)
             </Text>
           </View>
         </ImageBackground>

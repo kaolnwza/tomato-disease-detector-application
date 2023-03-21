@@ -6,6 +6,8 @@ import {
   View,
   ActivityIndicator,
 } from 'react-native';
+import Modal from 'react-native-modal';
+
 import {
   GoogleSignin,
   statusCodes,
@@ -14,8 +16,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {Button, Avatar} from '@rneui/themed';
 import {font, buttons} from './styles';
 import AntDesign from 'react-native-vector-icons/dist/AntDesign';
+import MaterialCommunityIcons from 'react-native-vector-icons/dist/MaterialCommunityIcons';
+
 import axios from 'axios';
 import LinearGradient from 'react-native-linear-gradient';
+import FarmPasscode from '../components/passcode';
 const image = {
   uri: 'https://www.gardendesign.com/pictures/images/900x705Max/site_3/goodhearted-tomatoes-on-vine-red-and-green-tomatoes-goodhearted-tomato-proven-winners_15786.jpg',
 };
@@ -24,6 +29,8 @@ const Login = ({navigation}) => {
     iosClientId:
       '79142185056-8hliasgjdru3aoq5b024c0o8s8jg9pjg.apps.googleusercontent.com',
   });
+  const [isModalVisible, setModalVisible] = useState(false);
+
   useEffect(() => {
     checkUser();
   }, []);
@@ -78,6 +85,10 @@ const Login = ({navigation}) => {
       }
     }
   };
+
+  const handleVerify = data => {
+    setModalVisible(false);
+  };
   return (
     <View style={styles.container}>
       <ImageBackground source={image} style={styles.image}></ImageBackground>
@@ -86,6 +97,7 @@ const Login = ({navigation}) => {
           TOMATO WATCHER
         </Text>
       </View>
+
       <View style={{top: '55%'}}>
         <View style={{flexDirection: 'row', alignItems: 'center'}}>
           {/* <AntDesign name="google" size={50} /> */}
@@ -125,7 +137,47 @@ const Login = ({navigation}) => {
             // }}
           />
         </View>
+        <View style={{alignSelf: 'center', marginTop: 150}}>
+          <Button
+            title="ลงชื่อใช้ไร่"
+            onPress={() => setModalVisible(true)}
+            iconPosition="right"
+            icon={
+              <MaterialCommunityIcons
+                name="lock-outline"
+                size={25}
+                color="#fFF"
+              />
+            }
+            titleStyle={[font.kanit, {marginHorizontal: 5, fontSize: 16}]}
+            buttonStyle={{
+              paddingVertical: 4,
+              paddingHorizontal: 40,
+              borderRadius: 100,
+              backgroundColor: '#3ED48D',
+            }}
+          />
+        </View>
       </View>
+
+      <Modal
+        isVisible={isModalVisible}
+        style={{justifyContent: 'flex-end'}}
+        onBackdropPress={() => setModalVisible(false)}
+        onModalHide={() => navigation.setParams({handleTitlePress: false})}>
+        <View
+          style={{
+            margin: -20,
+            borderRadius: 30,
+            padding: 20,
+            height: '80%',
+            backgroundColor: '#fff',
+          }}>
+          <FarmPasscode onVerify={handleVerify} />
+
+          <View></View>
+        </View>
+      </Modal>
     </View>
   );
 };

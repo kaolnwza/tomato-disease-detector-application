@@ -32,7 +32,9 @@ const ManageFarm = ({navigation}) => {
     }, 2000); // Simulate a delay before refreshing completes
   };
   useEffect(() => {
-    getFarm();
+    navigation.addListener('focus', getFarm);
+
+    // getFarm();
   }, [refreshing]);
 
   const getFarm = async () => {
@@ -131,8 +133,9 @@ const ManageFarm = ({navigation}) => {
                   width: '100%',
                   zIndex: 99,
                   backgroundColor: '#00000055',
-                  borderTopStartRadius: 40,
-                  borderTopEndRadius: 40,
+                  padding: 8,
+                  borderTopStartRadius: 30,
+                  borderTopEndRadius: 30,
                 }}>
                 <Text
                   style={[font.kanit, {marginHorizontal: 10, color: '#fff'}]}>
@@ -160,6 +163,9 @@ const ManageFarm = ({navigation}) => {
                   height: 200,
                   borderRadius: 30,
                 }}
+                moveOnMarkerPress={false}
+                pitchEnabled={false}
+                scrollEnabled={false}
                 initialRegion={{
                   latitude: item.farm_location[0].latitude,
                   longitude: item.farm_location[0].longitude,

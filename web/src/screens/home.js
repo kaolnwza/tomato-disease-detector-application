@@ -14,10 +14,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {Button} from '@rneui/themed';
 import Ionicons from 'react-native-vector-icons/dist/Ionicons';
 import Feather from 'react-native-vector-icons/dist/Feather';
-
 import {font, buttons} from './styles';
-import DiseaseChart from '../components/chart/disease-chart';
-import SummaryMap from '../components/map/summaryMap';
 import Modal from 'react-native-modal';
 import moment from 'moment';
 import MapView, {Marker, PROVIDER_GOOGLE} from 'react-native-maps';
@@ -71,8 +68,7 @@ export const HomeScreen = ({navigation, route}) => {
     if (route.params.handleTitlePress) {
       setModalVisible(true);
     }
-    getSummery();
-    // navigation.setParams({handleTitlePress});
+    navigation.addListener('focus', getSummery);
   }, [route]);
 
   const getSummery = async () => {
@@ -89,7 +85,6 @@ export const HomeScreen = ({navigation, route}) => {
         },
       )
       .then(response => {
-        // setCentered(response.data.center_location);
         setMarkers(response.data.info);
         Geolocation.getCurrentPosition(
           position => {
@@ -125,6 +120,8 @@ export const HomeScreen = ({navigation, route}) => {
   };
 
   const changeFarm = async item => {
+    setLocation(null);
+
     let farm = farmList[farmList.findIndex(x => x.farm_name === item)];
     setSelectedLanguage(item);
 
@@ -182,27 +179,27 @@ export const HomeScreen = ({navigation, route}) => {
           {/* <Text>{JSON.stringify(location)}</Text> */}
 
           {location ? (
-            <View style={(styles.container, {paddingBottom: 5})}>
-              <MapView
-                // provider={PROVIDER_GOOGLE}
-                style={{
-                  height: 200,
-                  width: '100%',
-                  borderRadius: 30,
-                }}
-                showsUserLocation={true}
-                initialRegion={location}>
-                {markers.map((coordinate, index) => (
-                  <Marker key={index} coordinate={coordinate} />
-                ))}
-              </MapView>
-            </View>
-          ) : null}
-
-          <View style={{flexDirection: 'row', justifyContent: 'space-around'}}>
-            <Text style={styles.info}>
-              {moment().format('DD/MM/YYYY')}
-              {/* {'  '}
+            <>
+              <View style={(styles.container, {paddingBottom: 5})}>
+                <MapView
+                  // provider={PROVIDER_GOOGLE}
+                  style={{
+                    height: 200,
+                    width: '100%',
+                    borderRadius: 30,
+                  }}
+                  showsUserLocation={true}
+                  initialRegion={location}>
+                  {markers.map((coordinate, index) => (
+                    <Marker key={index} coordinate={coordinate} />
+                  ))}
+                </MapView>
+              </View>
+              <View
+                style={{flexDirection: 'row', justifyContent: 'space-around'}}>
+                <Text style={styles.info}>
+                  {moment().format('DD/MM/YYYY')}
+                  {/* {'  '}
           00.00 -{' '}
           {props.time == 'currnt'
             ? time
@@ -210,10 +207,14 @@ export const HomeScreen = ({navigation, route}) => {
               : moment().format(' HH:mm')
             : props.time}{' '}
           น. */}
-            </Text>
-            <Text style={styles.info}>โรคใบไหม้ 10%</Text>
-            <Text style={styles.info}>เกิดขึ้นมากที่สุดในไร่</Text>
-          </View>
+                </Text>
+                <Text style={styles.info}>โรคใบไหม้ 10%</Text>
+                <Text style={styles.info}>
+                  เกิดโรคทั้งหมด {markers.length} ต้น
+                </Text>
+              </View>
+            </>
+          ) : null}
         </View>
         <View
           style={{
@@ -271,6 +272,10 @@ export const HomeScreen = ({navigation, route}) => {
               height: '40%',
               backgroundColor: '#fff',
             }}>
+            <Text style={[font.kanit, {fontSize: 20, alignSelf: 'center'}]}>
+              เลือกไร่
+            </Text>
+
             <Picker
               style={{height: -80}}
               ref={pickerRef}

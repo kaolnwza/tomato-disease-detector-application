@@ -27,7 +27,9 @@ const SelectFarm = ({navigation}) => {
     }, 2000); // Simulate a delay before refreshing completes
   };
   useEffect(() => {
-    getFarm();
+    navigation.addListener('focus', getFarm);
+
+    // getFarm();
   }, [refreshing]);
 
   const getFarm = async () => {

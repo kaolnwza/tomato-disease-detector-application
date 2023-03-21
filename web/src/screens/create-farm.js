@@ -79,6 +79,7 @@ const MapScreen = ({navigation}) => {
         <MapView
           style={{flex: 1}}
           initialRegion={currentRegion}
+          showsUserLocation={true}
           onPress={handleMapPress}>
           {coordinates.length > 2 && (
             <Polygon
