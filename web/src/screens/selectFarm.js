@@ -8,7 +8,8 @@ import {
   SafeAreaView,
   ScrollView,
 } from 'react-native';
-import {Button, SpeedDial} from '@rneui/themed';
+import {Button, SpeedDial, Skeleton} from '@rneui/themed';
+import LinearGradient from 'react-native-linear-gradient';
 import MaterialCommunityIcons from 'react-native-vector-icons/dist/MaterialCommunityIcons';
 import {font, buttons} from './styles';
 import axios from 'axios';
@@ -18,19 +19,15 @@ const SelectFarm = ({navigation}) => {
   const [open, setOpen] = useState(false);
   const [farm, setFarm] = useState([]);
   const [refreshing, setRefreshing] = useState(true);
+  const [loadData, setLoadData] = useState(true);
 
   const onRefresh = () => {
+    getFarm();
     setRefreshing(true);
-    // Put your refresh logic here
-    setTimeout(() => {
-      setRefreshing(false);
-    }, 2000); // Simulate a delay before refreshing completes
   };
   useEffect(() => {
     navigation.addListener('focus', getFarm);
-
-    // getFarm();
-  }, [refreshing]);
+  }, []);
 
   const getFarm = async () => {
     const value = await AsyncStorage.getItem('user_token');
@@ -45,7 +42,10 @@ const SelectFarm = ({navigation}) => {
       .then(response => {
         // console.log(response.data);
         setFarm(response.data);
-        setRefreshing(false);
+        setTimeout(() => {
+          setRefreshing(false);
+          setLoadData(false);
+        }, 500);
       })
       .catch(error => {
         console.log(error);
@@ -57,6 +57,35 @@ const SelectFarm = ({navigation}) => {
 
     navigation.navigate('Home', {name: item.farm_name});
   };
+  if (loadData) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View
+          style={{
+            flex: 1,
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+            justifyContent: 'space-between',
+            paddingHorizontal: 20,
+          }}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }>
+          {[...Array(8)].map((_, index) => (
+            <Skeleton
+              LinearGradientComponent={LinearGradient}
+              animation="wave"
+              style={{borderRadius: 40, margin: 15}}
+              // skeletonStyle={{}}
+              width={145}
+              height={145}
+              key={index} // add a key prop to avoid a warning
+            />
+          ))}
+        </View>
+      </SafeAreaView>
+    );
+  }
   return (
     <View style={styles.container}>
       <SpeedDial
@@ -77,7 +106,8 @@ const SelectFarm = ({navigation}) => {
           }}
         />
       </SpeedDial>
-      {(farm.length <= 0) & !refreshing ? (
+
+      {farm.length <= 0 ? (
         <SafeAreaView style={styles.container}>
           <ScrollView
             contentContainerStyle={styles.scrollView}
@@ -138,7 +168,10 @@ const SelectFarm = ({navigation}) => {
                   </View>
                   <View style={{flexDirection: 'row', alignItems: 'flex-end'}}>
                     <MaterialCommunityIcons
-                      style={{transform: [{rotate: '90deg'}], marginRight: -14}}
+                      style={{
+                        transform: [{rotate: '90deg'}],
+                        marginRight: -14,
+                      }}
                       name="equal"
                       size={30}
                       color="#047675"
@@ -150,13 +183,19 @@ const SelectFarm = ({navigation}) => {
                       color="#047675"
                     />
                     <MaterialCommunityIcons
-                      style={{transform: [{rotate: '90deg'}], marginLeft: -14}}
+                      style={{
+                        transform: [{rotate: '90deg'}],
+                        marginLeft: -14,
+                      }}
                       name="equal"
                       size={30}
                       color="#047675"
                     />
                     <MaterialCommunityIcons
-                      style={{transform: [{rotate: '90deg'}], marginLeft: -14}}
+                      style={{
+                        transform: [{rotate: '90deg'}],
+                        marginLeft: -14,
+                      }}
                       name="equal"
                       size={30}
                       color="#047675"

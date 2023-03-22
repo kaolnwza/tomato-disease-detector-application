@@ -230,6 +230,9 @@ const History = ({navigation}) => {
       <FlatList
         keyExtractor={keyExtractor}
         data={history}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
         renderItem={renderItem}
       />
       {/* Modal */}

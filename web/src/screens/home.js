@@ -11,14 +11,17 @@ import {
 } from 'react-native';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {Button} from '@rneui/themed';
+import {Button, Skeleton} from '@rneui/themed';
 import Ionicons from 'react-native-vector-icons/dist/Ionicons';
 import Feather from 'react-native-vector-icons/dist/Feather';
+import MaterialCommunityIcons from 'react-native-vector-icons/dist/MaterialCommunityIcons';
+
 import {font, buttons} from './styles';
 import Modal from 'react-native-modal';
 import moment from 'moment';
 import MapView, {Marker, PROVIDER_GOOGLE} from 'react-native-maps';
 import Geolocation from '@react-native-community/geolocation';
+import LinearGradient from 'react-native-linear-gradient';
 
 export const HomeScreen = ({navigation, route}) => {
   const [selectedLanguage, setSelectedLanguage] = useState();
@@ -27,6 +30,9 @@ export const HomeScreen = ({navigation, route}) => {
   const [farmList, setFarmList] = useState([]);
   const [markers, setMarkers] = useState([]);
   const [location, setLocation] = useState();
+  const [refreshMap, setRefreshMap] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [refreshFarm, setRefreshFarm] = useState(false);
 
   const [menu, setMenu] = useState([
     {
@@ -55,23 +61,27 @@ export const HomeScreen = ({navigation, route}) => {
     };
   };
 
-  const [refreshing, setRefreshing] = React.useState(false);
-
   const wait = timeout => {
     return new Promise(resolve => setTimeout(resolve, timeout));
   };
   const onRefresh = React.useCallback(() => {
+    getSummery();
     setRefreshing(true);
-    wait(2000).then(() => setRefreshing(false));
+    // wait(2000).then(() => setRefreshing(false));
   }, []);
+  useEffect(() => {
+    // console.log('home');
+    navigation.addListener('focus', getSummery);
+  }, []);
+
   useEffect(() => {
     if (route.params.handleTitlePress) {
       setModalVisible(true);
     }
-    navigation.addListener('focus', getSummery);
   }, [route]);
 
   const getSummery = async () => {
+    console.log('get summary');
     const token = await AsyncStorage.getItem('user_token');
     const current_farm = JSON.parse(await AsyncStorage.getItem('user_farm'));
 
@@ -97,17 +107,15 @@ export const HomeScreen = ({navigation, route}) => {
                 (position.coords.longitude +
                   parseFloat(response.data.center_location.longitude)) /
                 2,
-              latitudeDelta:
-                Math.abs(
-                  position.coords.latitude -
-                    parseFloat(response.data.center_location.latitude),
-                ) * 2,
+              latitudeDelta: 0.0009,
               longitudeDelta:
                 Math.abs(
                   position.coords.longitude -
                     parseFloat(response.data.center_location.longitude),
                 ) * 2,
             });
+            setRefreshing(false);
+            setRefreshMap(false);
           },
           error => console.log(error),
           {enableHighAccuracy: true, timeout: 20000, maximumAge: 1000},
@@ -116,12 +124,14 @@ export const HomeScreen = ({navigation, route}) => {
       .catch(error => {
         console.log('error summary', error);
         setLocation(null);
+        setRefreshing(false);
+        setRefreshMap(false);
       });
   };
 
   const changeFarm = async item => {
+    setRefreshMap(true);
     setLocation(null);
-
     let farm = farmList[farmList.findIndex(x => x.farm_name === item)];
     setSelectedLanguage(item);
 
@@ -141,9 +151,12 @@ export const HomeScreen = ({navigation, route}) => {
       .then(response => {
         setFarmList(response.data);
         setRefreshing(false);
+        setRefreshFarm(false);
       })
       .catch(error => {
         console.log('error farm', error);
+        setRefreshing(false);
+        setRefreshFarm(false);
       });
   };
 
@@ -164,6 +177,7 @@ export const HomeScreen = ({navigation, route}) => {
         <View style={[styles.card, styles.shadowProp]}>
           <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
             <Text style={font.kanit}>
+              <MaterialCommunityIcons name="chart-arc" size={24} />
               <Text style={{fontSize: 24}}>สรุปข้อมูล</Text> ภาพรวมวันนี้
             </Text>
             <Button
@@ -214,7 +228,35 @@ export const HomeScreen = ({navigation, route}) => {
                 </Text>
               </View>
             </>
-          ) : null}
+          ) : refreshMap ? (
+            <View
+              style={
+                (styles.container, {paddingBottom: 5, alignItems: 'center'})
+              }>
+              <Skeleton
+                LinearGradientComponent={LinearGradient}
+                animation="wave"
+                style={{borderRadius: 30}}
+                width="100%"
+                height={200}
+              />
+              <Skeleton
+                LinearGradientComponent={LinearGradient}
+                animation="wave"
+                style={{borderRadius: 30, marginTop: 8}}
+                width="95%"
+                height={10}
+              />
+            </View>
+          ) : (
+            <Text
+              style={[
+                font.kanit,
+                {fontSize: 12, alignSelf: 'center', color: '#00000055'},
+              ]}>
+              ข้อมูลมีน้อยเกินไปที่จะคำนวณ
+            </Text>
+          )}
         </View>
         <View
           style={{
@@ -275,20 +317,66 @@ export const HomeScreen = ({navigation, route}) => {
             <Text style={[font.kanit, {fontSize: 20, alignSelf: 'center'}]}>
               เลือกไร่
             </Text>
-
-            <Picker
-              style={{height: -80}}
-              ref={pickerRef}
-              selectedValue={selectedLanguage}
-              onValueChange={(itemValue, itemIndex) => changeFarm(itemValue)}>
-              {farmList.map((item, index) => (
-                <Picker.Item
-                  key={index}
-                  label={item.farm_name}
-                  value={item.farm_name}
+            {refreshFarm ? (
+              <View
+                style={{
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'space-evenly',
+                  height: 170,
+                  marginTop: 25,
+                }}>
+                <Skeleton
+                  LinearGradientComponent={LinearGradient}
+                  animation="wave"
+                  height={20}
+                  width="75%"
+                  style={{borderRadius: 8}}
                 />
-              ))}
-            </Picker>
+                <Skeleton
+                  LinearGradientComponent={LinearGradient}
+                  animation="wave"
+                  height={30}
+                  width="85%"
+                  style={{borderRadius: 8}}
+                />
+                <Skeleton
+                  LinearGradientComponent={LinearGradient}
+                  animation="wave"
+                  height={45}
+                  width="95%"
+                  style={{borderRadius: 8}}
+                />
+                <Skeleton
+                  LinearGradientComponent={LinearGradient}
+                  animation="wave"
+                  height={30}
+                  width="85%"
+                  style={{borderRadius: 8}}
+                />
+                <Skeleton
+                  LinearGradientComponent={LinearGradient}
+                  animation="wave"
+                  height={20}
+                  width="75%"
+                  style={{borderRadius: 8}}
+                />
+              </View>
+            ) : (
+              <Picker
+                style={{height: -80}}
+                ref={pickerRef}
+                selectedValue={selectedLanguage}
+                onValueChange={(itemValue, itemIndex) => changeFarm(itemValue)}>
+                {farmList.map((item, index) => (
+                  <Picker.Item
+                    key={index}
+                    label={item.farm_name}
+                    value={item.farm_name}
+                  />
+                ))}
+              </Picker>
+            )}
             <View></View>
           </View>
         </Modal>

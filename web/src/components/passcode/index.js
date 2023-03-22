@@ -146,7 +146,7 @@ const FarmPasscode = ({onVerify}) => {
               color="#fff"
             />
           }
-          disabled={!verify}
+          disabled={verify}
           loading={verify}
           iconRight
           iconContainerStyle={{marginLeft: 10}}

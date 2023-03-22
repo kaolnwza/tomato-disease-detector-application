@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {font, buttons} from './styles';
-import {Button, SpeedDial} from '@rneui/themed';
-
+import {Button, SpeedDial, Skeleton} from '@rneui/themed';
+import LinearGradient from 'react-native-linear-gradient';
 import MapView, {Polygon, Marker} from 'react-native-maps';
 
 import {
@@ -23,21 +23,23 @@ const ManageFarm = ({navigation}) => {
   const [open, setOpen] = useState(false);
   const [farm, setFarm] = useState([]);
   const [refreshing, setRefreshing] = useState(true);
+  const [loadData, setLoadData] = useState(true);
 
-  const onRefresh = () => {
+  const onRefresh = React.useCallback(() => {
+    getFarm();
+
     setRefreshing(true);
     // Put your refresh logic here
-    setTimeout(() => {
-      setRefreshing(false);
-    }, 2000); // Simulate a delay before refreshing completes
-  };
+  }, []);
+
   useEffect(() => {
     navigation.addListener('focus', getFarm);
 
     // getFarm();
-  }, [refreshing]);
+  }, []);
 
   const getFarm = async () => {
+    console.log('get farm');
     const value = await AsyncStorage.getItem('user_token');
 
     axios
@@ -50,12 +52,47 @@ const ManageFarm = ({navigation}) => {
       .then(response => {
         console.log(response.data[0].farm_location);
         setFarm(response.data);
-        setRefreshing(false);
+        setTimeout(() => {
+          setRefreshing(false);
+          setLoadData(false);
+        }, 500);
       })
       .catch(error => {
         console.log(error);
+        setRefreshing(false);
+        setLoadData(false);
       });
   };
+  if (loadData) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View
+          style={{
+            flex: 1,
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+            justifyContent: 'space-between',
+            paddingHorizontal: 20,
+            paddingTop: 60,
+          }}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }>
+          {[...Array(3)].map((_, index) => (
+            <Skeleton
+              LinearGradientComponent={LinearGradient}
+              animation="wave"
+              style={{borderRadius: 30, marginBottom: 8}}
+              // skeletonStyle={{}}
+              width="100%"
+              height={200}
+              key={index} // add a key prop to avoid a warning
+            />
+          ))}
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <View style={styles.container}>

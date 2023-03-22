@@ -98,7 +98,7 @@ const Login = ({navigation}) => {
         </Text>
       </View>
 
-      <View style={{top: '55%'}}>
+      <View style={{top: '52%'}}>
         <View style={{flexDirection: 'row', alignItems: 'center'}}>
           {/* <AntDesign name="google" size={50} /> */}
           <Avatar
@@ -137,25 +137,37 @@ const Login = ({navigation}) => {
             // }}
           />
         </View>
-        <View style={{alignSelf: 'center', marginTop: 150}}>
+        <View style={{flexDirection: 'row', alignItems: 'center'}}>
+          <MaterialCommunityIcons
+            name="cellphone-key"
+            size={40}
+            color="#2089DC"
+          />
+
+          <Text style={[font.kanit, {fontSize: 16, marginLeft: 20}]}>
+            Sign in with Code
+          </Text>
           <Button
-            title="ลงชื่อใช้ไร่"
-            onPress={() => setModalVisible(true)}
-            iconPosition="right"
-            icon={
-              <MaterialCommunityIcons
-                name="lock-outline"
-                size={25}
-                color="#fFF"
-              />
-            }
-            titleStyle={[font.kanit, {marginHorizontal: 5, fontSize: 16}]}
-            buttonStyle={{
-              paddingVertical: 4,
-              paddingHorizontal: 40,
-              borderRadius: 100,
-              backgroundColor: '#3ED48D',
+            style={{
+              elevation: 14,
+              padding: 14,
             }}
+            buttonStyle={{
+              width: 50,
+              height: 50,
+              borderRadius: 100,
+            }}
+            // ViewComponent={LinearGradient} // Don't forget this!
+            // linearGradientProps={{
+            //   colors: ['#3ED48D', '#56DEF0'],
+            //   start: {x: 0, y: 0.5},
+            //   end: {x: 1, y: 0.5},
+            // }}
+            icon={<AntDesign name="arrowright" size={30} color="#fFF" />}
+            onPress={() => setModalVisible(true)}
+
+            // onPress={() => {
+            // }}
           />
         </View>
       </View>
