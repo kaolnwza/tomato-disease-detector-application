@@ -5,6 +5,7 @@ Concept: https://dribbble.com/shots/5476562-Forgot-Password-Verification/attachm
 */
 import {Animated, Image, SafeAreaView, Text, View} from 'react-native';
 import React, {useState, useEffect} from 'react';
+import DeviceInfo from 'react-native-device-info';
 
 import {
   CodeField,
@@ -60,6 +61,9 @@ const FarmPasscode = ({onVerify}) => {
     if (ref.current) {
       ref.current.focus();
     }
+    DeviceInfo.getUniqueId().then(uniqueId => {
+      console.log(uniqueId);
+    });
   }, []);
 
   const renderCell = ({index, symbol, isFocused}) => {
@@ -111,7 +115,7 @@ const FarmPasscode = ({onVerify}) => {
       setVerify(true);
       setTimeout(() => {
         onVerify();
-      }, 2000);
+      }, 1000);
     }
   };
 
@@ -146,7 +150,7 @@ const FarmPasscode = ({onVerify}) => {
               color="#fff"
             />
           }
-          disabled={verify}
+          disabled
           loading={verify}
           iconRight
           iconContainerStyle={{marginLeft: 10}}

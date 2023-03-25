@@ -12,6 +12,7 @@ import {
   TouchableOpacity,
   FlatList,
 } from 'react-native';
+import * as geolib from 'geolib';
 import {Picker} from '@react-native-picker/picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Modal from 'react-native-modal';
@@ -20,7 +21,7 @@ import MaterialIcons from 'react-native-vector-icons/dist/MaterialIcons';
 import {Button, Input, ListItem} from '@rneui/base';
 import {font} from './styles';
 
-import MapView, {Marker, PROVIDER_GOOGLE} from 'react-native-maps';
+import MapView, {Marker, Polygon, PROVIDER_GOOGLE} from 'react-native-maps';
 import moment from 'moment';
 import {useSharedValue} from 'react-native-reanimated';
 import {
@@ -38,7 +39,7 @@ export const ResultPage = ({route, navigation}) => {
   const [nameTh, setNameTh] = useState('');
   const pickerRef = useRef();
   const [selectedDisease, setSelectedDisease] = useState();
-
+  const [isInsidePolygon, setIsInsidePolygon] = useState(false);
   const [description, setDescription] = useState('');
   const [isModalVisible, setModalVisible] = useState(false);
   const [Pin, setPin] = useState({
@@ -61,6 +62,7 @@ export const ResultPage = ({route, navigation}) => {
 
   const [ready, setReady] = useState(true);
   const [isEdit, setEdit] = useState(false);
+  const [farmLocation, setFarmLocation] = useState();
 
   const scrollValue = useSharedValue(0);
 
@@ -80,6 +82,7 @@ export const ResultPage = ({route, navigation}) => {
   ];
 
   useEffect(() => {
+    getFarmLocation();
     const {routes} = navigation.getState();
 
     const filteredRoutes = routes.filter(
@@ -96,6 +99,18 @@ export const ResultPage = ({route, navigation}) => {
     'worklet';
     scrollValue.value = e.contentOffset.y;
   }
+  const getFarmLocation = async () => {
+    const current_farm = JSON.parse(await AsyncStorage.getItem('user_farm'));
+    setFarmLocation(current_farm.farm_location);
+    if (
+      geolib.isPointInPolygon(
+        {latitude: info.coords.latitude, longitude: info.coords.longitude},
+        current_farm.farm_location,
+      )
+    ) {
+      setIsInsidePolygon(true);
+    }
+  };
 
   const saveEditedPin = () => {
     setPin(location);
@@ -268,6 +283,12 @@ export const ResultPage = ({route, navigation}) => {
                       longitudeDelta: 0.003,
                     }}>
                     <Marker coordinate={Pin} />
+                    <Polygon
+                      coordinates={farmLocation}
+                      fillColor="rgba(255, 0, 0, 0.15)"
+                      strokeColor="rgba(255, 0, 0, 1)"
+                      strokeWidth={2}
+                    />
                   </MapView>
                   <TouchableOpacity
                     style={{
@@ -292,6 +313,8 @@ export const ResultPage = ({route, navigation}) => {
                       font.kanit,
                       {fontSize: 25, alignSelf: 'center', marginBottom: 10},
                     ]}>
+                    {/* {JSON.stringify(info)} */}
+                    {isInsidePolygon ? 'true' : 'fasle'}
                     {nameTh}
                     <TouchableOpacity onPress={() => setEdit(true)}>
                       <Feather name="edit-3" size={30} color="#000" />
@@ -383,8 +406,14 @@ export const ResultPage = ({route, navigation}) => {
             {/* {markers.map((marker, index) => (
               <Marker key={index} coordinate={marker} />
             ))} */}
+            <Polygon
+              coordinates={farmLocation}
+              fillColor="rgba(255, 0, 0, 0.15)"
+              strokeColor="rgba(255, 0, 0, 1)"
+              strokeWidth={2}
+            />
           </MapView>
-          <View style={{position: 'absolute', top: '38%', left: '50%'}}>
+          <View style={{position: 'absolute', top: '35%', left: '50%'}}>
             <Feather name="crosshair" size={40} color="#000" />
           </View>
 

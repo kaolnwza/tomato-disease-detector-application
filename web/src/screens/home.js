@@ -19,7 +19,7 @@ import MaterialCommunityIcons from 'react-native-vector-icons/dist/MaterialCommu
 import {font, buttons} from './styles';
 import Modal from 'react-native-modal';
 import moment from 'moment';
-import MapView, {Marker, PROVIDER_GOOGLE} from 'react-native-maps';
+import MapView, {Marker, Polygon} from 'react-native-maps';
 import Geolocation from '@react-native-community/geolocation';
 import LinearGradient from 'react-native-linear-gradient';
 
@@ -33,6 +33,7 @@ export const HomeScreen = ({navigation, route}) => {
   const [refreshMap, setRefreshMap] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [refreshFarm, setRefreshFarm] = useState(false);
+  const [farmLocation, setFarmLocation] = useState([]);
 
   const [menu, setMenu] = useState([
     {
@@ -81,10 +82,11 @@ export const HomeScreen = ({navigation, route}) => {
   }, [route]);
 
   const getSummery = async () => {
-    console.log('get summary');
+    // console.log('get summary');
     const token = await AsyncStorage.getItem('user_token');
     const current_farm = JSON.parse(await AsyncStorage.getItem('user_farm'));
 
+    setFarmLocation(current_farm.farm_location);
     axios
       .get(
         `http://35.244.169.189.nip.io/v1/farms/${current_farm.farm_uuid}/summary`,
@@ -95,6 +97,7 @@ export const HomeScreen = ({navigation, route}) => {
         },
       )
       .then(response => {
+        // console.log(response.data);
         setMarkers(response.data.info);
         Geolocation.getCurrentPosition(
           position => {
@@ -107,7 +110,7 @@ export const HomeScreen = ({navigation, route}) => {
                 (position.coords.longitude +
                   parseFloat(response.data.center_location.longitude)) /
                 2,
-              latitudeDelta: 0.0009,
+              latitudeDelta: 0.003,
               longitudeDelta:
                 Math.abs(
                   position.coords.longitude -
@@ -149,6 +152,7 @@ export const HomeScreen = ({navigation, route}) => {
         },
       })
       .then(response => {
+        // console.log(response.data);
         setFarmList(response.data);
         setRefreshing(false);
         setRefreshFarm(false);
@@ -162,7 +166,7 @@ export const HomeScreen = ({navigation, route}) => {
 
   const shownModal = async () => {
     const current_farm = JSON.parse(await AsyncStorage.getItem('user_farm'));
-
+    // console.log(current_farm);
     setSelectedLanguage(current_farm.farm_name);
     getFarm();
   };
@@ -190,7 +194,6 @@ export const HomeScreen = ({navigation, route}) => {
                 <Feather name="chevron-right" size={30} color="#000" />
               }></Button>
           </View>
-          {/* <Text>{JSON.stringify(location)}</Text> */}
 
           {location ? (
             <>
@@ -207,6 +210,12 @@ export const HomeScreen = ({navigation, route}) => {
                   {markers.map((coordinate, index) => (
                     <Marker key={index} coordinate={coordinate} />
                   ))}
+                  <Polygon
+                    coordinates={farmLocation}
+                    fillColor="rgba(255, 255, 255, 0.1)"
+                    strokeColor="rgba(255, 0, 0, 1)"
+                    strokeWidth={2}
+                  />
                 </MapView>
               </View>
               <View

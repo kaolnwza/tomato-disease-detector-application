@@ -20,6 +20,7 @@ const SelectFarm = ({navigation}) => {
   const [farm, setFarm] = useState([]);
   const [refreshing, setRefreshing] = useState(true);
   const [loadData, setLoadData] = useState(true);
+  const [isOwner, setOwner] = useState(false);
 
   const onRefresh = () => {
     getFarm();
@@ -31,6 +32,13 @@ const SelectFarm = ({navigation}) => {
 
   const getFarm = async () => {
     const value = await AsyncStorage.getItem('user_token');
+    if (
+      JSON.parse(await AsyncStorage.getItem('user_data')).role === 'employee'
+    ) {
+      setOwner(false);
+    } else {
+      setOwner(true);
+    }
 
     axios
       .get('http://35.244.169.189.nip.io/v1/farms', {
@@ -88,24 +96,26 @@ const SelectFarm = ({navigation}) => {
   }
   return (
     <View style={styles.container}>
-      <SpeedDial
-        isOpen={open}
-        icon={{name: 'edit', color: '#fff'}}
-        openIcon={{name: 'close', color: '#fff'}}
-        style={{zIndex: 99}}
-        onOpen={() => setOpen(!open)}
-        onClose={() => setOpen(!open)}>
-        <SpeedDial.Action
-          icon={{name: 'add', color: '#fff'}}
-          color="#047675"
-          title="Add"
-          titleStyle={{backgroundColor: '#fff'}}
-          onPress={() => {
-            navigation.navigate('CreateFarm');
-            setOpen(!open);
-          }}
-        />
-      </SpeedDial>
+      {isOwner ? (
+        <SpeedDial
+          isOpen={open}
+          icon={{name: 'edit', color: '#fff'}}
+          openIcon={{name: 'close', color: '#fff'}}
+          style={{zIndex: 99}}
+          onOpen={() => setOpen(!open)}
+          onClose={() => setOpen(!open)}>
+          <SpeedDial.Action
+            icon={{name: 'add', color: '#fff'}}
+            color="#047675"
+            title="Add"
+            titleStyle={{backgroundColor: '#fff'}}
+            onPress={() => {
+              navigation.navigate('CreateFarm');
+              setOpen(!open);
+            }}
+          />
+        </SpeedDial>
+      ) : null}
 
       {farm.length <= 0 ? (
         <SafeAreaView style={styles.container}>

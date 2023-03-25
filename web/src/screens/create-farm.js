@@ -9,8 +9,9 @@ import AntDesign from 'react-native-vector-icons/dist/AntDesign';
 import Modal from 'react-native-modal';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as geolib from 'geolib';
 
-const MapScreen = ({navigation}) => {
+const MapScreen = ({navigation, route}) => {
   const [coordinates, setCoordinates] = useState([]);
   const [currentRegion, setCurrentRegion] = useState(null);
   const [toolTip, setToolTip] = useState(true);
@@ -18,28 +19,39 @@ const MapScreen = ({navigation}) => {
   const [farmName, setFarmName] = useState('');
 
   useEffect(() => {
-    const requestLocationPermission = async () => {
-      try {
-        Geolocation.getCurrentPosition(
-          position => {
-            const {latitude, longitude} = position.coords;
-            setCurrentRegion({
-              latitude,
-              longitude,
-              latitudeDelta: 0.01,
-              longitudeDelta: 0.01,
-            });
-          },
-          error => console.log(error),
-          {enableHighAccuracy: true, timeout: 20000, maximumAge: 1000},
-        );
-      } catch (err) {
-        console.warn(err);
-      }
-    };
+    if (route.params) {
+      setCoordinates(route.params.item.farm_location);
+      setFarmName(route.params.item.farm_name);
+      setCurrentRegion({
+        latitude: geolib.getCenterOfBounds(route.params.item.farm_location)
+          .latitude,
+        longitude: geolib.getCenterOfBounds(route.params.item.farm_location)
+          .longitude,
+        latitudeDelta: 0.01,
+        longitudeDelta: 0.01,
+      });
+    }
     requestLocationPermission();
   }, []);
-
+  const requestLocationPermission = async () => {
+    try {
+      Geolocation.getCurrentPosition(
+        position => {
+          const {latitude, longitude} = position.coords;
+          setCurrentRegion({
+            latitude,
+            longitude,
+            latitudeDelta: 0.01,
+            longitudeDelta: 0.01,
+          });
+        },
+        error => console.log(error),
+        {enableHighAccuracy: true, timeout: 20000, maximumAge: 1000},
+      );
+    } catch (err) {
+      console.warn(err);
+    }
+  };
   const handleMapPress = event => {
     const newCoordinate = {
       latitude: event.nativeEvent.coordinate.latitude,
@@ -57,20 +69,39 @@ const MapScreen = ({navigation}) => {
     const data = new FormData();
     data.append('farm_name', farmName);
     data.append('location', JSON.stringify(coordinates));
-    console.log(coordinates);
-    axios
-      .post('http://35.244.169.189.nip.io/v1/farms', data, {
-        headers: {
-          Authorization: `Bearer ${value}`,
-          'Content-Type': 'multipart/form-data',
-        },
-      })
-      .then(response => {
-        navigation.goBack();
-      })
-      .catch(error => {
-        console.log(error);
-      });
+    if (route.params) {
+      axios
+        .patch(
+          `http://35.244.169.189.nip.io/v1/farms/${route.params.item.farm_uuid}`,
+          data,
+          {
+            headers: {
+              Authorization: `Bearer ${value}`,
+              'Content-Type': 'multipart/form-data',
+            },
+          },
+        )
+        .then(response => {
+          navigation.goBack();
+        })
+        .catch(error => {
+          console.log(error);
+        });
+    } else {
+      axios
+        .post('http://35.244.169.189.nip.io/v1/farms', data, {
+          headers: {
+            Authorization: `Bearer ${value}`,
+            'Content-Type': 'multipart/form-data',
+          },
+        })
+        .then(response => {
+          navigation.goBack();
+        })
+        .catch(error => {
+          console.log(error);
+        });
+    }
   };
 
   return (
@@ -106,11 +137,11 @@ const MapScreen = ({navigation}) => {
           visible={toolTip}
           onOpen={() => setToolTip(true)}
           onClose={() => setToolTip(false)}
-          containerStyle={{width: 145, height: 130}}
+          containerStyle={{width: 150, height: 150}}
           popover={
             <Text style={[font.kanit, {color: '#fff'}]}>
               {
-                'เลือกพื้นที่โดยการเตะไปยังจุดที่ต้องการ และต้องมากกว่า 3 จุด จึงจะสามารถบันทึกพื้นที่ได้'
+                'เลือกพื้นที่โดยการเตะไปยังจุดที่ต้องการ เรียงตามลำดับ และต้องมากกว่า 3 จุด จึงจะสามารถบันทึกพื้นที่ได้'
               }
             </Text>
           }>

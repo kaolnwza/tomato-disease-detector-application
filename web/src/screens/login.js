@@ -1,11 +1,5 @@
-import React, {useEffect, useState} from 'react';
-import {
-  Text,
-  StyleSheet,
-  ImageBackground,
-  View,
-  ActivityIndicator,
-} from 'react-native';
+import React, {useEffect, useState, useRef} from 'react';
+import {Text, StyleSheet, ImageBackground, View, Image} from 'react-native';
 import Modal from 'react-native-modal';
 
 import {
@@ -13,57 +7,170 @@ import {
   statusCodes,
 } from '@react-native-google-signin/google-signin';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {Button, Avatar} from '@rneui/themed';
+import {Button, Avatar, Divider, Input} from '@rneui/themed';
 import {font, buttons} from './styles';
 import AntDesign from 'react-native-vector-icons/dist/AntDesign';
 import MaterialCommunityIcons from 'react-native-vector-icons/dist/MaterialCommunityIcons';
-
 import axios from 'axios';
 import LinearGradient from 'react-native-linear-gradient';
 import FarmPasscode from '../components/passcode';
+import DeviceInfo from 'react-native-device-info';
 const image = {
   uri: 'https://www.gardendesign.com/pictures/images/900x705Max/site_3/goodhearted-tomatoes-on-vine-red-and-green-tomatoes-goodhearted-tomato-proven-winners_15786.jpg',
+};
+const source = {
+  uri: 'https://cdn-icons-png.flaticon.com/512/921/921347.png',
 };
 const Login = ({navigation}) => {
   GoogleSignin.configure({
     iosClientId:
       '79142185056-8hliasgjdru3aoq5b024c0o8s8jg9pjg.apps.googleusercontent.com',
   });
-  const [isModalVisible, setModalVisible] = useState(false);
+  const [passcodeModal, setPasscodeModal] = useState(false);
+  const [formModal, setFormModal] = useState(false);
+  const [name, setName] = useState('');
+  const inputRef = useRef(null);
 
   useEffect(() => {
     checkUser();
   }, []);
+  useEffect(() => {
+    if (formModal && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [formModal]);
 
   const checkUser = async () => {
-    const user = await AsyncStorage.getItem('user_data');
-    console.log(await AsyncStorage.getAllKeys());
-    if (user) {
-      navigation.navigate('SelectFarm');
-    }
+    console.log(await AsyncStorage.getItem('user_data'));
   };
 
   const signIn = async () => {
+    const user = JSON.parse(await AsyncStorage.getItem('user_data'));
+
+    if (user ? user.role === 'owner' : false) {
+      navigation.navigate('SelectFarm');
+    } else {
+      try {
+        await GoogleSignin.hasPlayServices();
+        const userInfo = await GoogleSignin.signIn();
+
+        const data = new FormData();
+        data.append('email', userInfo.user.email);
+        data.append('name', userInfo.user.name);
+        data.append('auth_id', userInfo.user.id);
+
+        axios
+          .post('http://35.244.169.189.nip.io/oauth/login', data, {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+              // Authorization: 'Bearer',
+            },
+          })
+          .then(async response => {
+            await AsyncStorage.setItem(
+              'user_token',
+              response.data.access_token,
+            );
+            await AsyncStorage.setItem(
+              'user_data',
+              JSON.stringify({
+                ...userInfo.user,
+                role: response.data.role,
+                member_id: response.data.user.member_id,
+              }),
+            );
+
+            navigation.navigate('SelectFarm');
+          })
+          .catch(error => {
+            console.log(error);
+          });
+      } catch (error) {
+        if (error.code === statusCodes.SIGN_IN_CANCELLED) {
+          // user cancelled the login flow
+          console.log('User Cancel');
+        } else if (error.code === statusCodes.IN_PROGRESS) {
+          // operation (e.g. sign in) is in progress already
+          console.log('Progressing');
+        } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+          // play services not available or outdated
+          console.log('Service Not Avalible');
+        } else {
+          // some other error happened
+          console.log(error);
+        }
+      }
+    }
+  };
+
+  const checkEmployee = async () => {
+    const device = await DeviceInfo.getUniqueId();
+
     try {
-      await GoogleSignin.hasPlayServices();
-      const userInfo = await GoogleSignin.signIn();
-      await AsyncStorage.setItem('user_data', JSON.stringify(userInfo.user));
-
-      const data = new FormData();
-      data.append('email', userInfo.user.email);
-      data.append('name', userInfo.user.name);
-      data.append('auth_id', userInfo.user.id);
-
       axios
-        .post('http://35.244.169.189.nip.io/oauth/login', data, {
+        .get(
+          `http://35.244.169.189.nip.io/auth/provider?provider_type=device_id&provider_id=${device}`,
+        )
+        .then(async response => {
+          if (!response.data) {
+            setFormModal(true);
+          } else {
+            await AsyncStorage.setItem(
+              'user_token',
+              response.data.access_token,
+            );
+            await AsyncStorage.setItem(
+              'user_data',
+              JSON.stringify({
+                id: response.data.user.user_uuid,
+                name: response.data.user.first_name,
+                photo:
+                  'https://icon-library.com/images/google-user-icon/google-user-icon-21.jpg',
+                role: 'employee',
+                member_id: response.data.user.member_id,
+              }),
+            );
+            navigation.navigate('SelectFarm');
+          }
+        })
+        .catch(error => {
+          console.log(error);
+        });
+    } catch (error) {}
+  };
+
+  const codeIn = async () => {
+    // if (user) {
+    //   navigation.navigate('SelectFarm');
+    // } else {
+    try {
+      const data = new FormData();
+      data.append('name', name);
+      data.append('device_id', await DeviceInfo.getUniqueId());
+      axios
+        .post('http://35.244.169.189.nip.io/auth', data, {
           headers: {
             'Content-Type': 'multipart/form-data',
             // Authorization: 'Bearer',
           },
         })
         .then(async response => {
-          await AsyncStorage.setItem('user_token', response.data);
-
+          // console.log(response.data);
+          await AsyncStorage.setItem('user_token', response.data.access_token);
+          await AsyncStorage.setItem(
+            'user_data',
+            JSON.stringify({
+              user_id: response.data.user_uuid,
+              name: name,
+              photo:
+                'https://icon-library.com/images/google-user-icon/google-user-icon-21.jpg',
+              role: 'employee',
+              member_id: response.data.member_id,
+            }),
+          );
+          setFormModal(false);
+          setPasscodeModal(false);
+          setName('');
           navigation.navigate('SelectFarm');
         })
         .catch(error => {
@@ -84,11 +191,9 @@ const Login = ({navigation}) => {
         console.log(error);
       }
     }
+    // }
   };
 
-  const handleVerify = data => {
-    setModalVisible(false);
-  };
   return (
     <View style={styles.container}>
       <ImageBackground source={image} style={styles.image}></ImageBackground>
@@ -99,6 +204,9 @@ const Login = ({navigation}) => {
       </View>
 
       <View style={{top: '52%'}}>
+        <Text style={[font.kanit, {color: '#00000077'}]}>เจ้าของไร่</Text>
+        <Divider inset={true} insetType="left" />
+
         <View style={{flexDirection: 'row', alignItems: 'center'}}>
           {/* <AntDesign name="google" size={50} /> */}
           <Avatar
@@ -137,6 +245,10 @@ const Login = ({navigation}) => {
             // }}
           />
         </View>
+        <Text style={[font.kanit, {color: '#00000077'}]}>พี่ๆชาวไร่</Text>
+
+        <Divider inset={true} insetType="middle" />
+
         <View style={{flexDirection: 'row', alignItems: 'center'}}>
           <MaterialCommunityIcons
             name="cellphone-key"
@@ -164,7 +276,7 @@ const Login = ({navigation}) => {
             //   end: {x: 1, y: 0.5},
             // }}
             icon={<AntDesign name="arrowright" size={30} color="#fFF" />}
-            onPress={() => setModalVisible(true)}
+            onPress={() => checkEmployee()}
 
             // onPress={() => {
             // }}
@@ -173,10 +285,73 @@ const Login = ({navigation}) => {
       </View>
 
       <Modal
-        isVisible={isModalVisible}
+        isVisible={formModal}
         style={{justifyContent: 'flex-end'}}
-        onBackdropPress={() => setModalVisible(false)}
-        onModalHide={() => navigation.setParams({handleTitlePress: false})}>
+        onBackdropPress={() => {
+          setFormModal(false);
+          setPasscodeModal(false);
+          setName('');
+        }}>
+        <View
+          style={{
+            margin: -20,
+            borderRadius: 30,
+            padding: 20,
+            height: '80%',
+            backgroundColor: '#fff',
+          }}>
+          <Text
+            style={[
+              font.kanit,
+              {
+                textAlign: 'center',
+                fontSize: 24,
+                fontWeight: '700',
+                paddingTop: 10,
+              },
+            ]}>
+            โปรดใส่ชื่อ
+          </Text>
+          <Image style={styles.icon} source={source} />
+          <Input
+            ref={inputRef}
+            placeholder="ชื่อ"
+            onChangeText={newText => setName(newText)}
+            defaultValue={name}
+            inputStyle={[font.kanit]}
+          />
+          <View style={{alignSelf: 'center'}}>
+            <Button
+              onPress={() => codeIn()}
+              title="ยืนยัน"
+              icon={
+                <MaterialCommunityIcons
+                  name="account-check-outline"
+                  size={25}
+                  color="#fff"
+                />
+              }
+              disabled={!name}
+              iconRight
+              iconContainerStyle={{marginLeft: 10}}
+              titleStyle={[font.kanit, {fontWeight: '700', marginRight: 5}]}
+              buttonStyle={{
+                backgroundColor: '#3ED48D',
+                borderColor: 'transparent',
+                borderWidth: 0,
+                borderRadius: 30,
+              }}
+              containerStyle={{
+                width: 200,
+              }}
+            />
+          </View>
+        </View>
+      </Modal>
+      {/* <Modal
+        isVisible={passcodeModal}
+        style={{justifyContent: 'flex-end'}}
+        onBackdropPress={() => setPasscodeModal(false)}>
         <View
           style={{
             margin: -20,
@@ -186,10 +361,9 @@ const Login = ({navigation}) => {
             backgroundColor: '#fff',
           }}>
           <FarmPasscode onVerify={handleVerify} />
-
           <View></View>
         </View>
-      </Modal>
+      </Modal> */}
     </View>
   );
 };
@@ -218,6 +392,13 @@ const styles = StyleSheet.create({
     top: '44%',
     backgroundColor: '#fff',
     padding: 14,
+  },
+  icon: {
+    marginTop: 10,
+    width: 150 / 1.5,
+    height: 150 / 1.5,
+    marginLeft: 'auto',
+    marginRight: 'auto',
   },
 });
 

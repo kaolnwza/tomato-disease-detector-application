@@ -59,7 +59,8 @@ const DrawerContent = props => {
               fontSize: 22,
               fontFamily: 'Kanit',
             }}>
-            {user.name}
+            {user.name} (
+            {user.role.charAt(0).toUpperCase() + user.role.slice(1)})
           </Text>
           <View style={{flexDirection: 'row'}}>
             <Text
@@ -68,7 +69,7 @@ const DrawerContent = props => {
                 fontFamily: 'Kanit',
                 marginRight: 5,
               }}>
-              {user.email} (ลูกจ้าง)
+              {user.email} ({user.member_id})
             </Text>
           </View>
         </ImageBackground>

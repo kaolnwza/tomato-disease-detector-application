@@ -24,12 +24,15 @@ import {font, buttons} from './styles';
 import RNFetchBlob from 'rn-fetch-blob';
 import axios from 'axios';
 import moment from 'moment';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 const HistoryMap = props => {
   const [userLocation, setUserLocation] = useState();
 
   const [location, setLocation] = useState();
+  const [farmLocation, setFarmLocation] = useState();
 
   useEffect(() => {
+    getFarmLocation();
     Geolocation.getCurrentPosition(
       position => {
         setUserLocation({
@@ -55,6 +58,11 @@ const HistoryMap = props => {
       {enableHighAccuracy: true, timeout: 20000, maximumAge: 1000},
     );
   }, []);
+
+  const getFarmLocation = async () => {
+    const current_farm = JSON.parse(await AsyncStorage.getItem('user_farm'));
+    setFarmLocation(current_farm.farm_location);
+  };
 
   return (
     <MapView

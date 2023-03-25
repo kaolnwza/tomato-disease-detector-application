@@ -3,7 +3,7 @@ import {font, buttons} from './styles';
 import {Button, SpeedDial, Skeleton} from '@rneui/themed';
 import LinearGradient from 'react-native-linear-gradient';
 import MapView, {Polygon, Marker} from 'react-native-maps';
-
+import * as geolib from 'geolib';
 import {
   Text,
   StyleSheet,
@@ -50,7 +50,7 @@ const ManageFarm = ({navigation}) => {
         },
       })
       .then(response => {
-        console.log(response.data[0].farm_location);
+        // console.log(response.data);
         setFarm(response.data);
         setTimeout(() => {
           setRefreshing(false);
@@ -63,6 +63,12 @@ const ManageFarm = ({navigation}) => {
         setLoadData(false);
       });
   };
+
+  const onSetting = item => {
+    console.log(item);
+    navigation.navigate('CreateFarm', {item, type: 'edit'});
+  };
+
   if (loadData) {
     return (
       <SafeAreaView style={styles.container}>
@@ -187,7 +193,7 @@ const ManageFarm = ({navigation}) => {
                     }></Button>
                   <Button
                     type="clear"
-                    onPress={() => {}}
+                    onPress={() => onSetting(item)}
                     icon={
                       <Feather name="settings" size={25} color="#fff" />
                     }></Button>
@@ -204,10 +210,12 @@ const ManageFarm = ({navigation}) => {
                 pitchEnabled={false}
                 scrollEnabled={false}
                 initialRegion={{
-                  latitude: item.farm_location[0].latitude,
-                  longitude: item.farm_location[0].longitude,
-                  latitudeDelta: 0.0025,
-                  longitudeDelta: 0.0025,
+                  latitude: geolib.getCenterOfBounds(item.farm_location)
+                    .latitude,
+                  longitude: geolib.getCenterOfBounds(item.farm_location)
+                    .longitude,
+                  latitudeDelta: 0.004,
+                  longitudeDelta: 0.004,
                 }}>
                 {item.farm_location.map((coordinate, index) => (
                   <Marker key={index} coordinate={coordinate} />
