@@ -11,52 +11,68 @@ type tomatoDiseaseServices struct {
 	tdsRepo port.TomatoDiseaseRepository
 	tx      port.Transactor
 	storer  port.ImageStorer
+	rdb     port.RedisDB
 }
 
-func NewTomatoDiseaseServices(r port.TomatoDiseaseRepository, db port.Transactor, storer port.ImageStorer) port.TomatoDiseaseService {
+func NewTomatoDiseaseServices(r port.TomatoDiseaseRepository, db port.Transactor, storer port.ImageStorer, rdd port.RedisDB) port.TomatoDiseaseService {
 	return &tomatoDiseaseServices{
 		tdsRepo: r,
 		tx:      db,
 		storer:  storer,
+		rdb:     rdd,
 	}
 }
 
 func (s *tomatoDiseaseServices) GetTomatoDiseases(ctx context.Context) ([]*model.TomatoDiseaseResponse, error) {
-	disease := []*model.TomatoDisease{}
-	if err := s.tdsRepo.GetAll(ctx, &disease); err != nil {
-		return nil, err
-	}
-
-	resp := make([]*model.TomatoDiseaseResponse, len(disease))
-	ch := make(chan error, len(disease))
-
-	for idx, i := range disease {
-		go func(i *model.TomatoDisease, idx int) {
-			inform := model.NewTomatoDiseaseInform()
-
-			uri, err := s.storer.GenerateImageURI(ctx, os.Getenv("GCS_BUCKET_1"), i.ImagePath)
-			ch <- err
-
-			informGenerator(i, inform)
-
-			respT := &model.TomatoDiseaseResponse{
-				UUID:     i.DiseaseUUID,
-				ImageURL: uri,
-				Name:     i.DiseaseName,
-				NameThai: i.DiseaseNameThai,
-				Inform:   *inform,
+	resp := make([]*model.TomatoDiseaseResponse, 0)
+	if err := s.rdb.GetValue(ctx, model.REDIS_TMT_DISEASE, &resp); err != nil {
+		if s.rdb.IsNil(err) {
+			disease := []*model.TomatoDisease{}
+			if err := s.tdsRepo.GetAll(ctx, &disease); err != nil {
+				return nil, err
 			}
 
-			resp[idx] = respT
-		}(i, idx)
+			resp = make([]*model.TomatoDiseaseResponse, len(disease))
 
-	}
+			ch := make(chan error, len(disease))
 
-	for i := 0; i < len(disease); i++ {
-		err := <-ch
-		if err != nil {
-			return nil, err
+			for idx, i := range disease {
+				go func(i *model.TomatoDisease, idx int) {
+					inform := model.NewTomatoDiseaseInform()
+
+					uri, err := s.storer.GenerateImageURI(ctx, os.Getenv("GCS_BUCKET_1"), i.ImagePath)
+					ch <- err
+
+					informGenerator(i, inform)
+
+					respT := &model.TomatoDiseaseResponse{
+						UUID:     i.DiseaseUUID,
+						ImageURL: uri,
+						Name:     i.DiseaseName,
+						NameThai: i.DiseaseNameThai,
+						Inform:   *inform,
+					}
+
+					resp[idx] = respT
+				}(i, idx)
+
+			}
+
+			for i := 0; i < len(disease); i++ {
+				err := <-ch
+				if err != nil {
+					return nil, err
+				}
+			}
+
+			if err := s.rdb.SetValue(ctx, model.REDIS_TMT_DISEASE, resp); err != nil {
+				return nil, err
+			}
+
+			return resp, nil
 		}
+
+		return nil, err
 	}
 
 	return resp, nil

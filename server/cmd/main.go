@@ -11,9 +11,11 @@ import (
 
 	db "tomato-api/internal/adapters/database"
 	gcsCli "tomato-api/internal/adapters/gcs"
+	redisDB "tomato-api/internal/adapters/redis"
 	rapi "tomato-api/internal/adapters/restapi"
 	service "tomato-api/internal/core/services"
 	handler "tomato-api/internal/infra/handlers"
+	redisCli "tomato-api/internal/infra/redis"
 	"tomato-api/internal/infra/repositories/pgsql"
 	gcsStorer "tomato-api/internal/infra/store.gcs"
 )
@@ -29,8 +31,11 @@ func main() {
 	pg := db.PostgresTomato()
 	pgTx := db.NewPostgresRepo(pg)
 
+	redisDB := redisDB.NewRedisServer()
+	redisCli := redisCli.NewRedisClient(redisDB)
+
 	tmtDiseaseRepo := pgsql.NewTomatoDiseaseRepo(pgTx)
-	tmtDiseaseSvc := service.NewTomatoDiseaseServices(tmtDiseaseRepo, pgTx, storer)
+	tmtDiseaseSvc := service.NewTomatoDiseaseServices(tmtDiseaseRepo, pgTx, storer, redisCli)
 	tmtDiseaseHandler := handler.NewTomatoDiseaseHandler(tmtDiseaseSvc)
 
 	userRepo := pgsql.NewUserRepo(pgTx)
