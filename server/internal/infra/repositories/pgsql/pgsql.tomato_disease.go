@@ -2,17 +2,16 @@ package pgsql
 
 import (
 	"context"
+	"fmt"
 	model "tomato-api/internal/core/models"
 	port "tomato-api/internal/ports"
+
+	"github.com/google/uuid"
 )
 
 type tomatoDiseaseRepo struct {
 	tx port.Transactor
 }
-
-// func NewTomatoDiseaseRepo(db port.Transactor) port.TomatoDiseaseRepository {
-// 	return &tomatoDiseaseRepo{db: db}
-// }
 
 func NewTomatoDiseaseRepo(tx port.Transactor) port.TomatoDiseaseRepository {
 	return &tomatoDiseaseRepo{
@@ -103,4 +102,57 @@ func (r *tomatoDiseaseRepo) GetByName(ctx context.Context, diseaseName string, d
 		AND disease_name != 'Healthy'`
 
 	return r.tx.GetOne(ctx, disease, query, diseaseName)
+}
+
+func (r *tomatoDiseaseRepo) AddDiseaseImage(ctx context.Context, diseaseUUID uuid.UUID, uploadUUID []uuid.UUID) error {
+	values := ``
+	for idx, item := range uploadUUID {
+		values += fmt.Sprintf(`('%s', '%s')`, diseaseUUID, item)
+		if idx != len(uploadUUID)-1 {
+			values += ","
+		}
+	}
+
+	query := `
+		INSERT INTO tomato_disease_image (disease_uuid, upload_uuid)
+		VALUES ` + values
+
+	return r.tx.Insert(ctx, query)
+}
+
+func (r *tomatoDiseaseRepo) DeleteDiseaseImage(ctx context.Context, diseaseUUID uuid.UUID, imageUUID uuid.UUID) error {
+	query := `
+		DELETE FROM tomato_disease_image
+		WHERE uuid = $1
+		AND disease_uuid = $2
+	`
+
+	return r.tx.Delete(ctx, query, diseaseUUID, imageUUID)
+}
+
+func (r *tomatoDiseaseRepo) GetImagesByDiseaseUUID(ctx context.Context, diseaseUUID uuid.UUID, dest *[]*model.TomatoDiseaseImage) error {
+	query := `
+		SELECT
+			uuid,
+			disease_uuid,
+			tomato_disease_image.upload_uuid,
+			path AS image_path,
+			tomato_disease_image.created_at
+		FROM tomato_disease_image
+		LEFT JOIN upload ON tomato_disease_image.upload_uuid = upload.upload_uuid
+		WHERE disease_uuid = $1
+		ORDER BY created_at DESC
+	`
+
+	return r.tx.Get(ctx, dest, query, diseaseUUID)
+}
+
+func (r *tomatoDiseaseRepo) UpdateDiseaseInfo(ctx context.Context, diseaseUUID uuid.UUID, column string, text string) error {
+	query := fmt.Sprintf(`
+		UPDATE tomato_disease_info
+		SET %s = $1
+		WHERE disease_uuid = $2
+	`, column)
+
+	return r.tx.Update(ctx, query, text, diseaseUUID)
 }

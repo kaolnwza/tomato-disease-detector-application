@@ -4,6 +4,8 @@ import (
 	"net/http"
 	port "tomato-api/internal/ports"
 	log "tomato-api/lib/logs"
+
+	"github.com/google/uuid"
 )
 
 type tomatoDiseaseHandler struct {
@@ -44,17 +46,65 @@ func (h *tomatoDiseaseHandler) GetTomatoDiseaseByNameHandler(c port.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
-// func (h tomatoDiseaseHandler) GetTomatoDiseasesHandler()
+func (h *tomatoDiseaseHandler) AddDiseaseImageHandler(c port.Context) {
+	diseaseUUID, err := uuid.Parse(c.Param("disease_uuid"))
+	if err != nil {
+		log.Error(err)
+		c.JSON(http.StatusBadRequest, err.Error())
+		return
+	}
 
-// func (h accountHandler) GetAccounts() {
-// 	customerID, _ := strconv.Atoi(mux.Vars(r)["customerID"])
+	images := c.FormValue("images")
 
-// 	responses, err := h.accSrv.GetAccounts(customerID)
-// 	if err != nil {
-// 		handleError(w, err)
-// 		return
-// 	}
+	if err := h.tdsSvc.AddDiseaseImage(c.Ctx(), diseaseUUID, images); err != nil {
+		log.Error(err)
+		c.JSON(http.StatusInternalServerError, err.Error())
+		return
+	}
 
-// 	w.Header().Set("content-type", "application/json")
-// 	json.NewEncoder(w).Encode(responses)
-// }
+	c.JSON(http.StatusCreated, nil)
+}
+
+func (h *tomatoDiseaseHandler) DeleteDiseaseImageHandler(c port.Context) {
+	diseaseUUID, err := uuid.Parse(c.Param("disease_uuid"))
+	if err != nil {
+		log.Error(err)
+		c.JSON(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	imageUUID, err := uuid.Parse(c.FormValue("image_uuid"))
+	if err != nil {
+		log.Error(err)
+		c.JSON(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	if err := h.tdsSvc.DeleteDiseaseImage(c.Ctx(), diseaseUUID, imageUUID); err != nil {
+		log.Error(err)
+		c.JSON(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusCreated, nil)
+}
+
+func (h *tomatoDiseaseHandler) UpdateDiseaseInfoHandler(c port.Context) {
+	diseaseUUID, err := uuid.Parse(c.Param("disease_uuid"))
+	if err != nil {
+		log.Error(err)
+		c.JSON(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	column := c.FormValue("column")
+	text := c.FormValue("text")
+
+	if err := h.tdsSvc.UpdateDiseaseInfo(c.Ctx(), diseaseUUID, column, text); err != nil {
+		log.Error(err)
+		c.JSON(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusCreated, nil)
+}

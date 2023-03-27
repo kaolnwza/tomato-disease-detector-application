@@ -5,6 +5,10 @@ import (
 	"os"
 	model "tomato-api/internal/core/models"
 	port "tomato-api/internal/ports"
+	"tomato-api/lib/helper"
+	log "tomato-api/lib/logs"
+
+	uuid "github.com/google/uuid"
 )
 
 type tomatoDiseaseServices struct {
@@ -37,13 +41,18 @@ func (s *tomatoDiseaseServices) GetTomatoDiseases(ctx context.Context) ([]*model
 			ch := make(chan error, len(disease))
 
 			for idx, i := range disease {
-				go func(i *model.TomatoDisease, idx int) {
+				go func(i *model.TomatoDisease, idx int, ctx context.Context) {
 					inform := model.NewTomatoDiseaseInform()
 
 					uri, err := s.storer.GenerateImageURI(ctx, os.Getenv("GCS_BUCKET_1"), i.ImagePath)
-					ch <- err
 
 					informGenerator(i, inform)
+
+					images, err := s.GetImagesByDiseaseUUID(context.Background(), i.DiseaseUUID)
+					if err != nil {
+						log.Error(err)
+						return
+					}
 
 					respT := &model.TomatoDiseaseResponse{
 						UUID:     i.DiseaseUUID,
@@ -51,10 +60,13 @@ func (s *tomatoDiseaseServices) GetTomatoDiseases(ctx context.Context) ([]*model
 						Name:     i.DiseaseName,
 						NameThai: i.DiseaseNameThai,
 						Inform:   *inform,
+						Images:   images,
 					}
 
+					ch <- err
+
 					resp[idx] = respT
-				}(i, idx)
+				}(i, idx, ctx)
 
 			}
 
@@ -91,6 +103,11 @@ func (s *tomatoDiseaseServices) GetTomatoDiseaseByName(ctx context.Context, dise
 		return nil, err
 	}
 
+	images, err := s.GetImagesByDiseaseUUID(ctx, disease.DiseaseUUID)
+	if err != nil {
+		return nil, err
+	}
+
 	informGenerator(disease, inform)
 
 	resp := &model.TomatoDiseaseResponse{
@@ -99,6 +116,7 @@ func (s *tomatoDiseaseServices) GetTomatoDiseaseByName(ctx context.Context, dise
 		Name:     disease.DiseaseName,
 		NameThai: disease.DiseaseNameThai,
 		Inform:   *inform,
+		Images:   images,
 	}
 
 	return resp, nil
@@ -116,42 +134,110 @@ func informGenerator(disease *model.TomatoDisease, inform *model.TomatoDiseaseIn
 }
 
 func (s *tomatoDiseaseServices) CreateTomatoLog(c context.Context) error {
-	// c.Value()
-	// userUUID, ok := c.Request.Value("access_user_uuid").(uuid.UUID)
-	// if !ok {
-	// 	c.Status(http.StatusInternalServerError)
-	// 	c.Abort()
-	// 	return
-	// }
-
-	// desc := c.Request.FormValue("description")
-	// disease := c.Request.FormValue("disease")
-
-	// tx, err := port.DB.Beginx()
-	// if err != nil {
-	// 	c.JSON(http.StatusInternalServerError, err.Error())
-	// 	return
-	// }
-	// upload, err := FileUploadToBucketByImage(c, userUUID, tx)
-	// if err != nil {
-	// 	tx.Rollback()
-	// 	c.JSON(http.StatusInternalServerError, err.Error())
-	// 	return
-	// }
-
 	if err := s.tdsRepo.Create(c); err != nil {
-		// tx.Rollback()
-		// c.JSON(http.StatusInternalServerError, err.Error())
+
 		return err
 	}
 
 	return nil
-	// if err := tx.Commit(); err != nil {
-	// 	tx.Rollback()
-	// 	c.JSON(500, err.Error())
-	// 	return
-	// }
+}
 
-	// c.JSON(200, nil)
+func (s *tomatoDiseaseServices) AddDiseaseImage(ctx context.Context, diseaseUUID uuid.UUID, uploadUUIDs string) error {
+	img := make([]*model.TomatoDiseaseImage, 0)
+	if err := helper.JsonToStruct(uploadUUIDs, &img); err != nil {
+		return err
+	}
 
+	upload := make([]uuid.UUID, 0)
+	for _, item := range img {
+		upload = append(upload, item.UploadUUID)
+	}
+
+	return s.tx.WithinTransaction(ctx, func(tx context.Context) error {
+		if err := s.tdsRepo.AddDiseaseImage(tx, diseaseUUID, upload); err != nil {
+			return err
+		}
+
+		if err := s.rdb.DeleteValue(tx, model.REDIS_TMT_DISEASE_UUID_MAP(diseaseUUID)); err != nil {
+			return err
+		}
+
+		return s.rdb.DeleteValue(tx, model.REDIS_TMT_DISEASE)
+	})
+}
+
+func (s *tomatoDiseaseServices) DeleteDiseaseImage(ctx context.Context, diseaseUUID uuid.UUID, imageUUID uuid.UUID) error {
+	return s.tx.WithinTransaction(ctx, func(tx context.Context) error {
+		if err := s.tdsRepo.DeleteDiseaseImage(tx, diseaseUUID, imageUUID); err != nil {
+			return err
+		}
+
+		if err := s.rdb.DeleteValue(tx, model.REDIS_TMT_DISEASE_UUID_MAP(diseaseUUID)); err != nil {
+			return err
+		}
+
+		return s.rdb.DeleteValue(tx, model.REDIS_TMT_DISEASE)
+	})
+}
+
+func (s *tomatoDiseaseServices) GetImagesByDiseaseUUID(ctx context.Context, diseaseUUID uuid.UUID) (*[]*model.TomatoDiseaseImageResponse, error) {
+	resp := make([]*model.TomatoDiseaseImageResponse, 0)
+	if err := s.rdb.GetValue(ctx, model.REDIS_TMT_DISEASE_UUID_MAP(diseaseUUID), &resp); err != nil {
+		if s.rdb.IsNil(err) {
+			disease := make([]*model.TomatoDiseaseImage, 0)
+			if err := s.tdsRepo.GetImagesByDiseaseUUID(ctx, diseaseUUID, &disease); err != nil {
+				return nil, err
+			}
+
+			resp = make([]*model.TomatoDiseaseImageResponse, len(disease))
+
+			ch := make(chan error, len(disease))
+
+			for idx, i := range disease {
+				go func(i *model.TomatoDiseaseImage, idx int) {
+					uri, err := s.storer.GenerateImageURI(ctx, os.Getenv("GCS_BUCKET_1"), i.ImagePath)
+					ch <- err
+
+					respT := &model.TomatoDiseaseImageResponse{
+						UUID:      i.DiseaseUUID,
+						ImageURI:  uri,
+						CreatedAt: i.CreatedAt,
+					}
+
+					resp[idx] = respT
+				}(i, idx)
+
+			}
+
+			for i := 0; i < len(disease); i++ {
+				if err := <-ch; err != nil {
+					return nil, err
+				}
+			}
+
+			if err := s.rdb.SetValue(ctx, model.REDIS_TMT_DISEASE_UUID_MAP(diseaseUUID), resp); err != nil {
+				return nil, err
+			}
+
+			return &resp, nil
+		}
+
+		return nil, err
+	}
+
+	return &resp, nil
+}
+
+func (s *tomatoDiseaseServices) UpdateDiseaseInfo(ctx context.Context, diseaseUUID uuid.UUID, column string, text string) error {
+	return s.tx.WithinTransaction(ctx, func(tx context.Context) error {
+		if err := s.tdsRepo.UpdateDiseaseInfo(tx, diseaseUUID, column, text); err != nil {
+			return err
+		}
+
+		if err := s.rdb.DeleteValue(tx, model.REDIS_TMT_DISEASE); err != nil {
+			return err
+		}
+
+		return s.rdb.DeleteValue(tx, model.REDIS_TMT_DISEASE)
+	})
 }

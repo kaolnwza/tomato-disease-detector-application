@@ -80,11 +80,21 @@ func main() {
 	{
 		v1.POST("/upload", uploadHandler.UploadFile)
 		v1.POST("/prediction", predHandler.PredictionTomato)
-		disease := v1.GROUP("/disease", middleware)
+		diseasev1 := v1.GROUP("/diseases", middleware)
 		{
-			disease.GET("", tmtDiseaseHandler.GetTomatoDiseasesHandler)
-			disease.POST("/", tmtDiseaseHandler.GetTomatoDiseasesHandler)
-			disease.GET("/:name", tmtDiseaseHandler.GetTomatoDiseaseByNameHandler)
+			diseasev1.GET("", tmtDiseaseHandler.GetTomatoDiseasesHandler)
+			diseasev1.POST("/", tmtDiseaseHandler.GetTomatoDiseasesHandler)
+			diseasev1.GET("/name/:name", tmtDiseaseHandler.GetTomatoDiseaseByNameHandler)
+
+			diseaseIdv1 := diseasev1.GROUP("/:disease_uuid")
+			{
+				diseaseIdv1.PATCH("/", tmtDiseaseHandler.UpdateDiseaseInfoHandler)
+				diseaseImgv1 := diseaseIdv1.GROUP("/images")
+				{
+					diseaseImgv1.POST("/", tmtDiseaseHandler.AddDiseaseImageHandler)
+					diseaseImgv1.DELETE("/", tmtDiseaseHandler.DeleteDiseaseImageHandler)
+				}
+			}
 
 		}
 

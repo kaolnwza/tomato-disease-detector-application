@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"time"
 
-	uuid "github.com/satori/go.uuid"
+	uuid "github.com/google/uuid"
 )
 
 type TomatoDisease struct {
@@ -20,12 +20,12 @@ type TomatoDisease struct {
 }
 
 type TomatoDiseaseResponse struct {
-	UUID     uuid.UUID              `json:"uuid"`
-	Name     string                 `json:"name"`
-	NameThai string                 `json:"name_th"`
-	ImageURL string                 `json:"image_url"`
-	Inform   TomatoDiseaseInform    `json:"inform"`
-	Images   *[]*TomatoDiseaseImage `json:"images"`
+	UUID     uuid.UUID                      `json:"uuid"`
+	Name     string                         `json:"name"`
+	NameThai string                         `json:"name_th"`
+	ImageURL string                         `json:"image_url"`
+	Inform   TomatoDiseaseInform            `json:"inform"`
+	Images   *[]*TomatoDiseaseImageResponse `json:"images"`
 }
 
 func NewTomatoDiseaseInform() *TomatoDiseaseInform {
@@ -54,7 +54,14 @@ type TomatoDiseaseImage struct {
 	UUID        uuid.UUID `db:"uuid" json:"uuid"`
 	DiseaseUUID uuid.UUID `db:"disease_uuid" json:"-"`
 	UploadUUID  uuid.UUID `db:"upload_uuid" json:"upload_uuid"`
+	ImagePath   string    `db:"image_path" json:"image_path"`
 	CreatedAt   time.Time `db:"created_at" json:"created_at"`
+}
+
+type TomatoDiseaseImageResponse struct {
+	UUID      uuid.UUID `db:"uuid" json:"uuid"`
+	ImageURI  string    `db:"image_uri" json:"image_uri"`
+	CreatedAt time.Time `db:"created_at" json:"created_at"`
 }
 
 type TomatoDiseaseInformData struct {
