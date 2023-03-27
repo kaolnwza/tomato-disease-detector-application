@@ -2,6 +2,7 @@ package model
 
 import (
 	"encoding/json"
+	"time"
 
 	uuid "github.com/satori/go.uuid"
 )
@@ -19,10 +20,12 @@ type TomatoDisease struct {
 }
 
 type TomatoDiseaseResponse struct {
-	Name     string              `json:"name"`
-	NameThai string              `json:"name_th"`
-	ImageURL string              `json:"image_url"`
-	Inform   TomatoDiseaseInform `json:"inform"`
+	UUID     uuid.UUID              `json:"uuid"`
+	Name     string                 `json:"name"`
+	NameThai string                 `json:"name_th"`
+	ImageURL string                 `json:"image_url"`
+	Inform   TomatoDiseaseInform    `json:"inform"`
+	Images   *[]*TomatoDiseaseImage `json:"images"`
 }
 
 func NewTomatoDiseaseInform() *TomatoDiseaseInform {
@@ -45,6 +48,13 @@ func (t *TomatoDiseaseInform) MarshalJSON() ([]byte, error) {
 		InformIcon:           "virus",
 		TomatoDiseaseInformP: (*TomatoDiseaseInformP)(t),
 	})
+}
+
+type TomatoDiseaseImage struct {
+	UUID        uuid.UUID `db:"uuid" json:"uuid"`
+	DiseaseUUID uuid.UUID `db:"disease_uuid" json:"-"`
+	UploadUUID  uuid.UUID `db:"upload_uuid" json:"upload_uuid"`
+	CreatedAt   time.Time `db:"created_at" json:"created_at"`
 }
 
 type TomatoDiseaseInformData struct {

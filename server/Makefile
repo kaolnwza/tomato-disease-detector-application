@@ -1,4 +1,4 @@
 push-image:
-	docker build -t tomato/dev:latest .
-	docker tag tomato/dev:latest kaowasabi/tomato  
-	docker push kaowasabi/tomato 
+	docker build -t tomato/api:latest .
+	docker tag tomato/api:latest kaowasabi/tomato-api
+	docker push kaowasabi/tomato-api

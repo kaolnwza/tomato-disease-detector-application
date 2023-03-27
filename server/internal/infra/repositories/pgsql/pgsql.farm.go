@@ -87,8 +87,8 @@ func (r *farmRepo) Update(ctx context.Context, farmUUID uuid.UUID, farmName stri
 	query := `
 		UPDATE farm
 		SET 
-			farm_name = $1
-			location = ` + location + `
+			farm_name = $1,
+			farm_location = ` + location + `
 		WHERE farm_uuid = $2
 	`
 

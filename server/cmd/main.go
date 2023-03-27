@@ -14,8 +14,6 @@ import (
 	service "tomato-api/internal/core/services"
 	handler "tomato-api/internal/infra/handlers"
 	"tomato-api/internal/infra/repositories/pgsql"
-
-	"github.com/gin-gonic/gin"
 )
 
 func main() {
@@ -40,7 +38,7 @@ func main() {
 
 	usrFarmRepo := pgsql.NewUserFarmRepository(pgTx)
 	usrFarmSvc := service.NewUserFarmService(pgTx, usrFarmRepo)
-	usrFarmHdr := handler.NewUserFarmHandler(usrFarmSvc)
+	usrFarmHdr := handler.NewUserFarmHandler(usrFarmSvc, userSvc)
 
 	tmtLogRepo := pgsql.NewTomatoLogRepo(pgTx)
 	tmtLogSvc := service.NewTomatoLogService(tmtLogRepo, pgTx, uploadSvc, usrFarmSvc)
@@ -55,16 +53,18 @@ func main() {
 
 	health := handler.NewHealthHandler()
 
-	r.Use(gin.LoggerWithConfig(gin.LoggerConfig{
-		SkipPaths: []string{"/health"},
-	}))
-
 	r.GET("/jwt/:user_uuid", userHandler.NewAccessToken)
 
 	r.GET("/health", health.HealthCheck)
 
 	oauth := r.GROUP("/oauth")
 	oauth.POST("/login", userHandler.GoogleLoginHandler)
+
+	auth := r.GROUP("/auth")
+	{
+		auth.POST("/", userHandler.DeviceLoginHandler)
+		auth.GET("/provider", userHandler.GetUserByProviderID)
+	}
 
 	v1 := r.GROUP("/v1", middleware)
 	{
@@ -78,17 +78,29 @@ func main() {
 
 		}
 
+		userv1 := v1.GROUP("/users")
+		{
+			userv1.GET("/", userHandler.GetUserHandler)
+			memberv1 := userv1.GROUP("/members")
+			{
+				memberIdv1 := memberv1.GROUP("/:member_id")
+				{
+					memberIdv1.GET("/", userHandler.GetUserByMemberIDHandler)
+				}
+			}
+		}
+
 		farm := v1.GROUP("/farms", middleware)
 		{
 			farm.GET("", farmHdr.GetAllFarmHandler)
 			farm.POST("", farmHdr.CreateFarmHandler)
-			// farm.PUT("", farmHdr.UpdateFarmHandler)
 			farmUUID := farm.GROUP("/:farm_uuid")
 			{
 				farmUUID.GET("/log", tmtLogHandler.GetTomatoLogByFarmUUID)
 				farmUUID.POST("/log", tmtLogHandler.CreateTomatoLogByFarmUUID)
 				farmUUID.GET("/summary", tmtLogHandler.GetClusterByFarmUUIDHandler)
-				farmUUID.GET("/percentage", tmtLogHandler.GetLogsPercentageByFarmUUIDHandler)
+				// farmUUID.GET("/percentage", tmtLogHandler.GetLogsPercentageByFarmUUIDHandler)
+				farmUUID.GET("/percentage", tmtLogHandler.GetLogsPercentageDailyByFarmUUIDHandler)
 				farmUUID.GET("/role", usrFarmHdr.FetchFarmRoleHandler)
 				farmUUID.DELETE("/", farmHdr.DeleteFarmByUUIDHandler)
 				farmUUID.PATCH("/", farmHdr.UpdateFarmByUUID)

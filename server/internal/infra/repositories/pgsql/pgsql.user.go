@@ -4,6 +4,8 @@ import (
 	"context"
 	model "tomato-api/internal/core/models"
 	port "tomato-api/internal/ports"
+
+	"github.com/google/uuid"
 )
 
 type userRepo struct {
@@ -21,8 +23,13 @@ func NewUserRepo(tx port.Transactor) port.UserRepository {
 func (r *userRepo) Create(tx context.Context, user *model.User, provider model.ProviderType, providerID string) error {
 	query := `
 	WITH new_user AS (
-		INSERT INTO "user" (first_name, last_name)
-		SELECT $1, $2
+		INSERT INTO "user" (first_name, last_name, member_id)
+		SELECT $1, $2, (
+			SELECT array_to_string(array(
+				SELECT substr('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', trunc(random() * 25)::integer + 1, 1)
+				FROM  generate_series(1, 6)), ''
+				)
+		)
 		RETURNING user_uuid
 	)
 
@@ -39,7 +46,8 @@ func (r *userRepo) GetUserByProviderID(ctx context.Context, user *model.User, pr
 	SELECT
 		user_uuid,
 		first_name,
-		last_name
+		last_name,
+		member_id
 	FROM "user"
 	WHERE user_uuid = (
 		SELECT user_uuid
@@ -50,4 +58,32 @@ func (r *userRepo) GetUserByProviderID(ctx context.Context, user *model.User, pr
 	`
 
 	return r.tx.GetOne(ctx, user, query, providerType, providerID)
+}
+
+func (r *userRepo) GetUserByUUID(ctx context.Context, user *model.User, userUUID uuid.UUID) error {
+	query := `
+		SELECT
+			user_uuid,
+			first_name,
+			COALESCE(last_name, '') last_name,
+			member_id
+		FROM "user"
+		WHERE user_uuid = $1
+	`
+
+	return r.tx.GetOne(ctx, user, query, userUUID)
+}
+
+func (r *userRepo) GetUserByMemberID(ctx context.Context, user *model.User, memberID string) error {
+	query := `
+		SELECT
+			user_uuid,
+			first_name,
+			COALESCE(last_name, '') last_name,
+			member_id
+		FROM "user"
+		WHERE member_id = $1
+	`
+
+	return r.tx.GetOne(ctx, user, query, memberID)
 }

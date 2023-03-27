@@ -277,3 +277,19 @@ func (s *tomatoLogService) GetLogsPercentageByFarmUUID(ctx context.Context, farm
 	return &logs, nil
 
 }
+
+func (s *tomatoLogService) GetLogsPercentageDailyByFarmUUID(ctx context.Context, farmUUID uuid.UUID, startDate string, endDate string) (*[]*model.TomatoLogPercentageDailyResponse, error) {
+
+	logs := make([]*model.TomatoLogPercentage, 0)
+	resp := make([]*model.TomatoLogPercentageDailyResponse, 0)
+	if err := s.tlRepo.GetLogsPercentageDailyByFarmUUID(ctx, &logs, farmUUID, startDate, endDate); err != nil {
+		return nil, err
+	}
+
+	if err := helper.StructCopy(logs, &resp); err != nil {
+		return nil, err
+	}
+
+	return &resp, nil
+
+}

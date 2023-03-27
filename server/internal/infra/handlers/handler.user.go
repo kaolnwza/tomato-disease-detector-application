@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"database/sql"
 	"errors"
 	"net/http"
 	model "tomato-api/internal/core/models"
@@ -57,13 +58,116 @@ func (h *userHandler) GoogleLoginHandler(c port.Context) {
 		return
 	}
 
-	accessToken, err := h.userSvc.GoogleLogin(c.Ctx(), model.PROVIDER_TYPE_OAUTH2, authId, email, name)
+	accessToken, role, err := h.userSvc.GoogleLogin(c.Ctx(), model.PROVIDER_TYPE_OAUTH2, authId, email, name)
 	if err != nil {
 		log.Error(err)
 		c.JSON(http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, accessToken)
+	user, err := h.userSvc.GetUserByProviderID(c.Ctx(), model.PROVIDER_TYPE_OAUTH2, authId)
+	if err != nil {
+		log.Error(err)
+		c.JSON(http.StatusInternalServerError, err.Error())
+		return
+	}
 
+	c.JSON(http.StatusOK, map[string]interface{}{
+		"access_token": *accessToken,
+		"role":         *role,
+		"user":         &user,
+	})
+}
+
+func (h *userHandler) DeviceLoginHandler(c port.Context) {
+	device_id := c.FormValue("device_id")
+	name := c.FormValue("name")
+
+	if device_id == "" {
+		err := errors.New("device_id is empty")
+		log.Error(err)
+		c.JSON(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	accessToken, role, err := h.userSvc.DeviceLogin(c.Ctx(), model.PROVIDER_TYPE_DEVICE_ID, device_id, name)
+	if err != nil {
+		log.Error(err)
+		c.JSON(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	user, err := h.userSvc.GetUserByProviderID(c.Ctx(), model.PROVIDER_TYPE_DEVICE_ID, device_id)
+	if err != nil {
+		log.Error(err)
+		c.JSON(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, map[string]interface{}{
+		"access_token": *accessToken,
+		"role":         *role,
+		"user":         &user,
+	})
+
+}
+
+func (h userHandler) GetUserHandler(c port.Context) {
+	userUUID := c.AccessUserUUID()
+	user, err := h.userSvc.GetUserByUUID(c.Ctx(), userUUID)
+	if err != nil {
+		log.Error(err)
+		c.JSON(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, user)
+}
+
+func (h userHandler) GetUserByMemberIDHandler(c port.Context) {
+	memberID := c.Param("member_id")
+	user, err := h.userSvc.GetUserByMemberID(c.Ctx(), memberID)
+	if err != nil {
+		log.Error(err)
+		c.JSON(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, user)
+}
+
+func (h userHandler) GetUserByProviderID(c port.Context) {
+	providerType, ok := model.ProviderTypeMap[c.Request().URL.Query().Get("provider_type")]
+	if !ok {
+		err := errors.New("type not found")
+		log.Error(err)
+		c.JSON(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	providerId := c.Request().URL.Query().Get("provider_id")
+
+	user, err := h.userSvc.GetUserByProviderID(c.Ctx(), providerType, providerId)
+	if err != nil {
+		log.Error(err)
+		if err == sql.ErrNoRows {
+			c.JSON(http.StatusNoContent, nil)
+			return
+		}
+
+		c.JSON(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	accessToken, _, err := pkg.GenerateToken(user.UserUUID)
+	if err != nil {
+		log.Error(err)
+		c.JSON(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, map[string]interface{}{
+		"user":         &user,
+		"access_token": accessToken,
+	})
 }

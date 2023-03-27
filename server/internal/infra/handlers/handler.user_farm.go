@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"database/sql"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -12,11 +13,12 @@ import (
 )
 
 type usrFarmHdr struct {
-	svc port.UserFarmService
+	svc     port.UserFarmService
+	userSvc port.UserService
 }
 
-func NewUserFarmHandler(svc port.UserFarmService) usrFarmHdr {
-	return usrFarmHdr{svc: svc}
+func NewUserFarmHandler(svc port.UserFarmService, userSvc port.UserService) usrFarmHdr {
+	return usrFarmHdr{svc: svc, userSvc: userSvc}
 }
 
 func (h *usrFarmHdr) FetchFarmRoleHandler(c port.Context) {
@@ -67,10 +69,22 @@ func (h *usrFarmHdr) AddUserFarmHandler(c port.Context) {
 		return
 	}
 
-	newUserUUID, err := uuid.Parse(c.FormValue("user_uuid"))
+	memberID := c.FormValue("member_id")
 	if err != nil {
 		log.Error(err)
 		c.JSON(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	user, err := h.userSvc.GetUserByMemberID(c.Ctx(), memberID)
+	if err != nil {
+		log.Error(err)
+		if err == sql.ErrNoRows {
+			c.JSON(http.StatusNoContent, "user not found")
+			return
+		}
+
+		c.JSON(http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -92,7 +106,7 @@ func (h *usrFarmHdr) AddUserFarmHandler(c port.Context) {
 
 	}
 
-	if err := h.svc.AddUserFarm(c.Ctx(), farmUUID, newUserUUID, role); err != nil {
+	if err := h.svc.AddUserFarm(c.Ctx(), farmUUID, user.UserUUID, role); err != nil {
 		log.Error(err)
 		c.JSON(http.StatusInternalServerError, err.Error())
 		return

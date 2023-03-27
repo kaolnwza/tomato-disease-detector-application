@@ -40,6 +40,7 @@ func (s *tomatoDiseaseServices) GetTomatoDiseases(ctx context.Context) ([]*model
 			informGenerator(i, inform)
 
 			respT := &model.TomatoDiseaseResponse{
+				UUID:     i.DiseaseUUID,
 				ImageURL: uri,
 				Name:     i.DiseaseName,
 				NameThai: i.DiseaseNameThai,
@@ -77,6 +78,7 @@ func (s *tomatoDiseaseServices) GetTomatoDiseaseByName(ctx context.Context, dise
 	informGenerator(disease, inform)
 
 	resp := &model.TomatoDiseaseResponse{
+		UUID:     disease.DiseaseUUID,
 		ImageURL: uri,
 		Name:     disease.DiseaseName,
 		NameThai: disease.DiseaseNameThai,

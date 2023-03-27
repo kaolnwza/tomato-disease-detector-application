@@ -249,3 +249,31 @@ func (r *tomatoLogRepo) GetLogsPercentageByFarmUUID(ctx context.Context, logs *[
 
 	return r.tx.Get(ctx, logs, query, farmUUID)
 }
+
+func (r *tomatoLogRepo) GetLogsPercentageDailyByFarmUUID(ctx context.Context, logs *[]*model.TomatoLogPercentage, farmUUID uuid.UUID, startDate string, endDate string) error {
+	query := `
+	WITH log AS (
+		SELECT
+			tomato_disease_uuid,
+			status,
+			created_at
+		FROM tomato_log
+		WHERE created_at BETWEEN $1 AND $2 + INTERVAL '1D'
+		AND farm_plot_uuid = (
+			SELECT farm_plot_uuid
+			FROM farm_plot
+			WHERE farm_uuid = $3
+		)
+	)
+	
+		SELECT
+			created_at::date,
+			COUNT(1) AS total_log,
+			ROUND((100.00 / COUNT(1)) * COUNT(1) FILTER (WHERE status = 'disease')) disease_percentage
+		FROM log
+		GROUP BY created_at::date
+		ORDER BY created_at::date 
+	`
+
+	return r.tx.Get(ctx, logs, query, startDate, endDate, farmUUID)
+}

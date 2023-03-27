@@ -85,4 +85,11 @@ type TomatoLogPercentage struct {
 	TotalCured        int       `db:"total_cured" json:"total_cured"`
 	Path              string    `db:"path" json:"-"`
 	ImageUrl          string    `json:"image_url"`
+	CreatedAt         time.Time `db:"created_at" json:"created_at" `
+}
+
+type TomatoLogPercentageDailyResponse struct {
+	CreatedAt         time.Time `json:"created_at" `
+	TotalLog          int       `json:"total_log"`
+	DiseasePercentage float32   `json:"disease_percentage"`
 }

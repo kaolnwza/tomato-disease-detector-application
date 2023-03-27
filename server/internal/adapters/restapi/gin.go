@@ -30,7 +30,11 @@ type GinRouterGroup struct {
 }
 
 func NewGinRouter() *GinRouter {
-	r := gin.Default()
+	r := gin.New()
+
+	r.Use(gin.LoggerWithConfig(gin.LoggerConfig{
+		SkipPaths: []string{"/health"},
+	}))
 
 	corsConfig := cors.New(cors.Config{
 		AllowOrigins:     []string{"http://localhost:8000"},
