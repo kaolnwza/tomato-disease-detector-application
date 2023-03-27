@@ -10,16 +10,21 @@ import (
 	"time"
 
 	db "tomato-api/internal/adapters/database"
+	gcsCli "tomato-api/internal/adapters/gcs"
 	rapi "tomato-api/internal/adapters/restapi"
 	service "tomato-api/internal/core/services"
 	handler "tomato-api/internal/infra/handlers"
 	"tomato-api/internal/infra/repositories/pgsql"
+	gcsStorer "tomato-api/internal/infra/store.gcs"
 )
 
 func main() {
 
 	r := rapi.NewGinRouter()
 	middleware := rapi.NewGinMiddleware()
+
+	storerCli := gcsCli.NewGCSClient()
+	storer := gcsStorer.NewGCSStorer(storerCli)
 
 	pg := db.PostgresTomato()
 	pgTx := db.NewPostgresRepo(pg)
@@ -33,7 +38,7 @@ func main() {
 	userHandler := handler.NewUserHandler(userSvc)
 
 	uploadRepo := pgsql.NewUploadRepo(pgTx)
-	uploadSvc := service.NewUploadService(uploadRepo, pgTx)
+	uploadSvc := service.NewUploadService(uploadRepo, pgTx, storer)
 	uploadHandler := handler.NewUploadHandler(uploadSvc)
 
 	usrFarmRepo := pgsql.NewUserFarmRepository(pgTx)
