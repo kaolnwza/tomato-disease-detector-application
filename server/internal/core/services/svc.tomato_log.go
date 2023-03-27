@@ -17,14 +17,16 @@ type tomatoLogService struct {
 	tx         port.Transactor
 	uploadSvc  port.UploadService
 	usrFarmSvc port.UserFarmService
+	storer     port.ImageStorer
 }
 
-func NewTomatoLogService(r port.TomatoLogRepository, tx port.Transactor, uploadSvc port.UploadService, usrFarmSvc port.UserFarmService) port.TomatoLogService {
+func NewTomatoLogService(r port.TomatoLogRepository, tx port.Transactor, uploadSvc port.UploadService, usrFarmSvc port.UserFarmService, storer port.ImageStorer) port.TomatoLogService {
 	return &tomatoLogService{
 		tlRepo:     r,
 		tx:         tx,
 		uploadSvc:  uploadSvc,
 		usrFarmSvc: usrFarmSvc,
+		storer:     storer,
 	}
 }
 
@@ -70,7 +72,7 @@ func (s *tomatoLogService) GetByFarmUUID(ctx context.Context, farmUUID uuid.UUID
 		})
 
 		go func(i *model.TomatoLog, idx int, respI *model.TomatoLogResponse) {
-			uri, err := helper.GenerateImageURI(ctx, os.Getenv("GCS_BUCKET_1"), i.UploadPath)
+			uri, err := s.storer.GenerateImageURI(ctx, os.Getenv("GCS_BUCKET_1"), i.UploadPath)
 			errCh <- err
 
 			respI.ImageURI = uri
@@ -140,7 +142,7 @@ func (s *tomatoLogService) GetByLogUUID(ctx context.Context, logUUID uuid.UUID) 
 		return nil, err
 	}
 
-	uri, err := helper.GenerateImageURI(ctx, os.Getenv("GCS_BUCKET_1"), logs.UploadPath)
+	uri, err := s.storer.GenerateImageURI(ctx, os.Getenv("GCS_BUCKET_1"), logs.UploadPath)
 	if err != nil {
 		return nil, err
 	}
@@ -261,7 +263,7 @@ func (s *tomatoLogService) GetLogsPercentageByFarmUUID(ctx context.Context, farm
 	imgErr := make(chan error)
 	for _, item := range logs {
 		go func(item *model.TomatoLogPercentage) {
-			url, err := helper.GenerateImageURI(ctx, os.Getenv("GCS_BUCKET_1"), item.Path)
+			url, err := s.storer.GenerateImageURI(ctx, os.Getenv("GCS_BUCKET_1"), item.Path)
 			imgErr <- err
 
 			item.ImageUrl = url

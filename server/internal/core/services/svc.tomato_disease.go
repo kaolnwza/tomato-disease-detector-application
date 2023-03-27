@@ -5,19 +5,19 @@ import (
 	"os"
 	model "tomato-api/internal/core/models"
 	port "tomato-api/internal/ports"
-
-	"tomato-api/lib/helper"
 )
 
 type tomatoDiseaseServices struct {
 	tdsRepo port.TomatoDiseaseRepository
 	tx      port.Transactor
+	storer  port.ImageStorer
 }
 
-func NewTomatoDiseaseServices(r port.TomatoDiseaseRepository, db port.Transactor) port.TomatoDiseaseService {
+func NewTomatoDiseaseServices(r port.TomatoDiseaseRepository, db port.Transactor, storer port.ImageStorer) port.TomatoDiseaseService {
 	return &tomatoDiseaseServices{
 		tdsRepo: r,
 		tx:      db,
+		storer:  storer,
 	}
 }
 
@@ -34,7 +34,7 @@ func (s *tomatoDiseaseServices) GetTomatoDiseases(ctx context.Context) ([]*model
 		go func(i *model.TomatoDisease, idx int) {
 			inform := model.NewTomatoDiseaseInform()
 
-			uri, err := helper.GenerateImageURI(ctx, os.Getenv("GCS_BUCKET_1"), i.ImagePath)
+			uri, err := s.storer.GenerateImageURI(ctx, os.Getenv("GCS_BUCKET_1"), i.ImagePath)
 			ch <- err
 
 			informGenerator(i, inform)
@@ -70,7 +70,7 @@ func (s *tomatoDiseaseServices) GetTomatoDiseaseByName(ctx context.Context, dise
 
 	inform := model.NewTomatoDiseaseInform()
 
-	uri, err := helper.GenerateImageURI(ctx, os.Getenv("GCS_BUCKET_1"), disease.ImagePath)
+	uri, err := s.storer.GenerateImageURI(ctx, os.Getenv("GCS_BUCKET_1"), disease.ImagePath)
 	if err != nil {
 		return nil, err
 	}

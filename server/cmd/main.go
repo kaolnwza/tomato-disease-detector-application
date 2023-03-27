@@ -30,7 +30,7 @@ func main() {
 	pgTx := db.NewPostgresRepo(pg)
 
 	tmtDiseaseRepo := pgsql.NewTomatoDiseaseRepo(pgTx)
-	tmtDiseaseSvc := service.NewTomatoDiseaseServices(tmtDiseaseRepo, pgTx)
+	tmtDiseaseSvc := service.NewTomatoDiseaseServices(tmtDiseaseRepo, pgTx, storer)
 	tmtDiseaseHandler := handler.NewTomatoDiseaseHandler(tmtDiseaseSvc)
 
 	userRepo := pgsql.NewUserRepo(pgTx)
@@ -46,7 +46,7 @@ func main() {
 	usrFarmHdr := handler.NewUserFarmHandler(usrFarmSvc, userSvc)
 
 	tmtLogRepo := pgsql.NewTomatoLogRepo(pgTx)
-	tmtLogSvc := service.NewTomatoLogService(tmtLogRepo, pgTx, uploadSvc, usrFarmSvc)
+	tmtLogSvc := service.NewTomatoLogService(tmtLogRepo, pgTx, uploadSvc, usrFarmSvc, storer)
 	tmtLogHandler := handler.NewTomatoLogHandler(tmtLogSvc)
 
 	farmRepo := pgsql.NewFarmRepository(pgTx)
