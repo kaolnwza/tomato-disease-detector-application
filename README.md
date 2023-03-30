@@ -35,13 +35,48 @@ kubectl rollout restart deployment tomato -n tomato
     docker build -t tomato/api:latest . 
     docker tag tomato/api:latest $DOCKER_USERNAME/tomato-api
     ```
-    
+
+
 
 > push to docker hub (on this repo will be publish)
 
     docker push $DOCKER_USERNAME/tomato
+
+
+
 ---
 <br />
+
+## Part 1.2: Build image on Kube:
+#### if you dont lazy to add file in .gitignore or other credentials file into kube again
+
+> generate rsa ssh
+    ```
+    ssh-keygen -t rsa
+
+    cd ~/.ssh
+
+    cat ssh_rsa.pub
+    ```
+
+> add kube ssh into github or other
+
+> git clone on kube
+
+> build and deploy
+
+    ```
+    docker build -t tomato/api:latest . 
+    docker tag tomato-api:latest asia.gcr.io/able-stock-380702/tomato-api
+	docker push asia.gcr.io/able-stock-380702/tomato-api
+    ```
+
+    or
+
+    
+---
+<br />
+
 
 ## Part 2: GKE starter
 

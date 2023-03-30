@@ -108,6 +108,11 @@ func main() {
 					memberIdv1.GET("/", userHandler.GetUserByMemberIDHandler)
 				}
 			}
+
+			userIdv1 := userv1.GROUP("/:user_uuid")
+			{
+				userIdv1.GET("/", userHandler.GetUserByUUIDHandler)
+			}
 		}
 
 		farm := v1.GROUP("/farms", middleware)

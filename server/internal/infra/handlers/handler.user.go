@@ -124,6 +124,24 @@ func (h userHandler) GetUserHandler(c port.Context) {
 	c.JSON(http.StatusOK, user)
 }
 
+func (h userHandler) GetUserByUUIDHandler(c port.Context) {
+	userUUID, err := uuid.Parse(c.Param("user_uuid"))
+	if err != nil {
+		log.Error(err)
+		c.JSON(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	user, err := h.userSvc.GetUserByUUID(c.Ctx(), userUUID)
+	if err != nil {
+		log.Error(err)
+		c.JSON(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, user)
+}
+
 func (h userHandler) GetUserByMemberIDHandler(c port.Context) {
 	memberID := c.Param("member_id")
 	user, err := h.userSvc.GetUserByMemberID(c.Ctx(), memberID)

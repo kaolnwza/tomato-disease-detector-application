@@ -65,6 +65,7 @@ func (h *farmHdr) UpdateFarmByUUID(c port.Context) {
 	userUUID := c.AccessUserUUID()
 	farmName := c.FormValue("farm_name")
 	location := c.FormValue("location")
+	log.Info(location)
 	farmUUID, err := uuid.Parse(c.Param("farm_uuid"))
 	if err != nil {
 		log.Error(err)
