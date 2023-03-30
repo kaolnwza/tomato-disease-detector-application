@@ -18,7 +18,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Modal from 'react-native-modal';
 import Feather from 'react-native-vector-icons/dist/Feather';
 import MaterialIcons from 'react-native-vector-icons/dist/MaterialIcons';
-import {Button, Input, ListItem} from '@rneui/base';
+import MaterialCommunityIcons from 'react-native-vector-icons/dist/MaterialCommunityIcons';
+
+import {Button, Input, ListItem, Dialog} from '@rneui/base';
 import {font} from './styles';
 
 import MapView, {Marker, Polygon, PROVIDER_GOOGLE} from 'react-native-maps';
@@ -63,6 +65,7 @@ export const ResultPage = ({route, navigation}) => {
   const [ready, setReady] = useState(true);
   const [isEdit, setEdit] = useState(false);
   const [farmLocation, setFarmLocation] = useState();
+  const [outOfRange, setOutOfRange] = useState(false);
 
   const scrollValue = useSharedValue(0);
 
@@ -109,6 +112,9 @@ export const ResultPage = ({route, navigation}) => {
       )
     ) {
       setIsInsidePolygon(true);
+    } else {
+      setOutOfRange(true);
+      setModalVisible(true);
     }
   };
 
@@ -120,6 +126,9 @@ export const ResultPage = ({route, navigation}) => {
   const cancelEditedPin = () => {
     setEditMarkers(Pin);
     setModalVisible(false);
+    setTimeout(() => {
+      setOutOfRange(false);
+    }, 1000);
   };
   const addMarker = () => {
     setEditMarkers(location);
@@ -314,7 +323,7 @@ export const ResultPage = ({route, navigation}) => {
                       {fontSize: 25, alignSelf: 'center', marginBottom: 10},
                     ]}>
                     {/* {JSON.stringify(info)} */}
-                    {isInsidePolygon ? 'true' : 'fasle'}
+
                     {nameTh}
                     <TouchableOpacity onPress={() => setEdit(true)}>
                       <Feather name="edit-3" size={30} color="#000" />
@@ -371,120 +380,268 @@ export const ResultPage = ({route, navigation}) => {
           }
         })}
       </TabbedHeaderPager>
+
       {/* Modal */}
+      {/* <Modal
+        isVisible={outOfRange}
+        swipeDirection={['down', 'up']}
+        onSwipeComplete={() => {
+          setOutOfRange(false);
+        }}
+        onBackdropPress={() => {
+          setOutOfRange(false);
+        }}>
+        <View
+          style={{
+            borderRadius: 30,
+            padding: 20,
+            height: '25%',
+            backgroundColor: '#fff',
+            alignItems: 'center',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+          }}>
+          <Text style={[font.kanit, {fontSize: 24}]}>แจ้งเตือน</Text>
+          <Text style={[font.kanit, {textAlign: 'center'}]}>
+            จุดที่ถ่ายรูปอยู่นอกบริเวณไร่
+          </Text>
+          <Text style={[font.kanit, {textAlign: 'center'}]}>
+            ต้องการที่จะเปลี่ยนหมุดหรือไม่
+          </Text>
+
+          <View
+            style={{
+              width: '100%',
+              flexDirection: 'row',
+              justifyContent: 'space-around',
+              alignSelf: 'flex-end',
+            }}>
+            <Button
+              onPress={() => {
+                setOutOfRange(false);
+              }}
+              radius={'xl'}
+              type="solid"
+              size="sm"
+              titleStyle={[font.kanit]}
+              buttonStyle={{backgroundColor: '#E72970'}}
+              containerStyle={{width: '45%', marginBottom: 10}}>
+              ยกเลิก
+              <MaterialCommunityIcons
+                name="close"
+                size={20}
+                style={{marginHorizontal: 2}}
+                color="white"
+              />
+            </Button>
+            <Button
+              onPress={() => {
+                setOutOfRange(false);
+              }}
+              radius={'xl'}
+              type="solid"
+              size="sm"
+              buttonStyle={{backgroundColor: '#047675'}}
+              titleStyle={font.kanit}
+              containerStyle={{width: '45%', marginBottom: 10}}>
+              เปลี่ยนหมุด
+              <MaterialIcons
+                name="location-pin"
+                size={20}
+                style={{marginHorizontal: 2}}
+                color="white"
+              />
+            </Button>
+          </View>
+        </View>
+      </Modal> */}
       <Modal
         isVisible={isModalVisible}
         style={{justifyContent: 'flex-end'}}
         onBackdropPress={cancelEditedPin}
-        onModalHide={() => navigation.setParams({handleTitlePress: false})}>
-        <View
-          style={{
-            margin: -20,
-            borderRadius: 30,
-            padding: 20,
-            height: '75%',
-            backgroundColor: '#fff',
-          }}>
-          {/* <Text>
-            {location.latitude} {location.longitude}
-          </Text> */}
-          <MapView
-            onRegionChange={region => onLocationChange(region)}
-            onRegionChangeComplete={() => setReady(false)}
-            // provider={PROVIDER_GOOGLE}
-            showsUserLocation
-            region={Pin}
-            style={{
-              height: 400,
-              width: '100%',
-              borderRadius: 30,
-              alignSelf: 'center',
-              overflow: 'hidden',
-            }}
-            initialRegion={Pin}>
-            <Marker coordinate={editMarker} />
-            {/* {markers.map((marker, index) => (
-              <Marker key={index} coordinate={marker} />
-            ))} */}
-            <Polygon
-              coordinates={farmLocation}
-              fillColor="rgba(255, 0, 0, 0.15)"
-              strokeColor="rgba(255, 0, 0, 1)"
-              strokeWidth={2}
-            />
-          </MapView>
-          <View style={{position: 'absolute', top: '35%', left: '50%'}}>
-            <Feather name="crosshair" size={40} color="#000" />
-          </View>
-
-          <Button
-            onPress={addMarker}
-            size="lg"
-            disabled={ready}
-            buttonStyle={{
-              paddingHorizontal: 30,
-              marginHorizontal: 30,
-              marginVertical: 10,
-
-              borderRadius: 10,
-              backgroundColor: '#047675',
-            }}>
-            {/* <ActivityIndicator /> */}
-            <Text style={[font.kanit, {fontSize: 20, color: '#fff'}]}>
-              <MaterialIcons name="location-pin" size={20} color="#fff" />
-              ปักหมุด
-            </Text>
-          </Button>
+        swipeDirection={['down']} // or any other direction(s) you prefer
+        onSwipeComplete={cancelEditedPin}>
+        {!outOfRange ? (
           <View
             style={{
-              flexDirection: 'row',
-              justifyContent: 'space-evenly',
-              marginVertical: 10,
+              margin: -20,
+              borderRadius: 30,
+              padding: 20,
+              height: '75%',
+              backgroundColor: '#fff',
             }}>
+            {/* <Text>
+            {location.latitude} {location.longitude}
+          </Text> */}
+            <MapView
+              onRegionChange={region => onLocationChange(region)}
+              onRegionChangeComplete={() => setReady(false)}
+              // provider={PROVIDER_GOOGLE}
+              showsUserLocation
+              region={Pin}
+              style={{
+                height: 400,
+                width: '100%',
+                borderRadius: 30,
+                alignSelf: 'center',
+                overflow: 'hidden',
+              }}
+              initialRegion={Pin}>
+              <Marker coordinate={editMarker} />
+              {/* {markers.map((marker, index) => (
+              <Marker key={index} coordinate={marker} />
+            ))} */}
+              <Polygon
+                coordinates={farmLocation}
+                fillColor="rgba(255, 0, 0, 0.15)"
+                strokeColor="rgba(255, 0, 0, 1)"
+                strokeWidth={2}
+              />
+            </MapView>
+            <View style={{position: 'absolute', top: '35%', left: '50%'}}>
+              <Feather name="crosshair" size={40} color="#000" />
+            </View>
+
             <Button
-              onPress={cancelEditedPin}
+              onPress={addMarker}
               size="lg"
-              icon={<Feather name="x" size={20} color="#fff" />}
+              disabled={ready}
               buttonStyle={{
                 paddingHorizontal: 30,
-                borderRadius: 10,
-                backgroundColor: '#E72970',
-              }}>
-              <Text
-                style={[
-                  font.kanit,
-                  {fontSize: 20, color: '#fff', marginLeft: 5},
-                ]}>
-                ยกเลิก
-              </Text>
-            </Button>
-            <Button
-              onPress={saveEditedPin}
-              size="lg"
-              icon={<Feather name="check" size={20} color="#fff" />}
-              buttonStyle={{
-                paddingHorizontal: 30,
+                marginHorizontal: 30,
+                marginVertical: 10,
 
                 borderRadius: 10,
                 backgroundColor: '#047675',
               }}>
-              <Text
-                style={[
-                  font.kanit,
-                  {fontSize: 20, color: '#fff', marginLeft: 5},
-                ]}>
-                บันทึก
+              {/* <ActivityIndicator /> */}
+              <Text style={[font.kanit, {fontSize: 20, color: '#fff'}]}>
+                <MaterialIcons name="location-pin" size={20} color="#fff" />
+                ปักหมุด
               </Text>
             </Button>
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'space-evenly',
+                marginVertical: 10,
+              }}>
+              <Button
+                onPress={cancelEditedPin}
+                size="lg"
+                icon={<Feather name="x" size={20} color="#fff" />}
+                buttonStyle={{
+                  paddingHorizontal: 30,
+                  borderRadius: 10,
+                  backgroundColor: '#E72970',
+                }}>
+                <Text
+                  style={[
+                    font.kanit,
+                    {fontSize: 20, color: '#fff', marginLeft: 5},
+                  ]}>
+                  ยกเลิก
+                </Text>
+              </Button>
+              <Button
+                onPress={saveEditedPin}
+                size="lg"
+                icon={<Feather name="check" size={20} color="#fff" />}
+                buttonStyle={{
+                  paddingHorizontal: 30,
+
+                  borderRadius: 10,
+                  backgroundColor: '#047675',
+                }}>
+                <Text
+                  style={[
+                    font.kanit,
+                    {fontSize: 20, color: '#fff', marginLeft: 5},
+                  ]}>
+                  บันทึก
+                </Text>
+              </Button>
+            </View>
+            <View></View>
           </View>
-          <View></View>
-        </View>
+        ) : (
+          <View
+            style={{
+              borderRadius: 30,
+              padding: 20,
+              height: '30%',
+              backgroundColor: '#fff',
+              alignItems: 'center',
+              flexDirection: 'column',
+              justifyContent: 'space-evenly',
+            }}>
+            <Text style={[font.kanit, {fontSize: 24}]}>แจ้งเตือน</Text>
+            <View>
+              <Text style={[font.kanit, {textAlign: 'center'}]}>
+                จุดที่ถ่ายรูปอยู่นอกบริเวณไร่
+              </Text>
+              <Text style={[font.kanit, {textAlign: 'center'}]}>
+                ต้องการที่จะเปลี่ยนหมุดหรือไม่
+              </Text>
+            </View>
+            <View
+              style={{
+                width: '100%',
+                flexDirection: 'row',
+                justifyContent: 'space-around',
+                alignSelf: 'flex-end',
+              }}>
+              <Button
+                onPress={() => {
+                  setModalVisible(false);
+
+                  setTimeout(() => {
+                    setOutOfRange(false);
+                  }, 1000);
+                }}
+                radius={'xl'}
+                type="solid"
+                size="sm"
+                titleStyle={[font.kanit]}
+                buttonStyle={{backgroundColor: '#E72970'}}
+                containerStyle={{width: '45%', marginBottom: 10}}>
+                ยกเลิก
+                <MaterialCommunityIcons
+                  name="close"
+                  size={20}
+                  style={{marginHorizontal: 2}}
+                  color="white"
+                />
+              </Button>
+              <Button
+                onPress={() => {
+                  setOutOfRange(false);
+                }}
+                radius={'xl'}
+                type="solid"
+                size="sm"
+                buttonStyle={{backgroundColor: '#047675'}}
+                titleStyle={font.kanit}
+                containerStyle={{width: '45%', marginBottom: 10}}>
+                เปลี่ยนหมุด
+                <MaterialIcons
+                  name="location-pin"
+                  size={20}
+                  style={{marginHorizontal: 2}}
+                  color="white"
+                />
+              </Button>
+            </View>
+          </View>
+        )}
       </Modal>
+
       <Modal
         isVisible={isEdit}
         style={{justifyContent: 'flex-end'}}
-        onBackdropPress={() => setEdit(false)}
-        onModalHide={() => setEdit(false)}>
+        swipeDirection={['down']} // or any other direction(s) you prefer
+        onSwipeComplete={() => setEdit(false)}
+        onBackdropPress={() => setEdit(false)}>
         <View
           style={{
             margin: -20,

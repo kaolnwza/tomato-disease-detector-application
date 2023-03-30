@@ -33,6 +33,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {DrawerActions} from '@react-navigation/native';
 import ManageFarm from '../../screens/manageFarm';
 import UserManual from '../../screens/userManual';
+import ManageUser from '../../screens/manageUser';
 
 const Drawer = createDrawerNavigator();
 
@@ -40,6 +41,7 @@ const Stack = createNativeStackNavigator();
 
 function HomeDrawer(item) {
   const [user, setUser] = useState(null);
+  const [isOwner, setOwner] = useState(false);
 
   useEffect(() => {
     getUserInfomation();
@@ -48,6 +50,13 @@ function HomeDrawer(item) {
   const getUserInfomation = async () => {
     const value = await AsyncStorage.getItem('user_data');
     setUser(JSON.parse(value));
+    if (
+      JSON.parse(await AsyncStorage.getItem('user_data')).role === 'employee'
+    ) {
+      setOwner(false);
+    } else {
+      setOwner(true);
+    }
   };
 
   return (
@@ -116,7 +125,9 @@ function HomeDrawer(item) {
           ),
         })}
       />
-      <Drawer.Screen name="จัดการฟาร์ม" component={ManageFarm} />
+      {isOwner ? (
+        <Drawer.Screen name="จัดการฟาร์ม" component={ManageFarm} />
+      ) : null}
       <Drawer.Screen name="คู่มือการใช้งาน" component={UserManual} />
     </Drawer.Navigator>
   );
@@ -226,6 +237,14 @@ const HomeNavigator = () => (
       options={({navigation}) => ({
         title: 'กำหนดพื้นที่ไร่',
         headerTintColor: '#fff',
+      })}
+    />
+    <Stack.Screen
+      name="ManageUser"
+      component={ManageUser}
+      options={({navigation}) => ({
+        title: 'จัดการรายชื่อ',
+        headerTintColor: '#000',
       })}
     />
     <Stack.Screen

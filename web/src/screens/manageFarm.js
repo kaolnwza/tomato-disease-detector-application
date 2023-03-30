@@ -39,7 +39,6 @@ const ManageFarm = ({navigation}) => {
   }, []);
 
   const getFarm = async () => {
-    console.log('get farm');
     const value = await AsyncStorage.getItem('user_token');
 
     axios
@@ -65,7 +64,7 @@ const ManageFarm = ({navigation}) => {
   };
 
   const onSetting = item => {
-    console.log(item);
+    // console.log(item);
     navigation.navigate('CreateFarm', {item, type: 'edit'});
   };
 
@@ -112,8 +111,8 @@ const ManageFarm = ({navigation}) => {
         <SpeedDial.Action
           icon={{name: 'add', color: '#fff'}}
           color="#047675"
-          title="Add"
-          titleStyle={{backgroundColor: '#fff'}}
+          title="เพิ่มไร่"
+          titleStyle={[font.kanit, {backgroundColor: '#fff'}]}
           onPress={() => {
             setOpen(!open);
             navigation.navigate('CreateFarm');
@@ -187,7 +186,7 @@ const ManageFarm = ({navigation}) => {
                 <View style={{flexDirection: 'row'}}>
                   <Button
                     type="clear"
-                    onPress={() => {}}
+                    onPress={() => navigation.navigate('ManageUser', item)}
                     icon={
                       <Feather name="user" size={25} color="#fff" />
                     }></Button>

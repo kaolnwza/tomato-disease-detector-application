@@ -34,6 +34,7 @@ export const HomeScreen = ({navigation, route}) => {
   const [refreshing, setRefreshing] = useState(false);
   const [refreshFarm, setRefreshFarm] = useState(false);
   const [farmLocation, setFarmLocation] = useState([]);
+  const [isOwner, setOwner] = useState(false);
 
   const [menu, setMenu] = useState([
     {
@@ -82,6 +83,13 @@ export const HomeScreen = ({navigation, route}) => {
   }, [route]);
 
   const getSummery = async () => {
+    if (
+      JSON.parse(await AsyncStorage.getItem('user_data')).role === 'employee'
+    ) {
+      setOwner(false);
+    } else {
+      setOwner(true);
+    }
     // console.log('get summary');
     const token = await AsyncStorage.getItem('user_token');
     const current_farm = JSON.parse(await AsyncStorage.getItem('user_farm'));
@@ -178,51 +186,56 @@ export const HomeScreen = ({navigation, route}) => {
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }>
-        <View style={[styles.card, styles.shadowProp]}>
-          <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
-            <Text style={font.kanit}>
-              <MaterialCommunityIcons name="chart-arc" size={24} />
-              <Text style={{fontSize: 24}}>สรุปข้อมูล</Text> ภาพรวมวันนี้
-            </Text>
-            <Button
-              style={{marginRight: -15}}
-              type="clear"
-              onPress={() => {
-                navigation.navigate('Summary');
-              }}
-              icon={
-                <Feather name="chevron-right" size={30} color="#000" />
-              }></Button>
-          </View>
+        {isOwner ? (
+          <View style={[styles.card, styles.shadowProp]}>
+            <View
+              style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+              <Text style={font.kanit}>
+                <MaterialCommunityIcons name="chart-arc" size={24} />
+                <Text style={{fontSize: 24}}>สรุปข้อมูล</Text> ภาพรวมวันนี้
+              </Text>
+              <Button
+                style={{marginRight: -15}}
+                type="clear"
+                onPress={() => {
+                  navigation.navigate('Summary');
+                }}
+                icon={
+                  <Feather name="chevron-right" size={30} color="#000" />
+                }></Button>
+            </View>
 
-          {location ? (
-            <>
-              <View style={(styles.container, {paddingBottom: 5})}>
-                <MapView
-                  // provider={PROVIDER_GOOGLE}
+            {location ? (
+              <>
+                <View style={(styles.container, {paddingBottom: 5})}>
+                  <MapView
+                    // provider={PROVIDER_GOOGLE}
+                    style={{
+                      height: 200,
+                      width: '100%',
+                      borderRadius: 30,
+                    }}
+                    showsUserLocation={true}
+                    initialRegion={location}>
+                    {markers.map((coordinate, index) => (
+                      <Marker key={index} coordinate={coordinate} />
+                    ))}
+                    <Polygon
+                      coordinates={farmLocation}
+                      fillColor="rgba(255, 255, 255, 0.1)"
+                      strokeColor="rgba(255, 0, 0, 1)"
+                      strokeWidth={2}
+                    />
+                  </MapView>
+                </View>
+                <View
                   style={{
-                    height: 200,
-                    width: '100%',
-                    borderRadius: 30,
-                  }}
-                  showsUserLocation={true}
-                  initialRegion={location}>
-                  {markers.map((coordinate, index) => (
-                    <Marker key={index} coordinate={coordinate} />
-                  ))}
-                  <Polygon
-                    coordinates={farmLocation}
-                    fillColor="rgba(255, 255, 255, 0.1)"
-                    strokeColor="rgba(255, 0, 0, 1)"
-                    strokeWidth={2}
-                  />
-                </MapView>
-              </View>
-              <View
-                style={{flexDirection: 'row', justifyContent: 'space-around'}}>
-                <Text style={styles.info}>
-                  {moment().format('DD/MM/YYYY')}
-                  {/* {'  '}
+                    flexDirection: 'row',
+                    justifyContent: 'space-around',
+                  }}>
+                  <Text style={styles.info}>
+                    {moment().format('DD/MM/YYYY')}
+                    {/* {'  '}
           00.00 -{' '}
           {props.time == 'currnt'
             ? time
@@ -230,43 +243,44 @@ export const HomeScreen = ({navigation, route}) => {
               : moment().format(' HH:mm')
             : props.time}{' '}
           น. */}
-                </Text>
-                <Text style={styles.info}>โรคใบไหม้ 10%</Text>
-                <Text style={styles.info}>
-                  เกิดโรคทั้งหมด {markers.length} ต้น
-                </Text>
+                  </Text>
+                  <Text style={styles.info}>โรคใบไหม้ 10%</Text>
+                  <Text style={styles.info}>
+                    เกิดโรคทั้งหมด {markers.length} ต้น
+                  </Text>
+                </View>
+              </>
+            ) : refreshMap ? (
+              <View
+                style={
+                  (styles.container, {paddingBottom: 5, alignItems: 'center'})
+                }>
+                <Skeleton
+                  LinearGradientComponent={LinearGradient}
+                  animation="wave"
+                  style={{borderRadius: 30}}
+                  width="100%"
+                  height={200}
+                />
+                <Skeleton
+                  LinearGradientComponent={LinearGradient}
+                  animation="wave"
+                  style={{borderRadius: 30, marginTop: 8}}
+                  width="95%"
+                  height={10}
+                />
               </View>
-            </>
-          ) : refreshMap ? (
-            <View
-              style={
-                (styles.container, {paddingBottom: 5, alignItems: 'center'})
-              }>
-              <Skeleton
-                LinearGradientComponent={LinearGradient}
-                animation="wave"
-                style={{borderRadius: 30}}
-                width="100%"
-                height={200}
-              />
-              <Skeleton
-                LinearGradientComponent={LinearGradient}
-                animation="wave"
-                style={{borderRadius: 30, marginTop: 8}}
-                width="95%"
-                height={10}
-              />
-            </View>
-          ) : (
-            <Text
-              style={[
-                font.kanit,
-                {fontSize: 12, alignSelf: 'center', color: '#00000055'},
-              ]}>
-              ข้อมูลมีน้อยเกินไปที่จะคำนวณ
-            </Text>
-          )}
-        </View>
+            ) : (
+              <Text
+                style={[
+                  font.kanit,
+                  {fontSize: 12, alignSelf: 'center', color: '#00000055'},
+                ]}>
+                ข้อมูลมีน้อยเกินไปที่จะคำนวณ
+              </Text>
+            )}
+          </View>
+        ) : null}
         <View
           style={{
             flex: 1,
@@ -290,24 +304,6 @@ export const HomeScreen = ({navigation, route}) => {
             />
           ))}
         </View>
-        {/* <FlatList
-          numColumns={2}
-          columnWrapperStyle={{justifyContent: 'space-between'}}
-          data={menu}
-          renderItem={({item}) => (
-            <Button
-              type="clear"
-              title={item.name}
-              titleStyle={[{color: '#fff'}, font.kanit]}
-              style={[styles.btn, styles.shadowProp, jewelStyle(item.color)]}
-              icon={<Ionicons name={item.icon} size={60} color="#fff" />}
-              iconPosition="top"
-              onPress={() => {
-                navigation.navigate(item.page);
-              }}
-            />
-          )}
-        /> */}
         {/* Modal Section */}
         <Modal
           isVisible={isModalVisible}

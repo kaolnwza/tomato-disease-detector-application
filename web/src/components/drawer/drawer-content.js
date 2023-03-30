@@ -62,16 +62,24 @@ const DrawerContent = props => {
             {user.name} (
             {user.role.charAt(0).toUpperCase() + user.role.slice(1)})
           </Text>
-          <View style={{flexDirection: 'row'}}>
+          {user.email ? (
             <Text
               style={{
                 color: '#fff',
                 fontFamily: 'Kanit',
                 marginRight: 5,
               }}>
-              {user.email} ({user.member_id})
+              {user.email}
             </Text>
-          </View>
+          ) : null}
+          <Text
+            style={{
+              color: '#fff',
+              fontFamily: 'Kanit',
+              marginRight: 5,
+            }}>
+            ID: {user.member_id}
+          </Text>
         </ImageBackground>
         <View style={{flex: 1, backgroundColor: '#fff', paddingTop: 10}}>
           <DrawerItemList {...props} />

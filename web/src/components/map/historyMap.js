@@ -12,7 +12,6 @@ import Modal from 'react-native-modal';
 import {useSharedValue} from 'react-native-reanimated';
 
 import MapView, {Marker, PROVIDER_GOOGLE} from 'react-native-maps';
-import Feather from 'react-native-vector-icons/dist/Feather';
 import Geolocation from '@react-native-community/geolocation';
 
 import {

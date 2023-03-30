@@ -44,7 +44,6 @@ const SelectFarm = ({navigation}) => {
       .get('http://35.244.169.189.nip.io/v1/farms', {
         headers: {
           Authorization: `Bearer ${value}`,
-          'Content-Type': 'multipart/form-data',
         },
       })
       .then(response => {
@@ -107,8 +106,8 @@ const SelectFarm = ({navigation}) => {
           <SpeedDial.Action
             icon={{name: 'add', color: '#fff'}}
             color="#047675"
-            title="Add"
-            titleStyle={{backgroundColor: '#fff'}}
+            title="เพิ่มไร่"
+            titleStyle={[font.kanit, {backgroundColor: '#fff'}]}
             onPress={() => {
               navigation.navigate('CreateFarm');
               setOpen(!open);

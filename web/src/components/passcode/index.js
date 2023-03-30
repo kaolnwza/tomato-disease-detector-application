@@ -110,22 +110,21 @@ const FarmPasscode = ({onVerify}) => {
 
   const onInput = e => {
     setValue(e);
-    if (value.length == CELL_COUNT - 1) {
-      console.log('fulfill');
+    if (value.length >= CELL_COUNT - 1) {
       setVerify(true);
       setTimeout(() => {
-        onVerify();
+        onVerify(e);
       }, 1000);
     }
   };
 
   return (
     <SafeAreaView style={styles.root}>
-      <Text style={[styles.title, font.kanit]}>รหัสไร่</Text>
+      <Text style={[styles.title, font.kanit]}>รหัสพนักงาน</Text>
       <Image style={styles.icon} source={source} />
 
       <Text style={[styles.subTitle, font.kanit]}>
-        รหัสจะได้รับจากเจ้าของไร่ {value}
+        รหัสประจำตัวของพนักงาน {value}
       </Text>
 
       <CodeField
@@ -135,14 +134,13 @@ const FarmPasscode = ({onVerify}) => {
         onChangeText={onInput}
         cellCount={CELL_COUNT}
         rootStyle={styles.codeFiledRoot}
-        keyboardType="number-pad"
         textContentType="oneTimeCode"
         renderCell={renderCell}
       />
       <View style={{alignSelf: 'center'}}>
         <Button
           onPress={() => {}}
-          title="ตรวจสอบ"
+          title="เชิญ"
           icon={
             <MaterialCommunityIcons
               name="lock-check-outline"

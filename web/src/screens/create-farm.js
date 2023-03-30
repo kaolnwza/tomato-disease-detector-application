@@ -19,6 +19,7 @@ const MapScreen = ({navigation, route}) => {
   const [farmName, setFarmName] = useState('');
 
   useEffect(() => {
+    // console.log(route.params.item.farm_uuid);
     if (route.params) {
       setCoordinates(route.params.item.farm_location);
       setFarmName(route.params.item.farm_name);
@@ -68,11 +69,19 @@ const MapScreen = ({navigation, route}) => {
     const value = await AsyncStorage.getItem('user_token');
     const data = new FormData();
     data.append('farm_name', farmName);
-    data.append('location', JSON.stringify(coordinates));
+    data.append(
+      'location',
+      JSON.stringify(
+        coordinates.map(({latitude, longitude}) => ({
+          latitude: parseFloat(latitude),
+          longitude: parseFloat(longitude),
+        })),
+      ),
+    );
     if (route.params) {
       axios
         .patch(
-          `http://35.244.169.189.nip.io/v1/farms/${route.params.item.farm_uuid}`,
+          `http://35.244.169.189.nip.io/v1/farms/${route.params.item.farm_uuid}/`,
           data,
           {
             headers: {

@@ -41,7 +41,7 @@ const Login = ({navigation}) => {
   }, [formModal]);
 
   const checkUser = async () => {
-    console.log(await AsyncStorage.getItem('user_data'));
+    console.log(await AsyncStorage.getAllKeys());
   };
 
   const signIn = async () => {
@@ -348,22 +348,6 @@ const Login = ({navigation}) => {
           </View>
         </View>
       </Modal>
-      {/* <Modal
-        isVisible={passcodeModal}
-        style={{justifyContent: 'flex-end'}}
-        onBackdropPress={() => setPasscodeModal(false)}>
-        <View
-          style={{
-            margin: -20,
-            borderRadius: 30,
-            padding: 20,
-            height: '80%',
-            backgroundColor: '#fff',
-          }}>
-          <FarmPasscode onVerify={handleVerify} />
-          <View></View>
-        </View>
-      </Modal> */}
     </View>
   );
 };

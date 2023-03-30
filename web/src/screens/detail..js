@@ -15,7 +15,7 @@ import Ionicons from 'react-native-vector-icons/dist/Ionicons';
 import {font, buttons} from './styles';
 import DiseaseDetail from '../components/list/disease-detail';
 const Detail = props => {
-  const {name_th, image_url, name, inform} = props.route.params.item;
+  const {name_th, image_url, uuid, inform} = props.route.params.item;
 
   return (
     <View style={styles.container}>
@@ -37,7 +37,7 @@ const Detail = props => {
 
       <FlatList
         data={inform.inform_data}
-        renderItem={({item, index}) => <DiseaseDetail item={item} />}
+        renderItem={({item, index}) => <DiseaseDetail item={item} id={uuid} />}
         keyExtractor={item => item.title.toString()}
       />
     </View>

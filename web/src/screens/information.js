@@ -9,8 +9,6 @@ import {
 } from 'react-native';
 import {Button, ListItem, Avatar} from '@rneui/themed';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-import RNFetchBlob from 'rn-fetch-blob';
 import axios from 'axios';
 
 const Information = ({navigation}) => {
@@ -23,7 +21,7 @@ const Information = ({navigation}) => {
   const getData = async () => {
     const value = await AsyncStorage.getItem('user_token');
     axios
-      .get('http://35.244.169.189.nip.io/v1/disease', {
+      .get('http://35.244.169.189.nip.io/v1/diseases', {
         headers: {
           Authorization: `Bearer ${value}`,
         },
