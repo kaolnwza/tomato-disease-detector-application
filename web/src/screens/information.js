@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {
   Image,
+  RefreshControl,
   StyleSheet,
   FlatList,
   View,
@@ -13,12 +14,19 @@ import axios from 'axios';
 
 const Information = ({navigation}) => {
   const [disease, setDisease] = useState([]);
+  const [refreshing, setRefreshing] = useState(true);
 
   useEffect(() => {
-    getData();
+    navigation.addListener('focus', getData);
   }, []);
+  const onRefresh = React.useCallback(() => {
+    getData();
 
+    setRefreshing(true);
+    // Put your refresh logic here
+  }, []);
   const getData = async () => {
+    console.log('data');
     const value = await AsyncStorage.getItem('user_token');
     axios
       .get('http://35.244.169.189.nip.io/v1/diseases', {
@@ -32,13 +40,16 @@ const Information = ({navigation}) => {
       .catch(error => {
         console.log(error);
       });
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 500);
   };
   const keyExtractor = (item, index) => index.toString();
 
   const renderItem = ({item}) => (
     <TouchableOpacity
       onPress={() => {
-        navigation.navigate('Detail', {item});
+        navigation.navigate('Detail', {item, canEdit: true});
       }}>
       <ListItem bottomDivider containerStyle={{backgroundColor: '#00000000'}}>
         <Avatar
@@ -64,6 +75,9 @@ const Information = ({navigation}) => {
   return (
     <View style={styles.container}>
       <FlatList
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
         keyExtractor={keyExtractor}
         data={disease}
         renderItem={renderItem}

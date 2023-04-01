@@ -160,7 +160,7 @@ export const HomeScreen = ({navigation, route}) => {
         },
       })
       .then(response => {
-        // console.log(response.data);
+        console.log(response.data);
         setFarmList(response.data);
         setRefreshing(false);
         setRefreshFarm(false);

@@ -18,7 +18,7 @@ import axios from 'axios';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 import ImagePicker from 'react-native-image-crop-picker';
 
-const DiseaseDetail = ({item, id}) => {
+const DiseaseDetail = ({item, id, canEdit}) => {
   const width = Dimensions.get('window').width;
   const carousel = [1];
   carousel.push('');
@@ -54,9 +54,13 @@ const DiseaseDetail = ({item, id}) => {
       width: 300,
       height: 400,
       cropping: true,
-    }).then(image => {
-      console.log(image);
-    });
+    })
+      .then(image => {
+        console.log(image);
+      })
+      .catch(err => {
+        console.log(err);
+      });
   };
 
   const saveText = async module => {
@@ -83,7 +87,7 @@ const DiseaseDetail = ({item, id}) => {
     data.append('column', column);
     data.append('text', text);
     axios
-      .patch(`http://35.244.169.189.nip.io/v1/disease/${id}`, data, {
+      .patch(`http://35.244.169.189.nip.io/v1/diseases/${id}/`, data, {
         headers: {
           Authorization: `Bearer ${value}`,
         },
@@ -123,22 +127,24 @@ const DiseaseDetail = ({item, id}) => {
       isExpanded={expandedItems.includes(item.title)}>
       <ListItem>
         <ListItem.Content>
-          {!edit && isOwner ? (
-            <Button
-              onPress={() => setEdit(!edit)}
-              radius={'xl'}
-              type="solid"
-              size="sm"
-              titleStyle={font.kanit}
-              containerStyle={{width: '100%', marginBottom: 10}}>
-              แก้ไข
-              <MaterialCommunityIcons
-                name="pencil-outline"
-                size={20}
-                style={{marginHorizontal: 2}}
-                color="white"
-              />
-            </Button>
+          {canEdit ? (
+            !edit && isOwner ? (
+              <Button
+                onPress={() => setEdit(!edit)}
+                radius={'xl'}
+                type="solid"
+                size="sm"
+                titleStyle={font.kanit}
+                containerStyle={{width: '100%', marginBottom: 10}}>
+                แก้ไข
+                <MaterialCommunityIcons
+                  name="pencil-outline"
+                  size={20}
+                  style={{marginHorizontal: 2}}
+                  color="white"
+                />
+              </Button>
+            ) : null
           ) : null}
           {edit ? (
             <Input
@@ -158,7 +164,6 @@ const DiseaseDetail = ({item, id}) => {
               style={[
                 font.kanit,
                 {
-                  marginBottom: 20,
                   paddingVertical: 5,
                   paddingHorizontal: 10,
                   alignSelf: 'center',
@@ -209,9 +214,9 @@ const DiseaseDetail = ({item, id}) => {
               </Button>
             </View>
           ) : null}
-          <View style={{marginVertical: 20}}>
+          <View style={{marginLeft: -13.8}}>
             <Carousel
-              width={width}
+              width={canEdit ? width : 350}
               height={width / 2}
               data={carousel}
               scrollAnimationDuration={500}
@@ -220,7 +225,7 @@ const DiseaseDetail = ({item, id}) => {
                 index == carousel.length - 1 ? (
                   isOwner ? (
                     <TouchableOpacity
-                      style={{height: '100%'}}
+                      style={{height: '100%', marginLeft: 35}}
                       onPress={OpenPhoto}>
                       <View
                         style={{
@@ -252,6 +257,7 @@ const DiseaseDetail = ({item, id}) => {
                       borderRadius: 30,
                       marginRight: 30,
                       justifyContent: 'center',
+                      marginLeft: 35,
                     }}>
                     <Text style={{textAlign: 'center', fontSize: 30}}>
                       {index}

@@ -29,14 +29,15 @@ import axios from 'axios';
 import moment from 'moment';
 import HistoryMap from '../components/map/historyMap';
 import DiseaseDetail from '../components/list/disease-detail';
+import StageSelect from '../components/carousel/stageSelect';
 
-const Detail = props => {
+const Detail = ({detail}) => {
   const [info, setInfo] = useState([]);
 
   useEffect(() => {
     axios
       .get(
-        `http://35.244.169.189.nip.io/v1/disease/${props.detail.disease_name}`,
+        `http://35.244.169.189.nip.io/v1/diseases/name/${detail.disease_name}`,
         {
           headers: {
             Authorization:
@@ -291,6 +292,7 @@ const History = ({navigation}) => {
           )}
           tabs={TABS}
           showsVerticalScrollIndicator={false}>
+          {/* <Text>{JSON.stringify(history[modalIndex].status)}</Text> */}
           {TABS.map((tab, i) => {
             switch (tab.component) {
               case 'map':
@@ -304,6 +306,8 @@ const History = ({navigation}) => {
                     <Detail detail={history[modalIndex]} />
                   </ScrollView>
                 );
+              case 'fix':
+                return <StageSelect key={i} detail={history[modalIndex]} />;
               default:
                 return <Text key={i}>No Component</Text>;
             }

@@ -37,7 +37,13 @@ const Detail = props => {
 
       <FlatList
         data={inform.inform_data}
-        renderItem={({item, index}) => <DiseaseDetail item={item} id={uuid} />}
+        renderItem={({item, index}) => (
+          <DiseaseDetail
+            item={item}
+            id={uuid}
+            canEdit={props.route.params.canEdit}
+          />
+        )}
         keyExtractor={item => item.title.toString()}
       />
     </View>

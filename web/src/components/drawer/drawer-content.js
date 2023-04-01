@@ -59,8 +59,7 @@ const DrawerContent = props => {
               fontSize: 22,
               fontFamily: 'Kanit',
             }}>
-            {user.name} (
-            {user.role.charAt(0).toUpperCase() + user.role.slice(1)})
+            {user.name} ({user.role == 'owner' ? 'เจ้าของ' : 'พนักงาน'})
           </Text>
           {user.email ? (
             <Text

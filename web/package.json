@@ -41,6 +41,7 @@
     "react-native-screens": "^3.18.2",
     "react-native-sticky-parallax-header": "^1.0.0-rc.9",
     "react-native-svg": "^13.8.0",
+    "react-native-switch-selector": "^2.3.0",
     "react-native-vector-icons": "^9.2.0",
     "react-native-vision-camera": "^2.15.2",
     "rn-fetch-blob": "^0.12.0"
