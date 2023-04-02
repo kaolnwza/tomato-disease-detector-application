@@ -213,3 +213,18 @@ you can find them in Google Console/Kubenetes Engine/Clusters/$CLUSTER_NAME
     kubectl apply -f ./api-k8s/service.yaml
     kubectl apply -f ./api-k8s/ingress.yaml
     ```
+    
+    
+    
+ ---
+ ## Application Structure Overview
+ <img width="1379" alt="overview" src="https://user-images.githubusercontent.com/1614727/229361919-d4959c33-3b44-433e-b69f-1b7135c24752.png">
+ 
+ ## Hexagonal Architecture
+ <img width="1362" alt="hexagonal" src="https://user-images.githubusercontent.com/1614727/229361947-ed5092d2-9df2-4779-95ef-7e6b2b9ea3ce.png">
+
+## Infrastructure
+<img width="1362" alt="infra" src="https://user-images.githubusercontent.com/1614727/229361957-0f9f2ed4-48a1-439a-956f-d558c34a20c9.png">
+
+
+ 
