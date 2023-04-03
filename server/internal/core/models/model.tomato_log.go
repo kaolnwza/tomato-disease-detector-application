@@ -36,6 +36,7 @@ type TomatoLog struct {
 	ImageURI          string         `json:"image_uri"`
 	Location          sql.NullString `db:"location"`
 	Status            string         `db:"status"`
+	Score             float64        `db:"score"`
 }
 
 type TomatoLogResponse struct {
@@ -51,6 +52,7 @@ type TomatoLogResponse struct {
 	Latitude        string    `json:"latitude"`
 	Longtitude      string    `json:"longtitude"`
 	Status          string    `json:"status"`
+	Score           float64   `json:"score"`
 }
 
 type TomatoSummary struct {

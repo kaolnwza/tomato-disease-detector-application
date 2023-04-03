@@ -33,20 +33,20 @@ func NewTomatoLogService(r port.TomatoLogRepository, tx port.Transactor, uploadS
 func (s *tomatoLogService) GetByFarmUUID(ctx context.Context, farmUUID uuid.UUID, userUUID uuid.UUID) ([]*model.TomatoLogResponse, error) {
 	logs := []*model.TomatoLog{}
 
-	isOwner, err := s.usrFarmSvc.IsUserFarmOwner(ctx, userUUID, farmUUID)
-	if err != nil {
+	// isOwner, err := s.usrFarmSvc.IsUserFarmOwner(ctx, userUUID, farmUUID)
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	// if *isOwner {
+	if err := s.tlRepo.GetByFarmUUID(ctx, &logs, farmUUID); err != nil {
 		return nil, err
 	}
-
-	if *isOwner {
-		if err := s.tlRepo.GetByFarmUUID(ctx, &logs, farmUUID); err != nil {
-			return nil, err
-		}
-	} else {
-		if err := s.tlRepo.GetByUserUUID(ctx, &logs, userUUID, farmUUID); err != nil {
-			return nil, err
-		}
-	}
+	// } else {
+	// 	if err := s.tlRepo.GetByUserUUID(ctx, &logs, userUUID, farmUUID); err != nil {
+	// 		return nil, err
+	// 	}
+	// }
 
 	if len(logs) < 1 {
 		return nil, nil
@@ -69,6 +69,7 @@ func (s *tomatoLogService) GetByFarmUUID(ctx context.Context, farmUUID uuid.UUID
 			Latitude:        lat,
 			Longtitude:      long,
 			Status:          i.Status,
+			Score:           i.Score,
 		})
 
 		go func(i *model.TomatoLog, idx int, respI *model.TomatoLogResponse) {
@@ -157,6 +158,7 @@ func (s *tomatoLogService) GetByLogUUID(ctx context.Context, logUUID uuid.UUID) 
 		UpdatedAt:       logs.UpdatedAt,
 		ImageURI:        uri,
 		Status:          logs.Status,
+		Score:           logs.Score,
 	}
 
 	return resp, nil
@@ -172,6 +174,7 @@ func (s *tomatoLogService) Create(
 	bucket string,
 	lat string,
 	long string,
+	score float64,
 ) error {
 	// no ACID bcuz need to save uploaded info from gcs to db
 	upload, err := s.uploadSvc.Upload(ctx, userUUID, file, bucket)
@@ -188,7 +191,7 @@ func (s *tomatoLogService) Create(
 
 	status := helper.TomatoLogStatusVal(diseaseName, false)
 
-	if err := s.tlRepo.Create(ctx, &logs, farmUUID, diseaseName, geom, status); err != nil {
+	if err := s.tlRepo.Create(ctx, &logs, farmUUID, diseaseName, geom, status, score); err != nil {
 		return err
 	}
 

@@ -3,6 +3,7 @@ package handler
 import (
 	"net/http"
 	"os"
+	"strconv"
 	port "tomato-api/internal/ports"
 	log "tomato-api/lib/logs"
 
@@ -95,8 +96,14 @@ func (h *tomatoLogHandler) CreateTomatoLogByFarmUUID(c port.Context) {
 	latitude := c.Request().FormValue("latitude")
 	longtitude := c.Request().FormValue("longtitude")
 	userUUID := c.AccessUserUUID()
+	score, err := strconv.ParseFloat(c.Request().FormValue("score"), 2)
+	if err != nil {
+		log.Error(err)
+		c.JSON(http.StatusInternalServerError, err.Error())
+		return
+	}
 
-	if err := h.tlSvc.Create(c.Ctx(), userUUID, farmUUID, description, disease, file, os.Getenv("GCS_BUCKET_1"), latitude, longtitude); err != nil {
+	if err := h.tlSvc.Create(c.Ctx(), userUUID, farmUUID, description, disease, file, os.Getenv("GCS_BUCKET_1"), latitude, longtitude, score); err != nil {
 		log.Error(err)
 		c.JSON(http.StatusInternalServerError, err.Error())
 		return
@@ -173,11 +180,11 @@ func (h *tomatoLogHandler) GetLogsPercentageDailyByFarmUUIDHandler(c port.Contex
 	farmUUID, err := uuid.Parse(c.Param("farm_uuid"))
 	if err != nil {
 		log.Error(err)
-		c.JSON(http.StatusInternalServerError, err.Error())
+		c.JSON(http.StatusBadRequest, err.Error())
 		return
 	}
-	startTime := c.FormValue("start_time")
-	endTime := c.FormValue("end_time")
+	startTime := c.Request().URL.Query().Get("start_time")
+	endTime := c.Request().URL.Query().Get("end_time")
 
 	resp, err := h.tlSvc.GetLogsPercentageDailyByFarmUUID(c.Ctx(), farmUUID, startTime, endTime)
 	if err != nil {

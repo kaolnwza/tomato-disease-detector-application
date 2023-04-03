@@ -100,9 +100,10 @@ func (r *tomatoLogRepo) Create(
 	diseaseName string,
 	location string,
 	status model.TomatoLogStatus,
+	score float64,
 ) error {
 	query := `
-		INSERT INTO tomato_log (recorder_uuid, farm_plot_uuid, upload_uuid, tomato_disease_uuid, description, location, status)
+		INSERT INTO tomato_log (recorder_uuid, farm_plot_uuid, upload_uuid, tomato_disease_uuid, description, location, status, score)
 		SELECT 
 			$1, 
 			(SELECT farm_plot_uuid FROM farm_plot WHERE farm_uuid = $2 LIMIT 1), 
@@ -110,10 +111,11 @@ func (r *tomatoLogRepo) Create(
 			(SELECT disease_uuid FROM tomato_disease_info WHERE disease_name = $4), 
 			$5, 
 			$6,
-			$7
+			$7,
+			$8
 `
 
-	return r.tx.Insert(ctx, query, logs.RecorderUUID.String(), farmUUID.String(), logs.UploadUUID.String(), diseaseName, logs.Description, location, status)
+	return r.tx.Insert(ctx, query, logs.RecorderUUID.String(), farmUUID.String(), logs.UploadUUID.String(), diseaseName, logs.Description, location, status, score)
 }
 
 func (r *tomatoLogRepo) Update(ctx context.Context, logUUID uuid.UUID, desc string, diseaseName string, location string, status model.TomatoLogStatus) error {
@@ -258,7 +260,7 @@ func (r *tomatoLogRepo) GetLogsPercentageDailyByFarmUUID(ctx context.Context, lo
 			status,
 			created_at
 		FROM tomato_log
-		WHERE created_at BETWEEN $1 AND $2 + INTERVAL '1D'
+		WHERE created_at BETWEEN $1 AND $2
 		AND farm_plot_uuid = (
 			SELECT farm_plot_uuid
 			FROM farm_plot

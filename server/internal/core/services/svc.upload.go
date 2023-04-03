@@ -25,8 +25,7 @@ func NewUploadService(r port.UploadRepository, tx port.Transactor, storer port.I
 }
 
 func (s uploadService) Upload(ctx context.Context, userUUID uuid.UUID, file multipart.File, bucket string) (*model.Upload, error) {
-
-	upload, err := s.storer.UploadImages(ctx, file, bucket)
+	upload, err := s.storer.UploadImage(ctx, file, bucket)
 	if err != nil {
 		return nil, err
 	}

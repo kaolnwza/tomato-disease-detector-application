@@ -7,6 +7,6 @@ import (
 )
 
 type ImageStorer interface {
-	UploadImages(ctx context.Context, file multipart.File, bucket string) (*model.Upload, error)
+	UploadImage(ctx context.Context, file multipart.File, bucket string) (*model.Upload, error)
 	GenerateImageURI(ctx context.Context, bucket string, objectLocation string) (string, error)
 }

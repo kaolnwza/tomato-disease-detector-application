@@ -16,7 +16,6 @@ import (
 
 type gcsStorer struct {
 	cli *storage.Client
-	port.ImageStorer
 }
 
 func NewGCSStorer(cli *storage.Client) port.ImageStorer {
@@ -25,15 +24,12 @@ func NewGCSStorer(cli *storage.Client) port.ImageStorer {
 
 func (g gcsStorer) UploadImage(ctx context.Context, file multipart.File, bucket string) (*model.Upload, error) {
 	var err error
-
 	objectLocation := fmt.Sprintf(`images/%s`, uuid.New())
 
 	sw := g.cli.Bucket(bucket).Object(objectLocation).NewWriter(ctx)
-
 	if _, err := io.Copy(sw, file); err != nil {
 		return nil, err
 	}
-
 	if err := sw.Close(); err != nil {
 		return nil, err
 	}
@@ -43,9 +39,10 @@ func (g gcsStorer) UploadImage(ctx context.Context, file multipart.File, bucket 
 		return nil, err
 	}
 
-	var upload model.Upload
-	upload.Bucket = bucket
-	upload.Path = u.EscapedPath()
+	upload := model.Upload{
+		Bucket: bucket,
+		Path:   u.EscapedPath(),
+	}
 
 	return &upload, nil
 }
