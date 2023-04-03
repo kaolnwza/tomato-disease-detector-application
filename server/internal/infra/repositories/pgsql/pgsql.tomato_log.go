@@ -151,9 +151,18 @@ func (r *tomatoLogRepo) GetClusterByFarmUUID(ctx context.Context, logs *[]*model
 	}
 
 	query := `
-	WITH freq AS (
+	WITH all_logs AS (
+		SELECT *
+		FROM tomato_log
+		WHERE farm_plot_uuid = (
+			SELECT farm_plot_uuid
+			FROM farm_plot
+			WHERE farm_uuid = $1
+		)
+	),
+	freq AS (
 		SELECT 
-			ST_CLUSTERKMEANS(location, 3) OVER() AS cid, 
+			ST_CLUSTERKMEANS(location, CASE WHEN (SELECT count(1) FROM all_logs) <= 3 THEN 1 ELSE 3 END) OVER() AS cid, 
 			tomato_log_uuid, 
 			"location",
 			tomato_disease_uuid,
