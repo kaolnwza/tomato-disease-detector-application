@@ -22,7 +22,7 @@ import {
   TabbedHeaderPager,
   DetailsHeaderScrollView,
 } from 'react-native-sticky-parallax-header';
-import {Button, ListItem, Avatar, Tab, TabView} from '@rneui/themed';
+import {Button, ListItem, Avatar, Chip, Divider} from '@rneui/themed';
 import {font, buttons} from './styles';
 import RNFetchBlob from 'rn-fetch-blob';
 import axios from 'axios';
@@ -77,11 +77,47 @@ const History = ({navigation}) => {
       component: 'fix',
     },
   ]);
+
+  const allDisease = [
+    {label: 'ใบสุขภาพดี', value: 'Healthy'},
+    {label: 'โรคใบจุด', value: 'Bacterial Spot'},
+    {label: 'โรคใบหงิกเหลือง', value: 'Yellow Leaf Curl Virus'},
+    {label: 'โรคไรสองจุด', value: 'Spider Mites'},
+    {label: 'โรคใบจุดวงกลม', value: 'Septoria Leaf Spot'},
+    {label: 'โรคใบด่าง', value: 'Mosaic Virus'},
+    {label: 'โรคใบไหม้', value: 'Late Blight'},
+    {label: 'โรคใบจุดวง', value: 'Early Blight'},
+    {label: 'โรครากำมะหยี่', value: 'Leaf Mold'},
+  ];
   const scrollValue = useSharedValue(0);
 
   const [modalIndex, setModalIndex] = useState(-1);
   const [history, setHistory] = useState([]);
   const [refreshing, setRefreshing] = useState(true);
+  const [isVisible, setIsVisible] = useState(false);
+  const [selectedItems, setSelectedItems] = useState([]);
+
+  const handleSelectItem = itemValue => {
+    if (selectedItems.includes(itemValue)) {
+      // If the item is already selected, remove it from the selected items list
+      setSelectedItems(prevSelectedItems =>
+        prevSelectedItems.filter(selectedItem => selectedItem !== itemValue),
+      );
+    } else {
+      // If the item is not selected, add it to the selected items list
+      setSelectedItems(prevSelectedItems => [...prevSelectedItems, itemValue]);
+    }
+  };
+
+  const isItemSelected = itemValue => selectedItems.includes(itemValue);
+
+  const handleOpenModal = () => {
+    setIsVisible(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsVisible(false);
+  };
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -103,7 +139,6 @@ const History = ({navigation}) => {
 
     const current_farm = JSON.parse(await AsyncStorage.getItem('user_farm'));
 
-    // console.log('get log');
     axios
       .get(
         `http://35.244.169.189.nip.io/v1/farms/${current_farm.farm_uuid}/log`,
@@ -187,7 +222,7 @@ const History = ({navigation}) => {
               color: true ? '#047675' : '#E72970',
               fontFamily: 'Kanit-Regular',
             }}>
-            89%
+            {item.score} %
           </ListItem.Title>
           <ListItem.Subtitle style={[font.kanit, {textAlign: 'right'}]} right>
             {moment(item.created_at).format('DD/MM/YYYY HH:mm')}
@@ -228,6 +263,20 @@ const History = ({navigation}) => {
 
   return (
     <View style={styles.container}>
+      <TouchableOpacity
+        onPress={() => setIsVisible(true)}
+        style={{
+          borderRadius: 50,
+          backgroundColor: '#047675',
+          padding: 10,
+          bottom: 50,
+          right: 20,
+          zIndex: 1,
+          position: 'absolute',
+        }}>
+        <MaterialCommunityIcons name="filter-variant" size={35} color="#fff" />
+      </TouchableOpacity>
+
       <FlatList
         keyExtractor={keyExtractor}
         data={history}
@@ -237,6 +286,54 @@ const History = ({navigation}) => {
         renderItem={renderItem}
       />
       {/* Modal */}
+      <Modal
+        isVisible={isVisible}
+        onBackdropPress={handleCloseModal}
+        onSwipeComplete={handleCloseModal}
+        animationIn="slideInRight"
+        animationOut="slideOutRight"
+        swipeDirection="right"
+        style={styles.modal}>
+        <View style={styles.modalContent}>
+          <Text
+            style={[font.kanit, {color: '#00000077', marginHorizontal: 10}]}>
+            หมวดหมู่โรค
+          </Text>
+          <Divider style={{marginVertical: 5}} />
+
+          <View
+            style={{
+              flexDirection: 'row',
+              flexWrap: 'wrap',
+              marginBottom: 10,
+            }}>
+            {allDisease.map((item, i) => (
+              <Chip
+                key={i}
+                title={item.label}
+                buttonStyle={[
+                  styles.chipButton,
+                  isItemSelected(item.value) && styles.chipButtonSelected,
+                ]}
+                titleStyle={[
+                  styles.chipTitle,
+                  isItemSelected(item.value) && styles.chipTitleSelected,
+                  font.kanit,
+                ]}
+                onPress={() => handleSelectItem(item.value)}
+                type="outline"
+                size="sm"
+              />
+            ))}
+            {/* <Text>{JSON.stringify(selectedItems)}</Text> */}
+          </View>
+          <Text
+            style={[font.kanit, {color: '#00000077', marginHorizontal: 10}]}>
+            วัน
+          </Text>
+          <Divider style={{marginVertical: 5}} />
+        </View>
+      </Modal>
       <Modal
         isVisible={modalIndex !== -1}
         style={{justifyContent: 'flex-end'}}
@@ -380,6 +477,32 @@ const styles = StyleSheet.create({
 
     backgroundColor: '#F2f2f2',
     borderRadius: 20,
+  },
+  modal: {
+    justifyContent: 'flex-start',
+    margin: 0,
+    alignSelf: 'flex-end',
+  },
+  modalContent: {
+    height: '100%',
+    width: 250,
+    backgroundColor: '#fff',
+    paddingHorizontal: 10,
+    paddingVertical: 50,
+  },
+  chipButton: {
+    margin: 5,
+    borderColor: 'gray',
+    backgroundColor: 'white',
+  },
+  chipButtonSelected: {
+    backgroundColor: '#047675',
+  },
+  chipTitle: {
+    color: 'gray',
+  },
+  chipTitleSelected: {
+    color: 'white',
   },
 });
 

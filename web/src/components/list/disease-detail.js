@@ -20,7 +20,7 @@ import ImagePicker from 'react-native-image-crop-picker';
 
 const DiseaseDetail = ({item, id, canEdit}) => {
   const width = Dimensions.get('window').width;
-  const carousel = [1];
+  const carousel = [];
   carousel.push('');
   const [expandedItems, setExpandedItems] = useState([]);
   const [text, setText] = useState(item.data);
@@ -216,6 +216,7 @@ const DiseaseDetail = ({item, id, canEdit}) => {
           ) : null}
           <View style={{marginLeft: -13.8}}>
             <Carousel
+              mode="parallax"
               width={canEdit ? width : 350}
               height={width / 2}
               data={carousel}
@@ -225,17 +226,17 @@ const DiseaseDetail = ({item, id, canEdit}) => {
                 index == carousel.length - 1 ? (
                   isOwner ? (
                     <TouchableOpacity
-                      style={{height: '100%', marginLeft: 35}}
+                      style={{height: '100%'}}
                       onPress={OpenPhoto}>
                       <View
                         style={{
                           flex: 1,
                           borderWidth: 1,
                           borderRadius: 30,
-                          marginRight: 30,
                           justifyContent: 'center',
                           alignItems: 'center',
                           flexDirection: 'column',
+                          marginHorizontal: canEdit ? 0 : 10,
                         }}>
                         <MaterialCommunityIcons
                           name="file-image-plus-outline"
@@ -255,9 +256,8 @@ const DiseaseDetail = ({item, id, canEdit}) => {
                       flex: 1,
                       borderWidth: 1,
                       borderRadius: 30,
-                      marginRight: 30,
                       justifyContent: 'center',
-                      marginLeft: 35,
+                      marginHorizontal: canEdit ? 0 : 10,
                     }}>
                     <Text style={{textAlign: 'center', fontSize: 30}}>
                       {index}

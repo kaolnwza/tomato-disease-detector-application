@@ -73,8 +73,8 @@ const DiseaseChart = props => {
               moment(new Date(props.date[1])).format('DD/MM/YYYY')
             : moment(new Date(props.date)).format('DD/MM/YYYY')}
         </Text>
-        <Text style={[font.kanit]}>คิดเป็น 20% ของพื้นที่</Text>
-        <Text style={styles.info}>เกิดโรคในไร่ทั้งหมด 12 ต้น</Text>
+        {/* <Text style={[font.kanit]}>คิดเป็น 20% ของพื้นที่</Text> */}
+        <Text style={styles.info}>เกิดโรคในไร่ทั้งหมด {props.img} ต้น</Text>
 
         {/* <Text style={styles.info}>
           00.00 -{' '}

@@ -196,6 +196,7 @@ export const ResultPage = ({route, navigation}) => {
     data.append('description', description);
     data.append('latitude', Pin.latitude);
     data.append('longtitude', Pin.longitude);
+    data.append('score', percentage.toFixed(2));
 
     fetch(
       `http://35.244.169.189.nip.io/v1/farms/${current_farm.farm_uuid}/log`,

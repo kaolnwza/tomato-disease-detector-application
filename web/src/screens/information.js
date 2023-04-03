@@ -26,7 +26,6 @@ const Information = ({navigation}) => {
     // Put your refresh logic here
   }, []);
   const getData = async () => {
-    console.log('data');
     const value = await AsyncStorage.getItem('user_token');
     axios
       .get('http://35.244.169.189.nip.io/v1/diseases', {

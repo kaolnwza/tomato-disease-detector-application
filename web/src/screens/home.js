@@ -63,14 +63,12 @@ export const HomeScreen = ({navigation, route}) => {
     };
   };
 
-  const wait = timeout => {
-    return new Promise(resolve => setTimeout(resolve, timeout));
-  };
   const onRefresh = React.useCallback(() => {
     getSummery();
     setRefreshing(true);
     // wait(2000).then(() => setRefreshing(false));
   }, []);
+
   useEffect(() => {
     // console.log('home');
     navigation.addListener('focus', getSummery);
