@@ -159,6 +159,7 @@ func (r *tomatoLogRepo) GetClusterByFarmUUID(ctx context.Context, logs *[]*model
 			FROM farm_plot
 			WHERE farm_uuid = $1
 		)
+		AND "location" IS NOT NULL ` + dateCond + diseaseCond + `
 	),
 	freq AS (
 		SELECT 
@@ -168,13 +169,7 @@ func (r *tomatoLogRepo) GetClusterByFarmUUID(ctx context.Context, logs *[]*model
 			tomato_disease_uuid,
 			status,
 			created_at
-		FROM tomato_log
-		WHERE farm_plot_uuid = (
-			SELECT farm_plot_uuid
-			FROM farm_plot
-			WHERE farm_uuid = $1
-		)
-		AND "location" IS NOT NULL ` + dateCond + diseaseCond + `
+		FROM all_logs
 	),
 	most_freq AS (
 			SELECT cid FROM freq
