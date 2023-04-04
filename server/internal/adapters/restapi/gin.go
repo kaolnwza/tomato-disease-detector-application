@@ -192,3 +192,7 @@ func (c *GinContext) FormValue(key string) string {
 func (c *GinContext) Param(key string) string {
 	return c.Context.Params.ByName(key)
 }
+
+func (c *GinContext) QueryParam(key string) string {
+	return c.Request().URL.Query().Get(key)
+}

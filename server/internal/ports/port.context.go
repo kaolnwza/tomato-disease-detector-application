@@ -17,6 +17,7 @@ type Context interface {
 	Ctx() context.Context
 	Param(string) string
 	FormValue(string) string
+	QueryParam(string) string
 }
 
 type ResponseWriter interface {

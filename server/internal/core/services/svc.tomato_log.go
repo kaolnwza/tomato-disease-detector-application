@@ -2,8 +2,10 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"mime/multipart"
 	"os"
+	"time"
 	model "tomato-api/internal/core/models"
 	port "tomato-api/internal/ports"
 	"tomato-api/lib/helper"
@@ -30,7 +32,7 @@ func NewTomatoLogService(r port.TomatoLogRepository, tx port.Transactor, uploadS
 	}
 }
 
-func (s *tomatoLogService) GetByFarmUUID(ctx context.Context, farmUUID uuid.UUID, userUUID uuid.UUID) ([]*model.TomatoLogResponse, error) {
+func (s *tomatoLogService) GetByFarmUUID(ctx context.Context, farmUUID uuid.UUID, userUUID uuid.UUID, startTime *time.Time, endTime *time.Time, diseaseName *model.TomatoDiseaseName) ([]*model.TomatoLogResponse, error) {
 	logs := []*model.TomatoLog{}
 
 	// isOwner, err := s.usrFarmSvc.IsUserFarmOwner(ctx, userUUID, farmUUID)
@@ -39,8 +41,16 @@ func (s *tomatoLogService) GetByFarmUUID(ctx context.Context, farmUUID uuid.UUID
 	// }
 
 	// if *isOwner {
-	if err := s.tlRepo.GetByFarmUUID(ctx, &logs, farmUUID); err != nil {
-		return nil, err
+	if startTime != nil && endTime != nil {
+		fmt.Println("time", startTime, endTime)
+		if err := s.tlRepo.GetByFarmUUIDWithTime(ctx, &logs, farmUUID, startTime, endTime, diseaseName); err != nil {
+			return nil, err
+		}
+
+	} else {
+		if err := s.tlRepo.GetByFarmUUID(ctx, &logs, farmUUID, diseaseName); err != nil {
+			return nil, err
+		}
 	}
 	// } else {
 	// 	if err := s.tlRepo.GetByUserUUID(ctx, &logs, userUUID, farmUUID); err != nil {

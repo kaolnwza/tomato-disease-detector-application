@@ -4,7 +4,9 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	model "tomato-api/internal/core/models"
 	port "tomato-api/internal/ports"
+	"tomato-api/lib/helper"
 	log "tomato-api/lib/logs"
 
 	"github.com/google/uuid"
@@ -22,11 +24,34 @@ func (h *tomatoLogHandler) GetTomatoLogByFarmUUID(c port.Context) {
 	farmUUID, err := uuid.Parse(c.Param("farm_uuid"))
 	if err != nil {
 		log.Error(err)
-		c.JSON(http.StatusInternalServerError, err.Error())
+		c.JSON(http.StatusBadRequest, err.Error())
 		return
 	}
 
-	logs, err := h.tlSvc.GetByFarmUUID(c.Ctx(), farmUUID, c.AccessUserUUID())
+	diseaseNameString := c.QueryParam("disease_name")
+	var diseaseName *model.TomatoDiseaseName = nil
+	if diseaseNameString != "" {
+		diseaseMap, ok := model.TomatoDiseaseNameMap[diseaseNameString]
+		if ok {
+			diseaseName = &diseaseMap
+		}
+	}
+
+	startTime, err := helper.TimeFormatRFC3339(c.QueryParam("start_time"))
+	if err != nil {
+		log.Error(err)
+		c.JSON(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	endTime, err := helper.TimeFormatRFC3339(c.QueryParam("end_time"))
+	if err != nil {
+		log.Error(err)
+		c.JSON(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	logs, err := h.tlSvc.GetByFarmUUID(c.Ctx(), farmUUID, c.AccessUserUUID(), startTime, endTime, diseaseName)
 	if err != nil {
 		log.Error(err)
 		c.JSON(http.StatusInternalServerError, err.Error())

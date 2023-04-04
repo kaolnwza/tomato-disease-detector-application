@@ -7,6 +7,32 @@ import (
 	uuid "github.com/google/uuid"
 )
 
+type TomatoDiseaseName string
+
+const (
+	TOMATO_DISEASE_NAME_SPIDER_MITES           TomatoDiseaseName = "Spider Mites"
+	TOMATO_DISEASE_NAME_MOSAIC_VIRUS           TomatoDiseaseName = "Mosaic Virus"
+	TOMATO_DISEASE_NAME_LEAF_MOLD              TomatoDiseaseName = "Leaf Mold"
+	TOMATO_DISEASE_NAME_SEPTORIA_LEAF_SPOT     TomatoDiseaseName = "Septoria Leaf Spot"
+	TOMATO_DISEASE_NAME_BACTERIAL_SPOT         TomatoDiseaseName = "Bacterial Spot"
+	TOMATO_DISEASE_NAME_LATE_BLIGHT            TomatoDiseaseName = "Late Blight"
+	TOMATO_DISEASE_NAME_EARLY_BLIGHT           TomatoDiseaseName = "Early Blight"
+	TOMATO_DISEASE_NAME_HEALTHY                TomatoDiseaseName = "Healthy"
+	TOMATO_DISEASE_NAME_YELLOW_LEAF_CURL_VIRUS TomatoDiseaseName = "Yellow Leaf Curl Virus"
+)
+
+var TomatoDiseaseNameMap = map[string]TomatoDiseaseName{
+	"Spider Mites":           TOMATO_DISEASE_NAME_SPIDER_MITES,
+	"Mosaic Virus":           TOMATO_DISEASE_NAME_MOSAIC_VIRUS,
+	"Leaf Mold":              TOMATO_DISEASE_NAME_LEAF_MOLD,
+	"Septoria Leaf Spot":     TOMATO_DISEASE_NAME_SEPTORIA_LEAF_SPOT,
+	"Bacterial Spot":         TOMATO_DISEASE_NAME_BACTERIAL_SPOT,
+	"Late Blight":            TOMATO_DISEASE_NAME_LATE_BLIGHT,
+	"Early Blight":           TOMATO_DISEASE_NAME_EARLY_BLIGHT,
+	"Healthy":                TOMATO_DISEASE_NAME_HEALTHY,
+	"Yellow Leaf Curl Virus": TOMATO_DISEASE_NAME_YELLOW_LEAF_CURL_VIRUS,
+}
+
 type TomatoDisease struct {
 	DiseaseUUID     uuid.UUID `db:"disease_uuid"`
 	DiseaseName     string    `db:"disease_name"`

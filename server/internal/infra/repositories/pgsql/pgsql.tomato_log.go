@@ -2,6 +2,8 @@ package pgsql
 
 import (
 	"context"
+	"fmt"
+	"time"
 	model "tomato-api/internal/core/models"
 	port "tomato-api/internal/ports"
 
@@ -16,7 +18,7 @@ func NewTomatoLogRepo(tx port.Transactor) port.TomatoLogRepository {
 	return &tomatoLogRepo{tx: tx}
 }
 
-func (r *tomatoLogRepo) GetByFarmUUID(ctx context.Context, log *[]*model.TomatoLog, farmUUID uuid.UUID) error {
+func (r *tomatoLogRepo) GetByFarmUUID(ctx context.Context, log *[]*model.TomatoLog, farmUUID uuid.UUID, diseaseName *model.TomatoDiseaseName) error {
 	query := `
 		SELECT 
 			tomato_log_uuid,
@@ -27,7 +29,8 @@ func (r *tomatoLogRepo) GetByFarmUUID(ctx context.Context, log *[]*model.TomatoL
 			disease_name "tomato_disease_info.disease_name",
 			disease_name_th "tomato_disease_info.disease_name_th",
 			ST_AsGeoJSON("location")::json->>'coordinates' "location",
-			status
+			status,
+			score
 		FROM tomato_log
 		LEFT JOIN upload ON upload.upload_uuid = tomato_log.upload_uuid
 		LEFT JOIN tomato_disease_info ON tomato_disease_info.disease_uuid = tomato_disease_uuid
@@ -36,11 +39,55 @@ func (r *tomatoLogRepo) GetByFarmUUID(ctx context.Context, log *[]*model.TomatoL
 			FROM farm_plot
 			WHERE farm_uuid = $1
 			AND farm_plot.farm_plot_uuid = tomato_log.farm_plot_uuid
-		)
+		) `
+
+	if diseaseName != nil {
+		query += fmt.Sprintf(`
+		AND disease_name = '%s' `, *diseaseName)
+	}
+
+	query += `
 		ORDER BY created_at DESC
  `
 
 	return r.tx.Get(ctx, log, query, farmUUID.String())
+}
+
+func (r *tomatoLogRepo) GetByFarmUUIDWithTime(ctx context.Context, log *[]*model.TomatoLog, farmUUID uuid.UUID, startTime *time.Time, endTime *time.Time, diseaseName *model.TomatoDiseaseName) error {
+	query := `
+		SELECT 
+			tomato_log_uuid,
+			recorder_uuid,
+			description,
+			tomato_log.created_at,
+			path AS "upload_path",
+			disease_name "tomato_disease_info.disease_name",
+			disease_name_th "tomato_disease_info.disease_name_th",
+			ST_AsGeoJSON("location")::json->>'coordinates' "location",
+			status,
+			score
+		FROM tomato_log
+		LEFT JOIN upload ON upload.upload_uuid = tomato_log.upload_uuid
+		LEFT JOIN tomato_disease_info ON tomato_disease_info.disease_uuid = tomato_disease_uuid
+		WHERE EXISTS (
+			SELECT 1 
+			FROM farm_plot
+			WHERE farm_uuid = $1
+			AND farm_plot.farm_plot_uuid = tomato_log.farm_plot_uuid
+		) 
+	
+		AND tomato_log.created_at BETWEEN $2 AND $3 `
+
+	if diseaseName != nil {
+		query += fmt.Sprintf(`
+		AND disease_name = '%s' `, *diseaseName)
+	}
+
+	query += `
+		ORDER BY created_at DESC
+ `
+
+	return r.tx.Get(ctx, log, query, farmUUID.String(), startTime, endTime)
 }
 
 func (r *tomatoLogRepo) GetByUserUUID(ctx context.Context, log *[]*model.TomatoLog, userUUID uuid.UUID, farmUUID uuid.UUID) error {
