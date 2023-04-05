@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"net/http"
 	"os"
 	"strconv"
@@ -28,15 +29,7 @@ func (h *tomatoLogHandler) GetTomatoLogByFarmUUID(c port.Context) {
 		return
 	}
 
-	diseaseNameString := c.QueryParam("disease_name")
-	var diseaseName *model.TomatoDiseaseName = nil
-	if diseaseNameString != "" {
-		diseaseMap, ok := model.TomatoDiseaseNameMap[diseaseNameString]
-		if ok {
-			diseaseName = &diseaseMap
-		}
-	}
-
+	diseases := c.QueryParam("disease_name")
 	startTime, err := helper.TimeFormatRFC3339(c.QueryParam("start_time"))
 	if err != nil {
 		log.Error(err)
@@ -51,7 +44,7 @@ func (h *tomatoLogHandler) GetTomatoLogByFarmUUID(c port.Context) {
 		return
 	}
 
-	logs, err := h.tlSvc.GetByFarmUUID(c.Ctx(), farmUUID, c.AccessUserUUID(), startTime, endTime, diseaseName)
+	logs, err := h.tlSvc.GetByFarmUUID(c.Ctx(), farmUUID, c.AccessUserUUID(), startTime, endTime, diseases)
 	if err != nil {
 		log.Error(err)
 		c.JSON(http.StatusInternalServerError, err.Error())
@@ -219,4 +212,29 @@ func (h *tomatoLogHandler) GetLogsPercentageDailyByFarmUUIDHandler(c port.Contex
 	}
 
 	c.JSON(http.StatusOK, resp)
+}
+
+func (h *tomatoLogHandler) UpdateLogStatusByLogUUIDHandler(c port.Context) {
+	logUUID, err := uuid.Parse(c.Param("log_uuid"))
+	if err != nil {
+		log.Error(err)
+		c.JSON(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	status, ok := model.LogStatusToType[c.FormValue("status")]
+	if !ok {
+		err := errors.New("log status not matching")
+		log.Error(err)
+		c.JSON(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	if err := h.tlSvc.UpdateLogStatusByLogUUID(c.Ctx(), logUUID, status); err != nil {
+		log.Error(err)
+		c.JSON(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, nil)
 }

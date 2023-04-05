@@ -2,9 +2,9 @@ package service
 
 import (
 	"context"
-	"fmt"
 	"mime/multipart"
 	"os"
+	"strings"
 	"time"
 	model "tomato-api/internal/core/models"
 	port "tomato-api/internal/ports"
@@ -32,31 +32,38 @@ func NewTomatoLogService(r port.TomatoLogRepository, tx port.Transactor, uploadS
 	}
 }
 
-func (s *tomatoLogService) GetByFarmUUID(ctx context.Context, farmUUID uuid.UUID, userUUID uuid.UUID, startTime *time.Time, endTime *time.Time, diseaseName *model.TomatoDiseaseName) ([]*model.TomatoLogResponse, error) {
+func (s *tomatoLogService) GetByFarmUUID(ctx context.Context, farmUUID uuid.UUID, userUUID uuid.UUID, startTime *time.Time, endTime *time.Time, diseaseListString string) ([]*model.TomatoLogResponse, error) {
 	logs := []*model.TomatoLog{}
 
-	// isOwner, err := s.usrFarmSvc.IsUserFarmOwner(ctx, userUUID, farmUUID)
-	// if err != nil {
-	// 	return nil, err
-	// }
+	disease := []model.TomatoDiseaseName{
+		model.TOMATO_DISEASE_NAME_SPIDER_MITES,
+		model.TOMATO_DISEASE_NAME_MOSAIC_VIRUS,
+		model.TOMATO_DISEASE_NAME_LEAF_MOLD,
+		model.TOMATO_DISEASE_NAME_SEPTORIA_LEAF_SPOT,
+		model.TOMATO_DISEASE_NAME_BACTERIAL_SPOT,
+		model.TOMATO_DISEASE_NAME_LATE_BLIGHT,
+		model.TOMATO_DISEASE_NAME_EARLY_BLIGHT,
+		model.TOMATO_DISEASE_NAME_HEALTHY,
+		model.TOMATO_DISEASE_NAME_YELLOW_LEAF_CURL_VIRUS,
+	}
+	diseaseList := strings.Split(diseaseListString, ",")
+	if len(diseaseList) > 0 && diseaseListString != "" {
+		disease = nil
+		for _, item := range diseaseList {
+			disease = append(disease, model.TomatoDiseaseNameMap[item])
+		}
+	}
 
-	// if *isOwner {
 	if startTime != nil && endTime != nil {
-		fmt.Println("time", startTime, endTime)
-		if err := s.tlRepo.GetByFarmUUIDWithTime(ctx, &logs, farmUUID, startTime, endTime, diseaseName); err != nil {
+		if err := s.tlRepo.GetByFarmUUIDWithTime(ctx, &logs, farmUUID, startTime, endTime, disease); err != nil {
 			return nil, err
 		}
 
 	} else {
-		if err := s.tlRepo.GetByFarmUUID(ctx, &logs, farmUUID, diseaseName); err != nil {
+		if err := s.tlRepo.GetByFarmUUID(ctx, &logs, farmUUID, disease); err != nil {
 			return nil, err
 		}
 	}
-	// } else {
-	// 	if err := s.tlRepo.GetByUserUUID(ctx, &logs, userUUID, farmUUID); err != nil {
-	// 		return nil, err
-	// 	}
-	// }
 
 	if len(logs) < 1 {
 		return nil, nil
@@ -307,4 +314,8 @@ func (s *tomatoLogService) GetLogsPercentageDailyByFarmUUID(ctx context.Context,
 
 	return &resp, nil
 
+}
+
+func (s *tomatoLogService) UpdateLogStatusByLogUUID(ctx context.Context, logUUID uuid.UUID, status model.TomatoLogStatus) error {
+	return s.tlRepo.UpdateLogStatusByLogUUID(ctx, logUUID, status)
 }

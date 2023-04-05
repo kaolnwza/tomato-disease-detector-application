@@ -2,12 +2,12 @@ package pgsql
 
 import (
 	"context"
-	"fmt"
 	"time"
 	model "tomato-api/internal/core/models"
 	port "tomato-api/internal/ports"
 
 	"github.com/google/uuid"
+	"github.com/lib/pq"
 )
 
 type tomatoLogRepo struct {
@@ -18,7 +18,7 @@ func NewTomatoLogRepo(tx port.Transactor) port.TomatoLogRepository {
 	return &tomatoLogRepo{tx: tx}
 }
 
-func (r *tomatoLogRepo) GetByFarmUUID(ctx context.Context, log *[]*model.TomatoLog, farmUUID uuid.UUID, diseaseName *model.TomatoDiseaseName) error {
+func (r *tomatoLogRepo) GetByFarmUUID(ctx context.Context, log *[]*model.TomatoLog, farmUUID uuid.UUID, disease []model.TomatoDiseaseName) error {
 	query := `
 		SELECT 
 			tomato_log_uuid,
@@ -39,21 +39,15 @@ func (r *tomatoLogRepo) GetByFarmUUID(ctx context.Context, log *[]*model.TomatoL
 			FROM farm_plot
 			WHERE farm_uuid = $1
 			AND farm_plot.farm_plot_uuid = tomato_log.farm_plot_uuid
-		) `
-
-	if diseaseName != nil {
-		query += fmt.Sprintf(`
-		AND disease_name = '%s' `, *diseaseName)
-	}
-
-	query += `
+		) 
+		AND disease_name = ANY ($2)
 		ORDER BY created_at DESC
  `
 
-	return r.tx.Get(ctx, log, query, farmUUID.String())
+	return r.tx.Get(ctx, log, query, farmUUID.String(), pq.Array(disease))
 }
 
-func (r *tomatoLogRepo) GetByFarmUUIDWithTime(ctx context.Context, log *[]*model.TomatoLog, farmUUID uuid.UUID, startTime *time.Time, endTime *time.Time, diseaseName *model.TomatoDiseaseName) error {
+func (r *tomatoLogRepo) GetByFarmUUIDWithTime(ctx context.Context, log *[]*model.TomatoLog, farmUUID uuid.UUID, startTime *time.Time, endTime *time.Time, diseaseList []model.TomatoDiseaseName) error {
 	query := `
 		SELECT 
 			tomato_log_uuid,
@@ -76,18 +70,12 @@ func (r *tomatoLogRepo) GetByFarmUUIDWithTime(ctx context.Context, log *[]*model
 			AND farm_plot.farm_plot_uuid = tomato_log.farm_plot_uuid
 		) 
 	
-		AND tomato_log.created_at BETWEEN $2 AND $3 `
-
-	if diseaseName != nil {
-		query += fmt.Sprintf(`
-		AND disease_name = '%s' `, *diseaseName)
-	}
-
-	query += `
+		AND tomato_log.created_at BETWEEN $2 AND $3 
+		AND disease_name = ANY ($4)
 		ORDER BY created_at DESC
  `
 
-	return r.tx.Get(ctx, log, query, farmUUID.String(), startTime, endTime)
+	return r.tx.Get(ctx, log, query, farmUUID.String(), startTime, endTime, pq.Array(diseaseList))
 }
 
 func (r *tomatoLogRepo) GetByUserUUID(ctx context.Context, log *[]*model.TomatoLog, userUUID uuid.UUID, farmUUID uuid.UUID) error {
@@ -329,4 +317,16 @@ func (r *tomatoLogRepo) GetLogsPercentageDailyByFarmUUID(ctx context.Context, lo
 	`
 
 	return r.tx.Get(ctx, logs, query, startDate, endDate, farmUUID)
+}
+
+func (r *tomatoLogRepo) UpdateLogStatusByLogUUID(ctx context.Context, logUUID uuid.UUID, status model.TomatoLogStatus) error {
+	query := `
+		UPDATE tomato_log
+		SET 
+			status = $1,
+			updated_at = now()
+		WHERE tomato_log_uuid = $2
+	`
+
+	return r.tx.Update(ctx, query, status, logUUID)
 }

@@ -10,8 +10,8 @@ import (
 )
 
 type TomatoLogRepository interface {
-	GetByFarmUUID(ctx context.Context, dest *[]*model.TomatoLog, farmUUID uuid.UUID, diseaseName *model.TomatoDiseaseName) error
-	GetByFarmUUIDWithTime(ctx context.Context, dest *[]*model.TomatoLog, farmUUID uuid.UUID, startTime *time.Time, endTime *time.Time, diseaseName *model.TomatoDiseaseName) error
+	GetByFarmUUID(ctx context.Context, dest *[]*model.TomatoLog, farmUUID uuid.UUID, diseaseList []model.TomatoDiseaseName) error
+	GetByFarmUUIDWithTime(ctx context.Context, dest *[]*model.TomatoLog, farmUUID uuid.UUID, startTime *time.Time, endTime *time.Time, diseaseList []model.TomatoDiseaseName) error
 	GetByLogUUID(ctx context.Context, dest *model.TomatoLog, logUUID uuid.UUID) error
 	GetByUserUUID(ctx context.Context, dest *[]*model.TomatoLog, userUUID uuid.UUID, farmUUID uuid.UUID) error
 	Create(ctx context.Context, logs *model.TomatoLog, farmUUID uuid.UUID, diseaseName string, location string, status model.TomatoLogStatus, score float64) error
@@ -19,10 +19,11 @@ type TomatoLogRepository interface {
 	GetClusterByFarmUUID(ctx context.Context, logs *[]*model.TomatoSummary, farmUUID uuid.UUID, condition map[string]string) error
 	GetLogsPercentageByFarmUUID(ctx context.Context, logs *[]*model.TomatoLogPercentage, farmUUID uuid.UUID, condition map[string]string) error
 	GetLogsPercentageDailyByFarmUUID(ctx context.Context, logs *[]*model.TomatoLogPercentage, farmUUID uuid.UUID, startDate string, endDate string) error
+	UpdateLogStatusByLogUUID(ctx context.Context, logUUID uuid.UUID, status model.TomatoLogStatus) error
 }
 
 type TomatoLogService interface {
-	GetByFarmUUID(ctx context.Context, farmUUID uuid.UUID, userUUID uuid.UUID, startTime *time.Time, endTime *time.Time, diseaseName *model.TomatoDiseaseName) ([]*model.TomatoLogResponse, error)
+	GetByFarmUUID(ctx context.Context, farmUUID uuid.UUID, userUUID uuid.UUID, startTime *time.Time, endTime *time.Time, diseaseList string) ([]*model.TomatoLogResponse, error)
 	// GetByUserUUID(ctx context.Context, userUUID uuid.UUID, farmUUID uuid.UUID) ([]*model.TomatoLogResponse, error)
 	GetByLogUUID(ctx context.Context, logUUID uuid.UUID) (*model.TomatoLogResponse, error)
 	Create(ctx context.Context, userUUID uuid.UUID, farmUUID uuid.UUID, desc string, diseaseName string, file multipart.File, bucket string, lat string, long string, score float64) error
@@ -30,4 +31,5 @@ type TomatoLogService interface {
 	GetClusterByFarmUUID(ctx context.Context, farmUUID uuid.UUID, startTime string, endTime string, diseaseName string) (*model.TomatoSummaryResponse, error)
 	GetLogsPercentageByFarmUUID(ctx context.Context, farmUUID uuid.UUID, startTime string, endTime string) (*[]*model.TomatoLogPercentage, error)
 	GetLogsPercentageDailyByFarmUUID(ctx context.Context, farmUUID uuid.UUID, startTime string, endTime string) (*[]*model.TomatoLogPercentageDailyResponse, error)
+	UpdateLogStatusByLogUUID(ctx context.Context, logUUID uuid.UUID, status model.TomatoLogStatus) error
 }

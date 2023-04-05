@@ -149,6 +149,7 @@ func main() {
 			{
 				logUUID.GET("", tmtLogHandler.GetTomatoLogByLogUUID)
 				logUUID.PUT("", tmtLogHandler.UpdateByLogUUIDHandler)
+				logUUID.PATCH("/status", tmtLogHandler.UpdateLogStatusByLogUUIDHandler)
 			}
 		}
 	}

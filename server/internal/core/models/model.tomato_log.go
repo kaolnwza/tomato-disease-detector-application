@@ -10,17 +10,19 @@ import (
 type TomatoLogStatus string
 
 const (
-	TOMATO_LOG_STATUS_DISEASE   TomatoLogStatus = "disease"
-	TOMATO_LOG_STATUS_UNDIFINED TomatoLogStatus = "undifined"
-	TOMATO_LOG_STATUS_HEALTHY   TomatoLogStatus = "healthy"
-	TOMATO_LOG_STATUS_CURED     TomatoLogStatus = "cured"
+	TOMATO_LOG_STATUS_DISEASE    TomatoLogStatus = "disease"
+	TOMATO_LOG_STATUS_UNDIFINED  TomatoLogStatus = "undifined"
+	TOMATO_LOG_STATUS_HEALTHY    TomatoLogStatus = "healthy"
+	TOMATO_LOG_STATUS_CURED      TomatoLogStatus = "cured"
+	TOMATO_LOG_STATUS_MONITORING TomatoLogStatus = "monitoring"
 )
 
 var LogStatusToType = map[string]TomatoLogStatus{
-	"disease":   TOMATO_LOG_STATUS_DISEASE,
-	"undifined": TOMATO_LOG_STATUS_UNDIFINED,
-	"cured":     TOMATO_LOG_STATUS_CURED,
-	"healthy":   TOMATO_LOG_STATUS_HEALTHY,
+	"disease":    TOMATO_LOG_STATUS_DISEASE,
+	"undifined":  TOMATO_LOG_STATUS_UNDIFINED,
+	"cured":      TOMATO_LOG_STATUS_CURED,
+	"healthy":    TOMATO_LOG_STATUS_HEALTHY,
+	"monitoring": TOMATO_LOG_STATUS_MONITORING,
 }
 
 type TomatoLog struct {
