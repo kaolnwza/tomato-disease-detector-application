@@ -71,8 +71,7 @@ func (r *tomatoDiseaseRepo) GetByName(ctx context.Context, diseaseName string, d
 			path as image_path
 		FROM tomato_disease_info
 		LEFT JOIN upload ON upload.upload_uuid = tomato_disease_info.upload_uuid
-		WHERE disease_name = $1
-		AND disease_name != 'Healthy'`
+		WHERE disease_name = $1`
 
 	return r.tx.GetOne(ctx, disease, query, diseaseName)
 }

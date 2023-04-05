@@ -42,14 +42,14 @@ type TomatoDisease struct {
 	DiseaseEpidemic string    `db:"disease_epidemic"`
 	DiseaseResolve  string    `db:"disease_resolve"`
 	// UploadUUID      string    `db:"upload_uuid"`
-	ImagePath string `db:"image_path"`
+	ImagePath *string `db:"image_path"`
 }
 
 type TomatoDiseaseResponse struct {
 	UUID     uuid.UUID           `json:"uuid"`
 	Name     string              `json:"name"`
 	NameThai string              `json:"name_th"`
-	ImageURL string              `json:"image_url"`
+	ImageURL *string             `json:"image_url"`
 	Inform   TomatoDiseaseInform `json:"inform"`
 }
 

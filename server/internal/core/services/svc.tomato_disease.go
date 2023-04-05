@@ -44,7 +44,7 @@ func (s *tomatoDiseaseServices) GetTomatoDiseases(ctx context.Context) ([]*model
 				go func(i *model.TomatoDisease, idx int, ctx context.Context) {
 					inform := model.NewTomatoDiseaseInform()
 
-					uri, err := s.storer.GenerateImageURI(ctx, os.Getenv("GCS_BUCKET_1"), i.ImagePath)
+					uri, imgErr := s.storer.GenerateImageURI(ctx, os.Getenv("GCS_BUCKET_1"), *i.ImagePath)
 
 					images, err := s.GetImagesByDiseaseUUID(context.Background(), i.DiseaseUUID)
 					if err != nil {
@@ -56,13 +56,13 @@ func (s *tomatoDiseaseServices) GetTomatoDiseases(ctx context.Context) ([]*model
 
 					respT := &model.TomatoDiseaseResponse{
 						UUID:     i.DiseaseUUID,
-						ImageURL: uri,
+						ImageURL: &uri,
 						Name:     i.DiseaseName,
 						NameThai: i.DiseaseNameThai,
 						Inform:   *inform,
 					}
 
-					ch <- err
+					ch <- imgErr
 
 					resp[idx] = respT
 				}(i, idx, ctx)
@@ -96,10 +96,13 @@ func (s *tomatoDiseaseServices) GetTomatoDiseaseByName(ctx context.Context, dise
 	}
 
 	inform := model.NewTomatoDiseaseInform()
-
-	uri, err := s.storer.GenerateImageURI(ctx, os.Getenv("GCS_BUCKET_1"), disease.ImagePath)
-	if err != nil {
-		return nil, err
+	var uri *string
+	if disease.ImagePath != nil {
+		var err error
+		*uri, err = s.storer.GenerateImageURI(ctx, os.Getenv("GCS_BUCKET_1"), *disease.ImagePath)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	images, err := s.GetImagesByDiseaseUUID(ctx, disease.DiseaseUUID)
