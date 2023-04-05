@@ -96,10 +96,10 @@ func (s *tomatoDiseaseServices) GetTomatoDiseaseByName(ctx context.Context, dise
 	}
 
 	inform := model.NewTomatoDiseaseInform()
-	var uri *string
+	var uri string
 	if disease.ImagePath != nil {
 		var err error
-		*uri, err = s.storer.GenerateImageURI(ctx, os.Getenv("GCS_BUCKET_1"), *disease.ImagePath)
+		uri, err = s.storer.GenerateImageURI(ctx, os.Getenv("GCS_BUCKET_1"), *disease.ImagePath)
 		if err != nil {
 			return nil, err
 		}
@@ -114,7 +114,7 @@ func (s *tomatoDiseaseServices) GetTomatoDiseaseByName(ctx context.Context, dise
 
 	resp := &model.TomatoDiseaseResponse{
 		UUID:     disease.DiseaseUUID,
-		ImageURL: uri,
+		ImageURL: &uri,
 		Name:     disease.DiseaseName,
 		NameThai: disease.DiseaseNameThai,
 		Inform:   *inform,
