@@ -46,12 +46,11 @@ type TomatoDisease struct {
 }
 
 type TomatoDiseaseResponse struct {
-	UUID     uuid.UUID                      `json:"uuid"`
-	Name     string                         `json:"name"`
-	NameThai string                         `json:"name_th"`
-	ImageURL string                         `json:"image_url"`
-	Inform   TomatoDiseaseInform            `json:"inform"`
-	Images   *[]*TomatoDiseaseImageResponse `json:"images"`
+	UUID     uuid.UUID           `json:"uuid"`
+	Name     string              `json:"name"`
+	NameThai string              `json:"name_th"`
+	ImageURL string              `json:"image_url"`
+	Inform   TomatoDiseaseInform `json:"inform"`
 }
 
 func NewTomatoDiseaseInform() *TomatoDiseaseInform {
@@ -81,48 +80,60 @@ type TomatoDiseaseImage struct {
 	DiseaseUUID uuid.UUID `db:"disease_uuid" json:"-"`
 	UploadUUID  uuid.UUID `db:"upload_uuid" json:"upload_uuid"`
 	ImagePath   string    `db:"image_path" json:"image_path"`
+	Column      string    `db:"column" json:"column"`
 	CreatedAt   time.Time `db:"created_at" json:"created_at"`
 }
 
 type TomatoDiseaseImageResponse struct {
 	UUID      uuid.UUID `db:"uuid" json:"uuid"`
 	ImageURI  string    `db:"image_uri" json:"image_uri"`
+	Column    string    `db:"column" json:"column"`
 	CreatedAt time.Time `db:"created_at" json:"created_at"`
 }
 
 type TomatoDiseaseInformData struct {
-	Title string `json:"title"`
-	Icon  string `json:"icon"`
-	Data  string `json:"data"`
+	Title  string                      `json:"title"`
+	Icon   string                      `json:"icon"`
+	Data   string                      `json:"data"`
+	Images *[]TomatoDiseaseInformImage `json:"images"`
 }
 
-func (i TomatoDiseaseInformData) TypeSymptom(data string) TomatoDiseaseInformData {
+type TomatoDiseaseInformImage struct {
+	UUID     uuid.UUID `json:"uuid"`
+	ImageURI string    `json:"image_uri"`
+}
+
+func (i TomatoDiseaseInformData) TypeSymptom(data string, images []TomatoDiseaseInformImage) TomatoDiseaseInformData {
 	i.Title = "อาการ"
 	i.Icon = "leaf"
 	i.Data = data
+	i.Images = &images
 
 	return i
 }
 
-func (i TomatoDiseaseInformData) TypeCause(data string) TomatoDiseaseInformData {
+func (i TomatoDiseaseInformData) TypeCause(data string, images []TomatoDiseaseInformImage) TomatoDiseaseInformData {
 	i.Title = "สาเหตุ"
 	i.Icon = "alert-circle-outline"
 	i.Data = data
+	i.Images = &images
 
 	return i
 }
 
-func (i TomatoDiseaseInformData) TypeEpidemic(data string) TomatoDiseaseInformData {
+func (i TomatoDiseaseInformData) TypeEpidemic(data string, images []TomatoDiseaseInformImage) TomatoDiseaseInformData {
 	i.Title = "การแพร่ระบาด"
 	i.Icon = "virus-outline"
 	i.Data = data
+	i.Images = &images
 
 	return i
 }
-func (i TomatoDiseaseInformData) TypeResolve(data string) TomatoDiseaseInformData {
+func (i TomatoDiseaseInformData) TypeResolve(data string, images []TomatoDiseaseInformImage) TomatoDiseaseInformData {
 	i.Title = "การป้องกัน"
 	i.Icon = "shield-check-outline"
 	i.Data = data
+	i.Images = &images
 
 	return i
 }

@@ -46,13 +46,13 @@ func (s *tomatoDiseaseServices) GetTomatoDiseases(ctx context.Context) ([]*model
 
 					uri, err := s.storer.GenerateImageURI(ctx, os.Getenv("GCS_BUCKET_1"), i.ImagePath)
 
-					informGenerator(i, inform)
-
 					images, err := s.GetImagesByDiseaseUUID(context.Background(), i.DiseaseUUID)
 					if err != nil {
 						log.Error(err)
 						return
 					}
+
+					informGenerator(i, inform, images)
 
 					respT := &model.TomatoDiseaseResponse{
 						UUID:     i.DiseaseUUID,
@@ -60,7 +60,6 @@ func (s *tomatoDiseaseServices) GetTomatoDiseases(ctx context.Context) ([]*model
 						Name:     i.DiseaseName,
 						NameThai: i.DiseaseNameThai,
 						Inform:   *inform,
-						Images:   images,
 					}
 
 					ch <- err
@@ -108,7 +107,7 @@ func (s *tomatoDiseaseServices) GetTomatoDiseaseByName(ctx context.Context, dise
 		return nil, err
 	}
 
-	informGenerator(disease, inform)
+	informGenerator(disease, inform, images)
 
 	resp := &model.TomatoDiseaseResponse{
 		UUID:     disease.DiseaseUUID,
@@ -116,19 +115,27 @@ func (s *tomatoDiseaseServices) GetTomatoDiseaseByName(ctx context.Context, dise
 		Name:     disease.DiseaseName,
 		NameThai: disease.DiseaseNameThai,
 		Inform:   *inform,
-		Images:   images,
 	}
 
 	return resp, nil
 }
 
 // func (inform *tomatoDiseaseInform) informGenerator(disease model.TomatoDisease) {
-func informGenerator(disease *model.TomatoDisease, inform *model.TomatoDiseaseInform) {
+func informGenerator(disease *model.TomatoDisease, inform *model.TomatoDiseaseInform, images *[]*model.TomatoDiseaseImageResponse) {
+	imgMap := make(map[string][]model.TomatoDiseaseInformImage, 0)
+	for _, item := range *images {
+		imgMap[item.Column] = append(imgMap[item.Column],
+			model.TomatoDiseaseInformImage{
+				UUID:     item.UUID,
+				ImageURI: item.ImageURI,
+			})
+	}
+
 	info := &model.TomatoDiseaseInformData{}
-	symp := info.TypeSymptom(disease.DiseaseSymptom)
-	cause := info.TypeCause(disease.DiseaseCause)
-	epidemic := info.TypeEpidemic(disease.DiseaseEpidemic)
-	resolve := info.TypeResolve(disease.DiseaseResolve)
+	symp := info.TypeSymptom(disease.DiseaseSymptom, imgMap["disease_symptom"])
+	cause := info.TypeCause(disease.DiseaseCause, imgMap["disease_cause"])
+	epidemic := info.TypeEpidemic(disease.DiseaseEpidemic, imgMap["disease_epidemic"])
+	resolve := info.TypeResolve(disease.DiseaseResolve, imgMap["disease_resolve"])
 
 	inform.InformData = append(inform.InformData, &symp, &cause, &epidemic, &resolve)
 }
@@ -142,7 +149,7 @@ func (s *tomatoDiseaseServices) CreateTomatoLog(c context.Context) error {
 	return nil
 }
 
-func (s *tomatoDiseaseServices) AddDiseaseImage(ctx context.Context, diseaseUUID uuid.UUID, uploadUUIDs string) error {
+func (s *tomatoDiseaseServices) AddDiseaseImage(ctx context.Context, diseaseUUID uuid.UUID, uploadUUIDs string, column string) error {
 	img := make([]*model.TomatoDiseaseImage, 0)
 	if err := helper.JsonToStruct(uploadUUIDs, &img); err != nil {
 		return err
@@ -154,7 +161,7 @@ func (s *tomatoDiseaseServices) AddDiseaseImage(ctx context.Context, diseaseUUID
 	}
 
 	return s.tx.WithinTransaction(ctx, func(tx context.Context) error {
-		if err := s.tdsRepo.AddDiseaseImage(tx, diseaseUUID, upload); err != nil {
+		if err := s.tdsRepo.AddDiseaseImage(tx, diseaseUUID, upload, column); err != nil {
 			return err
 		}
 
@@ -199,8 +206,9 @@ func (s *tomatoDiseaseServices) GetImagesByDiseaseUUID(ctx context.Context, dise
 					ch <- err
 
 					respT := &model.TomatoDiseaseImageResponse{
-						UUID:      i.DiseaseUUID,
+						UUID:      i.UUID,
 						ImageURI:  uri,
+						Column:    i.Column,
 						CreatedAt: i.CreatedAt,
 					}
 

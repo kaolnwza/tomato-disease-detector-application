@@ -54,9 +54,9 @@ func (h *tomatoDiseaseHandler) AddDiseaseImageHandler(c port.Context) {
 		return
 	}
 
+	column := c.FormValue("column")
 	images := c.FormValue("images")
-
-	if err := h.tdsSvc.AddDiseaseImage(c.Ctx(), diseaseUUID, images); err != nil {
+	if err := h.tdsSvc.AddDiseaseImage(c.Ctx(), diseaseUUID, images, column); err != nil {
 		log.Error(err)
 		c.JSON(http.StatusInternalServerError, err.Error())
 		return

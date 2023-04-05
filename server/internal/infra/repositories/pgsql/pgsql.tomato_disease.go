@@ -19,33 +19,6 @@ func NewTomatoDiseaseRepo(tx port.Transactor) port.TomatoDiseaseRepository {
 	}
 }
 
-// func (r *tomatoDiseaseRepo) GetAll(ctx context.Context) ([]model.TomatoDisease, error) {
-// 	query := `
-// 		SELECT
-// 			disease_uuid,
-// 			disease_name,
-// 			disease_name_th,
-// 			disease_cause,
-// 			disease_symptom,
-// 			disease_epidemic,
-// 			disease_resolve,
-// 			path as image_path
-// 		FROM tomato_disease_info
-// 		LEFT JOIN upload ON upload.upload_uuid = tomato_disease_info.upload_uuid
-// 		`
-
-// 	disease := []model.TomatoDisease{}
-// 	// ex. test clean transaction
-// 	if err := r.db.WithinTransaction(ctx, func(tx context.Context) error {
-// 		return r.db.Select(tx, &disease, query)
-// 	}); err != nil {
-// 		return nil, err
-// 	}
-
-// 	fmt.Println("pass")
-// 	return disease, nil
-// }
-
 func (r *tomatoDiseaseRepo) Create(ctx context.Context) error {
 	// s := `
 	// 	INSERT INTO tomato_log (farm_plot_uuid, recorder_uuid, tomato_disease_uuid, description, upload_uuid)
@@ -104,17 +77,17 @@ func (r *tomatoDiseaseRepo) GetByName(ctx context.Context, diseaseName string, d
 	return r.tx.GetOne(ctx, disease, query, diseaseName)
 }
 
-func (r *tomatoDiseaseRepo) AddDiseaseImage(ctx context.Context, diseaseUUID uuid.UUID, uploadUUID []uuid.UUID) error {
+func (r *tomatoDiseaseRepo) AddDiseaseImage(ctx context.Context, diseaseUUID uuid.UUID, uploadUUID []uuid.UUID, column string) error {
 	values := ``
 	for idx, item := range uploadUUID {
-		values += fmt.Sprintf(`('%s', '%s')`, diseaseUUID, item)
+		values += fmt.Sprintf(`('%s', '%s', '%s')`, diseaseUUID, item, column)
 		if idx != len(uploadUUID)-1 {
 			values += ","
 		}
 	}
 
 	query := `
-		INSERT INTO tomato_disease_image (disease_uuid, upload_uuid)
+		INSERT INTO tomato_disease_image (disease_uuid, upload_uuid, column)
 		VALUES ` + values
 
 	return r.tx.Insert(ctx, query)
@@ -137,7 +110,8 @@ func (r *tomatoDiseaseRepo) GetImagesByDiseaseUUID(ctx context.Context, diseaseU
 			disease_uuid,
 			tomato_disease_image.upload_uuid,
 			path AS image_path,
-			tomato_disease_image.created_at
+			tomato_disease_image.created_at,
+			"column"
 		FROM tomato_disease_image
 		LEFT JOIN upload ON tomato_disease_image.upload_uuid = upload.upload_uuid
 		WHERE disease_uuid = $1
