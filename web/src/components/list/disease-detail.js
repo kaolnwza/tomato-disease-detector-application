@@ -8,7 +8,7 @@ import {
   ScrollView,
   Dimensions,
 } from 'react-native';
-import {Button, Avatar, ListItem, Input} from '@rneui/themed';
+import {Button, ListItem, Input, Avatar, Image} from '@rneui/themed';
 import MaterialCommunityIcons from 'react-native-vector-icons/dist/MaterialCommunityIcons';
 import Carousel from 'react-native-reanimated-carousel';
 
@@ -20,8 +20,8 @@ import ImagePicker from 'react-native-image-crop-picker';
 
 const DiseaseDetail = ({item, id, canEdit}) => {
   const width = Dimensions.get('window').width;
-  const carousel = [];
-  carousel.push('');
+  const carousel = item.images;
+  // carousel.push('');
   const [expandedItems, setExpandedItems] = useState([]);
   const [text, setText] = useState(item.data);
   const [edit, setEdit] = useState(false);
@@ -49,14 +49,79 @@ const DiseaseDetail = ({item, id, canEdit}) => {
     }
   };
 
-  const OpenPhoto = async () => {
+  const OpenPhoto = async module => {
+    const value = await AsyncStorage.getItem('user_token');
+    let column;
+    switch (module) {
+      case 'อาการ':
+        column = 'disease_symptom';
+        break;
+      case 'สาเหตุ':
+        column = 'disease_cause';
+        break;
+      case 'การแพร่ระบาด':
+        column = 'disease_epidemic';
+        break;
+      case 'การป้องกัน':
+        column = 'disease_resolve';
+        break;
+      default:
+        break;
+    }
+
     ImagePicker.openPicker({
-      width: 300,
-      height: 400,
+      width: 400,
+      height: 300,
       cropping: true,
     })
       .then(image => {
-        console.log(image);
+        const imageUri = 'file://' + image.path;
+        const fileName = image.path.split('/').pop();
+        const data = new FormData();
+
+        data.append('file', {
+          uri: imageUri,
+          type: 'image/jpeg',
+          name: fileName,
+        });
+
+        fetch(`http://35.244.169.189.nip.io/v1/upload`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            Authorization: `Bearer ${value}`,
+          },
+          body: data,
+        })
+          .then(response => response.json())
+          .then(responseData => {
+            console.log(responseData);
+            const imageData = new FormData();
+            imageData.append(
+              'images',
+              JSON.stringify([{upload_uuid: responseData.uuid}]),
+            );
+            imageData.append('column', column);
+            axios
+              .post(
+                `http://35.244.169.189.nip.io/v1/diseases/${id}/images/`,
+                imageData,
+                {
+                  headers: {
+                    Authorization: `Bearer ${value}`,
+                  },
+                },
+              )
+              .then(response => {
+                console.log(response.data);
+              })
+              .catch(error => {
+                console.log(error);
+              });
+          })
+          .catch(error => {
+            console.log('error:', error);
+          });
       })
       .catch(err => {
         console.log(err);
@@ -222,12 +287,12 @@ const DiseaseDetail = ({item, id, canEdit}) => {
               data={carousel}
               scrollAnimationDuration={500}
               // onSnapToItem={index => console.log('current index:', index)}
-              renderItem={({index}) =>
+              renderItem={({item: img, index}) =>
                 index == carousel.length - 1 ? (
                   isOwner ? (
                     <TouchableOpacity
                       style={{height: '100%'}}
-                      onPress={OpenPhoto}>
+                      onPress={() => OpenPhoto(item.title)}>
                       <View
                         style={{
                           flex: 1,
@@ -251,18 +316,17 @@ const DiseaseDetail = ({item, id, canEdit}) => {
                     </TouchableOpacity>
                   ) : null
                 ) : (
-                  <View
-                    style={{
-                      flex: 1,
-                      borderWidth: 1,
+                  <Avatar
+                    containerStyle={{
+                      width: '100%',
+                      height: '100%',
+                    }}
+                    avatarStyle={{
                       borderRadius: 30,
-                      justifyContent: 'center',
-                      marginHorizontal: canEdit ? 0 : 10,
-                    }}>
-                    <Text style={{textAlign: 'center', fontSize: 30}}>
-                      {index}
-                    </Text>
-                  </View>
+                    }}
+                    source={img.image_uri && {uri: img.image_uri}}
+                    title={<ActivityIndicator />}
+                  />
                 )
               }
             />

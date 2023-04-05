@@ -68,9 +68,7 @@ const DiseaseChart = props => {
           {props.date == 'current'
             ? moment().format('DD/MM/YYYY')
             : Array.isArray(props.date)
-            ? moment(new Date(props.date[0])).format('DD/MM/YYYY') +
-              ' - ' +
-              moment(new Date(props.date[1])).format('DD/MM/YYYY')
+            ? props.date[0] + ' - ' + props.date[1]
             : moment(new Date(props.date)).format('DD/MM/YYYY')}
         </Text>
         {/* <Text style={[font.kanit]}>คิดเป็น 20% ของพื้นที่</Text> */}
@@ -99,9 +97,9 @@ const styles = StyleSheet.create({
   },
   percentage: {
     textAlign: 'center',
-    fontSize: 20,
+    fontSize: 16,
     fontFamily: 'Kanit-Regular',
-    lineHeight: 21,
+    lineHeight: 19,
   },
 });
 export default DiseaseChart;

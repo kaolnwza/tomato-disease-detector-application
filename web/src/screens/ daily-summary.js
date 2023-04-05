@@ -1,141 +1,252 @@
 import React, {useEffect, useState} from 'react';
 import {Text, StyleSheet, FlatList, View, TouchableOpacity} from 'react-native';
-import Ionicons from 'react-native-vector-icons/dist/Ionicons';
-import Entypo from 'react-native-vector-icons/dist/Entypo';
-import MapView, {Marker, PROVIDER_GOOGLE} from 'react-native-maps';
+import MaterialCommunityIcons from 'react-native-vector-icons/dist/MaterialCommunityIcons';
+import Octicons from 'react-native-vector-icons/dist/Octicons';
+import MapView, {Marker, Polygon} from 'react-native-maps';
 import {font, buttons} from './styles';
-import {Tab, TabView, Button} from '@rneui/themed';
+import {Tab, TabView, Button, Divider, Chip} from '@rneui/themed';
 import moment from 'moment';
-const Daily = () => {
-  const [index, setIndex] = React.useState(0);
-  const [headers, setHeaders] = useState([
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import Modal from 'react-native-modal';
+import {ScrollView} from 'react-native-gesture-handler';
+
+const Daily = ({route, navigation}) => {
+  const [index, setIndex] = useState(0);
+  const {date} = route.params;
+  const allDisease = [
+    {label: 'ใบสุขภาพดี', value: 'Healthy', color: '#047675'},
     {
-      name: 'โรคทั้งหมด',
+      label: 'โรคใบหงิกเหลือง',
+      value: 'Yellow Leaf Curl Virus',
+      color: '#FFD93D',
     },
-    {
-      name: 'โรคใบจุด',
-    },
-    {
-      name: 'โรคใบจุดวง',
-    },
-    {
-      name: 'โรคใบไหม้',
-    },
-    {
-      name: 'โรครากำมะหยี่ ',
-    },
-    {
-      name: 'โรคใบจุดวงกลม',
-    },
-    {
-      name: 'โรคไรสองจุด',
-    },
-    {
-      name: 'โรคใบหงิกเหลือง',
-    },
-    {
-      name: 'โรคใบด่าง',
-    },
-  ]);
+    {label: 'โรคใบจุด', value: 'Bacterial Spot', color: '#F99417'},
+    {label: 'โรคใบไหม้', value: 'Late Blight', color: '#562B08'},
+    {label: 'โรคไรสองจุด', value: 'Spider Mites', color: '#DF2E38'},
+    {label: 'โรคใบจุดวงกลม', value: 'Septoria Leaf Spot', color: '#A61F69'},
+    {label: 'โรคใบด่าง', value: 'Mosaic Virus', color: '#645CBB'},
+    {label: 'โรคใบจุดวง', value: 'Early Blight', color: '#3A1078'},
+    {label: 'โรครากำมะหยี่', value: 'Leaf Mold', color: '#F6E1C3'},
+  ];
+  const [pins, setPins] = useState();
+  const [center, setCenter] = useState();
+  const [isVisible, setIsVisible] = useState(false);
+  const [selectedItems, setSelectedItems] = useState([]);
+  const [farmLocation, setFarmLocation] = useState([]);
+
+  useEffect(() => {
+    navigation.addListener('focus', getSummery);
+  }, []);
+
+  const handleSelectItem = itemValue => {
+    if (selectedItems.includes(itemValue)) {
+      // If the item is already selected, remove it from the selected items list
+      setSelectedItems(prevSelectedItems =>
+        prevSelectedItems.filter(selectedItem => selectedItem !== itemValue),
+      );
+    } else {
+      // If the item is not selected, add it to the selected items list
+      setSelectedItems(prevSelectedItems => [...prevSelectedItems, itemValue]);
+    }
+  };
+
+  const isItemSelected = itemValue => selectedItems.includes(itemValue);
+  const handleCloseModal = () => {
+    setIsVisible(false);
+  };
+  const getSummery = async () => {
+    const token = await AsyncStorage.getItem('user_token');
+    const current_farm = JSON.parse(await AsyncStorage.getItem('user_farm'));
+    const dateTime = moment(date).format('YYYY-MM-DD');
+    setFarmLocation(current_farm.farm_location);
+
+    axios
+      .get(
+        `http://35.244.169.189.nip.io/v1/farms/${current_farm.farm_uuid}/summary?start_time=${dateTime} 00:00:00&end_time=${dateTime} 23:59:59`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      )
+      .then(response => {
+        setPins(response.data.info);
+        setCenter(response.data.center_location);
+      })
+      .catch(error => {
+        console.log('error', error);
+      });
+  };
+
+  const getDiseaseObject = item => {
+    const disease = allDisease.find(e => e.value === item.disease_name);
+    return disease ? disease : null;
+  };
+
+  // const filteredPin = pins.filter(p => selectedItems.includes(p.disease_name));
 
   return (
     <View style={styles.container}>
-      <View
-        style={{
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          padding: 5,
-        }}>
-        <Text style={[font.kanit, {fontSize: 18}]}>
-          วันที่ {moment().format('DD/MM/YYYY')}
+      <TouchableOpacity
+        onPress={() => setIsVisible(true)}
+        style={[
+          styles.shadowProp,
+          {
+            borderRadius: 50,
+            backgroundColor: '#AD1357',
+            padding: 10,
+            bottom: 50,
+            right: 20,
+            zIndex: 1,
+            position: 'absolute',
+          },
+        ]}>
+        <MaterialCommunityIcons name="filter-variant" size={35} color="#fff" />
+      </TouchableOpacity>
+      <View style={[styles.card]}>
+        <Text style={[font.kanit, {fontSize: 20}]}>
+          ตรววจจับโรคได้ {pins ? pins.length : null} รูป
         </Text>
-        <TouchableOpacity>
-          <Ionicons name="filter" size={25} color="#000" />
-        </TouchableOpacity>
-      </View>
-      <View style={[styles.card, styles.shadowProp, {overflow: 'hidden'}]}>
-        <View style={{flexDirection: 'row', marginBottom: 20}}>
-          <TouchableOpacity
-            style={{zIndex: 1, paddingTop: 20}}
-            onPress={() => setIndex(index - 1)}
-            disabled={index == 0}>
-            <Entypo
-              name="chevron-left"
-              size={30}
-              color={index == 0 ? '#8C8C8C' : '#000'}
-            />
-          </TouchableOpacity>
-          <TabView
-            value={index}
-            onChange={setIndex}
-            animationType="spring"
-            containerStyle={{}}>
-            {headers.map((item, i) => (
-              <TabView.Item key={i} style={styles.headerTabs}>
-                <Text style={[font.kanit, {fontSize: 18}]} h1>
-                  {item.name}
+        <View
+          style={{
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+          }}>
+          {allDisease.map((item, i) => {
+            const count = pins
+              ? pins.filter(pin => pin.disease_name === item.value).length
+              : 0;
+            return (
+              <View
+                key={i}
+                style={{flexDirection: 'row', alignItems: 'center', margin: 2}}>
+                <Octicons
+                  name="dot-fill"
+                  color={item.color}
+                  size={30}
+                  style={{marginHorizontal: 10}}
+                />
+
+                <Text key={i} style={font.kanit}>
+                  {item.label} {count != 0 ? `(${count})` : null}
                 </Text>
-              </TabView.Item>
-            ))}
-          </TabView>
-          <TouchableOpacity
-            style={{zIndex: 1, paddingTop: 20}}
-            onPress={() => setIndex(index + 1)}
-            disabled={index >= headers.length - 1}>
-            <Entypo
-              name="chevron-right"
-              size={30}
-              color={index >= headers.length - 1 ? '#8C8C8C' : '#000'}
-            />
-          </TouchableOpacity>
+              </View>
+            );
+          })}
         </View>
+      </View>
+      {center ? (
         <MapView
           // region={Pin}
           // provider={PROVIDER_GOOGLE}
-          style={{
-            height: 500,
-            width: '100%',
-            borderRadius: 30,
-            alignSelf: 'center',
-            overflow: 'hidden',
-          }}
+          style={[
+            styles.shadowProp,
+            {
+              marginTop: -30,
+              height: 500,
+              width: '100%',
+              borderRadius: 40,
+              alignSelf: 'center',
+            },
+          ]}
           initialRegion={{
-            latitude: 13.731328,
-            longitude: 100.78181,
+            latitude: center.latitude,
+            longitude: center.longitude,
             latitudeDelta: 0.003,
             longitudeDelta: 0.003,
           }}>
-          <Marker
-            title="โรคใบจุด"
-            description="เทส"
-            coordinate={{latitude: 13.731328, longitude: 100.78181}}
-          />
-          <Marker
-            title="โรคใบด่าง"
-            description="เทฟ1"
-            pinColor="#FF6E00"
-            coordinate={{latitude: 13.731329, longitude: 100.781}}
-          />
-          <Marker
-            title="โรคใบไหม้"
-            description="เทฟ2"
-            pinColor="#FFFF00"
-            coordinate={{latitude: 13.731, longitude: 100.7814}}
-          />
-          <Marker
-            title="โรคไรสองจุด"
-            description="เทฟ3"
-            pinColor="#19B618"
-            coordinate={{latitude: 13.731, longitude: 100.7819}}
-          />
-          <Marker
-            title="โรคไรสองจุด"
-            description="เทฟ4"
-            pinColor="#19B618"
-            coordinate={{latitude: 13.7312, longitude: 100.782}}
+          {selectedItems.length <= 0
+            ? pins.map((item, index) => (
+                <Marker
+                  key={index}
+                  title={item.disease_name}
+                  pinColor={getDiseaseObject(item).color}
+                  coordinate={{
+                    latitude: item.latitude,
+                    longitude: item.longitude,
+                  }}
+                />
+              ))
+            : pins
+                .filter(p => selectedItems.includes(p.disease_name))
+                .map((item, index) => (
+                  <Marker
+                    key={index}
+                    title={item.disease_name}
+                    pinColor={getDiseaseObject(item).color}
+                    coordinate={{
+                      latitude: item.latitude,
+                      longitude: item.longitude,
+                    }}
+                  />
+                ))}
+          <Polygon
+            coordinates={farmLocation}
+            fillColor="rgba(255, 255, 255, 0.1)"
+            strokeColor="rgba(255, 0, 0, 1)"
+            strokeWidth={2}
           />
         </MapView>
-      </View>
+      ) : null}
+
+      <Modal
+        isVisible={isVisible}
+        onBackdropPress={handleCloseModal}
+        onSwipeComplete={handleCloseModal}
+        animationIn="slideInRight"
+        animationOut="slideOutRight"
+        swipeDirection="right"
+        style={styles.modal}>
+        <View style={styles.modalContent}>
+          <View>
+            <Text
+              style={[font.kanit, {color: '#00000077', marginHorizontal: 10}]}>
+              หมวดหมู่โรค
+            </Text>
+            <Divider style={{marginVertical: 10}} />
+            <View
+              style={
+                {
+                  // flexDirection: 'row',
+                  // flexWrap: 'wrap',
+                }
+              }>
+              {allDisease.map((item, i) => (
+                <Chip
+                  key={i}
+                  title={item.label}
+                  buttonStyle={[
+                    styles.chipButton,
+                    isItemSelected(item.value) && {backgroundColor: item.color},
+                  ]}
+                  titleStyle={[
+                    styles.chipTitle,
+                    isItemSelected(item.value) && styles.chipTitleSelected,
+                    font.kanit,
+                  ]}
+                  onPress={() => handleSelectItem(item.value)}
+                  type="outline"
+                />
+              ))}
+              {/* <Text>{JSON.stringify(selectedItems)}</Text> */}
+            </View>
+          </View>
+          <Button
+            style={{marginVertical: 10}}
+            buttonStyle={{borderRadius: 30}}
+            titleStyle={font.kanit}
+            title="รีเซ็ตข้อมูล"
+            size="sm"
+            onPress={() => setSelectedItems([])}
+          />
+          {/* <Text
+            style={[font.kanit, {color: '#00000077', marginHorizontal: 10}]}>
+            วัน
+          </Text>
+          <Divider style={{marginVertical: 5}} /> */}
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -144,17 +255,19 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'flex-start',
     alignContent: 'center',
-    paddingTop: 100,
+    paddingTop: 90,
     paddingHorizontal: 15,
   },
   card: {
     backgroundColor: 'white',
-    borderRadius: 40,
-    margin: 5,
+
+    borderTopLeftRadius: 40,
+    borderTopRightRadius: 40,
+
     paddingVertical: 15,
     paddingHorizontal: 25,
-    width: '98%',
-    height: '90%',
+    paddingBottom: 40,
+    width: '100%',
   },
   shadowProp: {
     shadowOffset: {width: 0, height: 4},
@@ -169,6 +282,35 @@ const styles = StyleSheet.create({
     // backgroundColor: 'red',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  modal: {
+    justifyContent: 'flex-start',
+    margin: 0,
+    alignSelf: 'flex-end',
+  },
+  modalContent: {
+    height: '100%',
+    width: 300,
+    backgroundColor: '#fff',
+    paddingHorizontal: 10,
+    paddingTop: 80,
+    paddingBottom: 40,
+    justifyContent: 'space-between',
+  },
+  chipButton: {
+    paddingHorizontal: 20,
+    margin: 5,
+    borderColor: 'gray',
+    backgroundColor: 'white',
+  },
+  chipButtonSelected: {
+    backgroundColor: '#047675',
+  },
+  chipTitle: {
+    color: 'gray',
+  },
+  chipTitleSelected: {
+    color: 'white',
   },
 });
 

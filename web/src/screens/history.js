@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useRef} from 'react';
 import {
   Text,
   StyleSheet,
@@ -14,10 +14,13 @@ import Modal from 'react-native-modal';
 import {useSharedValue} from 'react-native-reanimated';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import MaterialCommunityIcons from 'react-native-vector-icons/dist/MaterialCommunityIcons';
+import Octicons from 'react-native-vector-icons/dist/Octicons';
+
 import MapView, {Marker, PROVIDER_GOOGLE} from 'react-native-maps';
 import Feather from 'react-native-vector-icons/dist/Feather';
 import Geolocation from '@react-native-community/geolocation';
-
+import ActionSheet from 'react-native-actions-sheet';
+import DatepickerRange from 'react-native-range-datepicker';
 import {
   TabbedHeaderPager,
   DetailsHeaderScrollView,
@@ -63,6 +66,8 @@ const Detail = ({detail}) => {
 };
 
 const History = ({navigation}) => {
+  const actionSheetRef = useRef();
+
   const [TABS, setTABS] = useState([
     {
       title: 'ตำแหน่ง',
@@ -93,9 +98,11 @@ const History = ({navigation}) => {
 
   const [modalIndex, setModalIndex] = useState(-1);
   const [history, setHistory] = useState([]);
-  const [refreshing, setRefreshing] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [selectedItems, setSelectedItems] = useState([]);
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
 
   const handleSelectItem = itemValue => {
     if (selectedItems.includes(itemValue)) {
@@ -119,16 +126,27 @@ const History = ({navigation}) => {
     setIsVisible(false);
   };
 
+  const onNoDataRefresh = () => {
+    setRefreshing(true);
+    // Put your refresh logic here
+    setSelectedItems([]);
+    setStartDate('');
+    setEndDate('');
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 2000);
+  };
   const onRefresh = () => {
     setRefreshing(true);
     // Put your refresh logic here
+
     setTimeout(() => {
       setRefreshing(false);
     }, 2000); // Simulate a delay before refreshing completes
   };
   useEffect(() => {
     getLog();
-  }, [refreshing]);
+  }, [selectedItems, refreshing, startDate]);
 
   function onScroll(e) {
     'worklet';
@@ -138,10 +156,24 @@ const History = ({navigation}) => {
     const token = await AsyncStorage.getItem('user_token');
 
     const current_farm = JSON.parse(await AsyncStorage.getItem('user_farm'));
-
+    console.log('log');
     axios
       .get(
-        `http://35.244.169.189.nip.io/v1/farms/${current_farm.farm_uuid}/log`,
+        `http://35.244.169.189.nip.io/v1/farms/${
+          current_farm.farm_uuid
+        }/log?disease_name=${selectedItems.join(',')}&start_time=${
+          startDate
+            ? `${moment(new Date(startDate)).format('YYYY-MM-DD')}T00:00:00`
+            : ''
+        }&end_time=${
+          startDate
+            ? `${
+                endDate
+                  ? moment(new Date(endDate)).format('YYYY-MM-DD')
+                  : moment(new Date(startDate)).format('YYYY-MM-DD')
+              }T23:59:59`
+            : ''
+        }`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -237,7 +269,10 @@ const History = ({navigation}) => {
         <ScrollView
           contentContainerStyle={styles.scrollView}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onNoDataRefresh}
+            />
           }>
           <View
             style={{
@@ -285,6 +320,7 @@ const History = ({navigation}) => {
         }
         renderItem={renderItem}
       />
+
       {/* Modal */}
       <Modal
         isVisible={isVisible}
@@ -295,43 +331,116 @@ const History = ({navigation}) => {
         swipeDirection="right"
         style={styles.modal}>
         <View style={styles.modalContent}>
-          <Text
-            style={[font.kanit, {color: '#00000077', marginHorizontal: 10}]}>
-            หมวดหมู่โรค
-          </Text>
-          <Divider style={{marginVertical: 5}} />
-
-          <View
-            style={{
-              flexDirection: 'row',
-              flexWrap: 'wrap',
-              marginBottom: 10,
-            }}>
-            {allDisease.map((item, i) => (
-              <Chip
-                key={i}
-                title={item.label}
-                buttonStyle={[
-                  styles.chipButton,
-                  isItemSelected(item.value) && styles.chipButtonSelected,
-                ]}
-                titleStyle={[
-                  styles.chipTitle,
-                  isItemSelected(item.value) && styles.chipTitleSelected,
-                  font.kanit,
-                ]}
-                onPress={() => handleSelectItem(item.value)}
+          <View>
+            <Text
+              style={[font.kanit, {color: '#00000077', marginHorizontal: 10}]}>
+              หมวดหมู่โรค
+            </Text>
+            <Divider style={{marginVertical: 5}} />
+            <View
+              style={{
+                flexDirection: 'row',
+                flexWrap: 'wrap',
+                marginBottom: 30,
+              }}>
+              {allDisease.map((item, i) => (
+                <Chip
+                  key={i}
+                  title={item.label}
+                  buttonStyle={[
+                    styles.chipButton,
+                    isItemSelected(item.value) && styles.chipButtonSelected,
+                  ]}
+                  titleStyle={[
+                    styles.chipTitle,
+                    isItemSelected(item.value) && styles.chipTitleSelected,
+                    font.kanit,
+                  ]}
+                  onPress={() => handleSelectItem(item.value)}
+                  type="outline"
+                  size="sm"
+                />
+              ))}
+              {/* <Text>{selectedItems.join(',')}</Text> */}
+            </View>
+            <Text
+              style={[font.kanit, {color: '#00000077', marginHorizontal: 10}]}>
+              วัน
+            </Text>
+            <Divider style={{marginVertical: 5}} />
+            <View
+              style={{
+                flexDirection: 'row',
+                flexWrap: 'wrap',
+                marginVertical: 10,
+                justifyContent: 'space-evenly',
+                alignItems: 'center',
+              }}>
+              <Button
+                title={
+                  startDate
+                    ? moment(new Date(startDate)).format('DD-MM-YYYY')
+                    : 'วันที่เริ่มต้น'
+                }
                 type="outline"
+                buttonStyle={{borderRadius: 30, paddingHorizontal: 10}}
+                titleStyle={[font.kanit, {fontSize: 16}]}
+                onPress={() => actionSheetRef.current?.show()}
                 size="sm"
               />
-            ))}
-            {/* <Text>{JSON.stringify(selectedItems)}</Text> */}
+              <Octicons name="chevron-right" size={25} />
+
+              <Button
+                title={
+                  endDate
+                    ? moment(new Date(endDate)).format('DD-MM-YYYY')
+                    : 'วันที่สุดท้าย'
+                }
+                type="outline"
+                buttonStyle={{borderRadius: 30, paddingHorizontal: 10}}
+                titleStyle={[font.kanit, {fontSize: 16}]}
+                size="sm"
+                onPress={() => actionSheetRef.current?.show()}
+              />
+            </View>
           </View>
-          <Text
-            style={[font.kanit, {color: '#00000077', marginHorizontal: 10}]}>
-            วัน
-          </Text>
-          <Divider style={{marginVertical: 5}} />
+          <Button
+            style={{marginVertical: 10}}
+            buttonStyle={{borderRadius: 30}}
+            titleStyle={font.kanit}
+            title="รีเซ็ตข้อมูล"
+            size="sm"
+            onPress={() => {
+              setSelectedItems([]);
+              setStartDate('');
+              setEndDate('');
+            }}
+          />
+          <ActionSheet
+            ref={actionSheetRef}
+            containerStyle={{
+              borderTopLeftRadius: 25,
+              borderTopRightRadius: 25,
+            }}
+            indicatorStyle={{
+              width: 100,
+            }}>
+            <View style={{height: 550}}>
+              <DatepickerRange
+                maxMonth={4}
+                maxDate={moment().format('L')}
+                initialMonth={moment().subtract(3, 'months').format('YYYYMM')}
+                onClose={() => actionSheetRef.current?.hide()}
+                selectedBackgroundColor="#047675"
+                onConfirm={(start, until) => {
+                  setStartDate(start);
+                  setEndDate(until);
+
+                  actionSheetRef.current?.hide();
+                }}
+              />
+            </View>
+          </ActionSheet>
         </View>
       </Modal>
       <Modal
@@ -484,11 +593,13 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-end',
   },
   modalContent: {
+    justifyContent: 'space-between',
+
     height: '100%',
-    width: 250,
+    width: 300,
     backgroundColor: '#fff',
     paddingHorizontal: 10,
-    paddingVertical: 50,
+    paddingVertical: 60,
   },
   chipButton: {
     margin: 5,

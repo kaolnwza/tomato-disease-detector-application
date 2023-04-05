@@ -190,7 +190,6 @@ export const ResultPage = ({route, navigation}) => {
       type: 'image/jpeg',
       name: fileName,
     });
-    console.log(result);
 
     data.append('disease', result.replaceAll('"', ''));
     data.append('description', description);
@@ -459,9 +458,7 @@ export const ResultPage = ({route, navigation}) => {
       <Modal
         isVisible={isModalVisible}
         style={{justifyContent: 'flex-end'}}
-        onBackdropPress={cancelEditedPin}
-        swipeDirection={['down']} // or any other direction(s) you prefer
-        onSwipeComplete={cancelEditedPin}>
+        onBackdropPress={cancelEditedPin}>
         {!outOfRange ? (
           <View
             style={{

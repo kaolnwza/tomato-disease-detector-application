@@ -34,6 +34,7 @@ import {DrawerActions} from '@react-navigation/native';
 import ManageFarm from '../../screens/manageFarm';
 import UserManual from '../../screens/userManual';
 import ManageUser from '../../screens/manageUser';
+import moment from 'moment';
 
 const Drawer = createDrawerNavigator();
 
@@ -329,8 +330,8 @@ const HomeNavigator = () => (
     <Stack.Screen
       name="daily"
       component={Daily}
-      options={({navigation}) => ({
-        title: 'สรุปข้อมูล',
+      options={({navigation, route}) => ({
+        title: 'วันที่ ' + moment(route.params.date).format('DD/MM/YYYY'),
         headerTintColor: '#000',
         headerRight: () => (
           <Octicons
