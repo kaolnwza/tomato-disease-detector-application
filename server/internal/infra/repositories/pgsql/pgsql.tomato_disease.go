@@ -86,7 +86,7 @@ func (r *tomatoDiseaseRepo) AddDiseaseImage(ctx context.Context, diseaseUUID uui
 	}
 
 	query := `
-		INSERT INTO tomato_disease_image (disease_uuid, upload_uuid, column)
+		INSERT INTO tomato_disease_image (disease_uuid, upload_uuid, "column")
 		VALUES ` + values
 
 	return r.tx.Insert(ctx, query)
