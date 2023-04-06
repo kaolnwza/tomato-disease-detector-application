@@ -2,19 +2,19 @@
 
 # import pandas as pd
 import torchvision.transforms.functional as TF
-import os
-import numpy as np
+# import os
+# import numpy as np
 import torch
-from pathlib import Path
+# from pathlib import Path
 import torch.nn as nn
 from torchvision.transforms import transforms
-from torch.utils.data import DataLoader, Dataset
-from torch.optim import Adam
+# from torch.utils.data import DataLoader, Dataset
+# from torch.optim import Adam
 from torch.autograd import Variable
-from datetime import datetime
-from torch.utils.data.sampler import SubsetRandomSampler
-import cv2 as cv
-import base64
+# from datetime import datetime
+# from torch.utils.data.sampler import SubsetRandomSampler
+# import cv2 as cv
+# import base64
 import io
 from PIL import Image
 
@@ -51,7 +51,8 @@ model_dir = "../ptmodel/"
 model.load_state_dict(torch.load(
     # "resnet18-lr0.001-10 ithink0.0001.pt", map_location='cpu'))
     # model_dir + "dense-lr0.001-10.pt", map_location='cpu'))
-    model_dir + "gnet555eiei.pt", map_location='cpu'))
+    # model_dir + "gnet555eiei.pt", map_location='cpu'))
+     "./gnet555eiei.pt", map_location='cpu'))
 
 model.eval()
 
@@ -171,6 +172,22 @@ async def imgpred2(file: bytes = File(...)):
     # Image.open(io.BytesIO(request_object_content))
 
     # return resp
+    
+@app.post("/v2/prediction")
+async def imgpred2(file: bytes = File(...)):
+    # img = Image.open(io.BytesIO(file))
+    img = Image.open(io.BytesIO(file)).convert('RGB')
+    # img.show()
+
+    # resp = predictionImg(img)
+    resp, score = predictionImgV2(img)
+    # print("-------------", resp)
+    return{"disease_name": resp, "score": score}
+
+    # request_object_content = await file.read()
+    # Image.open(io.BytesIO(request_object_content))
+
+    # return resp
 
 if __name__ == "__main__":
-    uvicorn.run(app, host=os.environ['HOST_URL'], port=1234)
+    uvicorn.run(app, port=1234)
