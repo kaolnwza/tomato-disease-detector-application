@@ -24,3 +24,18 @@ spec:
             name: tomato-api
             port:
               number: 8765
+      - path: /
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: redis-svc
+            port:
+              number: 6379
+      - path: /v2/prediction
+        pathType: Prefix
+        backend:
+          service:
+            name: tomato-prediction
+            port:
+              number: 1234
+              

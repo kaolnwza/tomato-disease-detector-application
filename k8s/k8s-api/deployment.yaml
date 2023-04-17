@@ -1,0 +1,91 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tomato-api
+  namespace: tomato-api-ns
+  labels:
+    app: tomato-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tomato-api
+  template:
+    metadata:
+      labels:
+        app: tomato-api
+    spec:
+      terminationGracePeriodSeconds: 31
+      containers:
+      - name: tomato-api
+        image: asia.gcr.io/able-stock-380702/tomato-api:latest
+        imagePullPolicy: Always
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "250m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 8765
+          name: web-port
+          protocol: TCP
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8765
+            scheme: HTTP
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8765
+            scheme: HTTP
+      # volumes:
+      #   - name: volumn-config
+      #     configMap:
+      #       name: api-config
+        env:
+          - name: DATABASE_URL
+            valueFrom:
+              configMapKeyRef:
+                name: api-config
+                key: DATABASE_URL
+          # - name: REDIS_HOST
+          #   value: redis-svc
+          - name: REDIS_HOST
+           valueFrom:
+             configMapKeyRef:
+               name: api-config
+               key: REDIS_HOST
+          - name: FASTAPI_HOST_URL
+          - name: FASTAPI_HOST_URL
+            valueFrom:
+              configMapKeyRef:
+                name: api-config
+                key: FASTAPI_HOST_URL
+          - name: BUCKET
+            valueFrom:
+              configMapKeyRef:
+                name: api-config
+                key: BUCKET
+          - name: GCS_PROJECT_ID
+            valueFrom:
+              configMapKeyRef:
+                name: api-config
+                key: GCS_PROJECT_ID
+          - name: GCS_BUCKET_1
+            valueFrom:
+              configMapKeyRef:
+                name: api-config
+                key: GCS_BUCKET_1
+          - name: GOOGLE_APPLICATION_CREDENTIALS
+            valueFrom:
+              configMapKeyRef:
+                name: api-config
+                key: GOOGLE_APPLICATION_CREDENTIALS
+          - name: TZ
+            valueFrom:
+              configMapKeyRef:
+                name: api-config
+                key: TZ
