@@ -313,7 +313,7 @@ func (r *tomatoLogRepo) GetLogsPercentageDailyByFarmUUID(ctx context.Context, lo
 			ROUND((100.00 / COUNT(1)) * COUNT(1) FILTER (WHERE status = 'disease')) disease_percentage
 		FROM log
 		GROUP BY created_at::date
-		ORDER BY created_at::date 
+		ORDER BY created_at::date DESC
 	`
 
 	return r.tx.Get(ctx, logs, query, startDate, endDate, farmUUID)

@@ -24,5 +24,6 @@ type UserFarm struct {
 	FarmUUID     uuid.UUID    `db:"farm_uuid" json:"-"`
 	UserFarmRole UserFarmRole `db:"user_farm_role" json:"user_farm_role"`
 	IsActive     bool         `db:"-" json:"-"`
-	CreatedAt    time.Time    `db:"created_at" json:"created_at"`
+	*User        `db:"user" json:"user"`
+	CreatedAt    time.Time `db:"created_at" json:"created_at"`
 }

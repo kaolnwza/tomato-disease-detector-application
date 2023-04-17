@@ -34,19 +34,26 @@ func (r *usrFarmRepo) FetchUserFarmInfo(ctx context.Context, user *model.UserFar
 	return r.tx.GetOne(ctx, user, query, farmUUID, userUUID)
 }
 
-func (r *usrFarmRepo) GetAll(ctx context.Context, users *[]*model.UserFarm, farmUUID uuid.UUID) error {
+func (r *usrFarmRepo) GetAll(ctx context.Context, users *[]*model.UserFarm, farmUUID uuid.UUID, limit int, offset int) error {
 	query := `
 		SELECT
 			user_farm_uuid,
-			user_uuid,
+			user_farm.user_uuid,
+			u.first_name AS "user.first_name",
+			u.last_name AS "user.last_name",
+			u.member_id AS "user.member_id",
 			user_farm_role,
-			created_at
+			user_farm.created_at
 		FROM user_farm
+		LEFT JOIN "user" u ON u.user_uuid = user_farm.user_uuid
 		WHERE farm_uuid = $1
-		AND is_active IS TRUE
+		AND user_farm.is_active IS TRUE
+		ORDER BY user_farm.created_at
+		OFFSET $2
+		LIMIT $3
 	`
 
-	return r.tx.Get(ctx, users, query, farmUUID)
+	return r.tx.Get(ctx, users, query, farmUUID, offset, limit)
 }
 
 func (r *usrFarmRepo) AddUserFarm(ctx context.Context, farmUUID uuid.UUID, newUserUUID uuid.UUID, role model.UserFarmRole) error {

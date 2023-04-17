@@ -25,7 +25,7 @@ func (r redisDB) SetValue(ctx context.Context, key model.RedisKey, value interfa
 		return err
 	}
 
-	return r.cli.Set(ctx, string(key), byteValue, time.Hour*24).Err()
+	return r.cli.Set(ctx, string(key), byteValue, time.Hour*1).Err()
 }
 
 func (r redisDB) GetValue(ctx context.Context, key model.RedisKey, dest interface{}) error {

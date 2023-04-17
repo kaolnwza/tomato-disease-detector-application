@@ -39,9 +39,9 @@ func (s *usrFarmSvc) IsUserFarmOwner(ctx context.Context, userUUID uuid.UUID, fa
 	return &isOwer, nil
 }
 
-func (s *usrFarmSvc) GetAll(ctx context.Context, farmUUID uuid.UUID) (*[]*model.UserFarm, error) {
+func (s *usrFarmSvc) GetAll(ctx context.Context, farmUUID uuid.UUID, limit int, offset int) (*[]*model.UserFarm, error) {
 	users := make([]*model.UserFarm, 0)
-	if err := s.usrFarmRepo.GetAll(ctx, &users, farmUUID); err != nil {
+	if err := s.usrFarmRepo.GetAll(ctx, &users, farmUUID, limit, offset); err != nil {
 		return nil, err
 	}
 

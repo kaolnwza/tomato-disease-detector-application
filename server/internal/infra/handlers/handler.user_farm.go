@@ -51,7 +51,29 @@ func (h *usrFarmHdr) GetAllFarmUserHandler(c port.Context) {
 		return
 	}
 
-	farm, err := h.svc.GetAll(c.Ctx(), farmUUID)
+	offset := 0
+	offsetStr := c.FormValue("offset")
+	if offsetStr != "" {
+		offset, err = strconv.Atoi(offsetStr)
+		if err != nil {
+			log.Error(err)
+			c.JSON(http.StatusBadRequest, err.Error())
+			return
+		}
+	}
+
+	limit := 10
+	limitStr := c.FormValue("limit")
+	if limitStr != "" {
+		limit, err = strconv.Atoi(limitStr)
+		if err != nil {
+			log.Error(err)
+			c.JSON(http.StatusBadRequest, err.Error())
+			return
+		}
+	}
+
+	farm, err := h.svc.GetAll(c.Ctx(), farmUUID, limit, offset)
 	if err != nil {
 		log.Error(err)
 		c.JSON(http.StatusInternalServerError, err.Error())
