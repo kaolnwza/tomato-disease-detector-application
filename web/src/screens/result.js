@@ -31,6 +31,7 @@ import {
   DetailsHeaderScrollView,
 } from 'react-native-sticky-parallax-header';
 import DiseaseDetail from '../components/list/disease-detail';
+import axios from 'axios';
 
 export const ResultPage = ({route, navigation}) => {
   const {photo, info} = route.params;
@@ -173,6 +174,8 @@ export const ResultPage = ({route, navigation}) => {
   };
 
   const getData = async () => {
+    const token = await AsyncStorage.getItem('user_token');
+
     const imageUri = photo.path ? 'file://' + photo.path : photo.uri;
     const fileName = photo.fileName
       ? photo.fileName
@@ -187,29 +190,46 @@ export const ResultPage = ({route, navigation}) => {
       name: fileName,
     });
 
-    fetch('http://35.244.169.189.nip.io/v1/prediction', {
+    fetch('http://35.244.169.189.nip.io/v2/prediction', {
       method: 'POST',
       headers: {
         'Content-Type': 'multipart/form-data',
-        Authorization:
-          'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NfdXVpZCI6IjUzYmRhZThlLWMxZTMtNDAzMC1hODVkLWNkMWZhOTNhOWJlNSIsImV4cCI6MTg1MzkyNTA4OCwidXNlcl91dWlkIjoiOGU0ZDgzMjAtOGExOS00NmZjLTgxNTEtN2E2MjI2ZDc2ZjZiIn0.YKjeADsaC5oKaD4bBEkWxTDVbZMH_34j4Vx3bKgeZhc',
+        Authorization: `Bearer ${token}`,
       },
       body: data,
     })
       .then(response => response.json())
       .then(responseData => {
-        setResult(responseData.prediction_result);
-        setPercentage(Number(responseData.prediction_score));
-        setInform(responseData.disease_info.inform);
-        setNameTh(responseData.disease_info.name_th);
+        setNameTh(diseaseTh(responseData.disease_name));
+        setResult(responseData.disease_name);
+        setPercentage(Number(responseData.score * 100));
+        getInformation(responseData.disease_name);
       })
       .catch(error => {
         console.log('error:', error);
       });
     setLoading(false);
   };
+  const getInformation = async name => {
+    const token = await AsyncStorage.getItem('user_token');
+
+    axios
+      .get(`http://35.244.169.189.nip.io/v1/diseases/name/${name}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then(response => {
+        setInform(response.data.inform);
+      })
+      .catch(error => {
+        console.log(error);
+      });
+  };
 
   const saveResult = async () => {
+    const token = await AsyncStorage.getItem('user_token');
+
     const imageUri = photo.path ? 'file://' + photo.path : photo.uri;
     const fileName = photo.fileName
       ? photo.fileName
@@ -236,8 +256,7 @@ export const ResultPage = ({route, navigation}) => {
         method: 'POST',
         headers: {
           'Content-Type': 'multipart/form-data',
-          Authorization:
-            'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NfdXVpZCI6IjUzYmRhZThlLWMxZTMtNDAzMC1hODVkLWNkMWZhOTNhOWJlNSIsImV4cCI6MTg1MzkyNTA4OCwidXNlcl91dWlkIjoiOGU0ZDgzMjAtOGExOS00NmZjLTgxNTEtN2E2MjI2ZDc2ZjZiIn0.YKjeADsaC5oKaD4bBEkWxTDVbZMH_34j4Vx3bKgeZhc',
+          Authorization: `Bearer ${token}`,
         },
         body: data,
       },
