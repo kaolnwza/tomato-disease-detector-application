@@ -27,8 +27,8 @@ export const CameraScreen = ({navigation}) => {
 
   const OpenPhoto = async () => {
     ImagePicker.openPicker({
-      width: 300,
-      height: 400,
+      width: 400,
+      height: 500,
       cropping: true,
     }).then(image => {
       Geolocation.getCurrentPosition(info => {

@@ -12,6 +12,7 @@ import {
   RefreshControl,
   SafeAreaView,
   ScrollView,
+  TouchableOpacity,
 } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/dist/MaterialCommunityIcons';
 
@@ -22,8 +23,9 @@ import Feather from 'react-native-vector-icons/dist/Feather';
 const ManageFarm = ({navigation}) => {
   const [open, setOpen] = useState(false);
   const [farm, setFarm] = useState([]);
-  const [refreshing, setRefreshing] = useState(true);
   const [loadData, setLoadData] = useState(true);
+
+  const [refreshing, setRefreshing] = useState(true);
 
   const onRefresh = React.useCallback(() => {
     getFarm();
@@ -101,24 +103,22 @@ const ManageFarm = ({navigation}) => {
 
   return (
     <View style={styles.container}>
-      <SpeedDial
-        isOpen={open}
-        icon={{name: 'edit', color: '#fff'}}
-        openIcon={{name: 'close', color: '#fff'}}
-        style={{zIndex: 99}}
-        onOpen={() => setOpen(!open)}
-        onClose={() => setOpen(!open)}>
-        <SpeedDial.Action
-          icon={{name: 'add', color: '#fff'}}
-          color="#047675"
-          title="เพิ่มไร่"
-          titleStyle={[font.kanit, {backgroundColor: '#fff'}]}
-          onPress={() => {
-            setOpen(!open);
-            navigation.navigate('CreateFarm');
-          }}
-        />
-      </SpeedDial>
+      <TouchableOpacity
+        onPress={() => {
+          navigation.navigate('CreateFarm');
+        }}
+        style={{
+          borderRadius: 50,
+          backgroundColor: '#047675',
+          padding: 10,
+          bottom: 50,
+          right: 17,
+          zIndex: 1,
+          position: 'absolute',
+        }}>
+        <MaterialCommunityIcons name="plus" size={35} color="#fff" />
+      </TouchableOpacity>
+
       {(farm.length <= 0) & !refreshing ? (
         <SafeAreaView style={styles.container}>
           <ScrollView
@@ -205,6 +205,7 @@ const ManageFarm = ({navigation}) => {
                   height: 200,
                   borderRadius: 30,
                 }}
+                mapType="satellite"
                 moveOnMarkerPress={false}
                 pitchEnabled={false}
                 scrollEnabled={false}

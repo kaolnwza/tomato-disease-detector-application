@@ -15,6 +15,7 @@ import {useSharedValue} from 'react-native-reanimated';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import MaterialCommunityIcons from 'react-native-vector-icons/dist/MaterialCommunityIcons';
 import Octicons from 'react-native-vector-icons/dist/Octicons';
+import LinearGradient from 'react-native-linear-gradient';
 
 import MapView, {Marker, PROVIDER_GOOGLE} from 'react-native-maps';
 import Feather from 'react-native-vector-icons/dist/Feather';
@@ -25,7 +26,7 @@ import {
   TabbedHeaderPager,
   DetailsHeaderScrollView,
 } from 'react-native-sticky-parallax-header';
-import {Button, ListItem, Avatar, Chip, Divider} from '@rneui/themed';
+import {Button, ListItem, Avatar, Chip, Divider, Skeleton} from '@rneui/themed';
 import {font, buttons} from './styles';
 import RNFetchBlob from 'rn-fetch-blob';
 import axios from 'axios';
@@ -103,6 +104,7 @@ const History = ({navigation}) => {
   const [selectedItems, setSelectedItems] = useState([]);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [loadData, setLoadData] = useState(true);
 
   const handleSelectItem = itemValue => {
     if (selectedItems.includes(itemValue)) {
@@ -117,10 +119,6 @@ const History = ({navigation}) => {
   };
 
   const isItemSelected = itemValue => selectedItems.includes(itemValue);
-
-  const handleOpenModal = () => {
-    setIsVisible(true);
-  };
 
   const handleCloseModal = () => {
     setIsVisible(false);
@@ -156,7 +154,7 @@ const History = ({navigation}) => {
     const token = await AsyncStorage.getItem('user_token');
 
     const current_farm = JSON.parse(await AsyncStorage.getItem('user_farm'));
-    console.log('log');
+
     axios
       .get(
         `http://35.244.169.189.nip.io/v1/farms/${
@@ -182,6 +180,7 @@ const History = ({navigation}) => {
       )
       .then(response => {
         setHistory(response.data);
+        setLoadData(false);
         setRefreshing(false);
       })
       .catch(error => {
@@ -228,7 +227,11 @@ const History = ({navigation}) => {
         <View
           style={{
             backgroundColor:
-              item.disease_name == 'Healthy' ? '#047675' : '#E72970',
+              item.status == 'monitoring'
+                ? '#2089dc'
+                : item.disease_name == 'Healthy'
+                ? '#047675'
+                : '#E72970',
             borderRadius: 50,
             padding: 5,
           }}>
@@ -241,7 +244,9 @@ const History = ({navigation}) => {
         </View>
         <ListItem.Content>
           <ListItem.Title style={font.kanit}>
-            {item.disease_name_th}
+            {item.disease_name_th}{' '}
+            {item.status == 'monitoring' ? '(กำลังรักษา)' : null}
+            {item.status == 'cured' ? '(รักษาแล้ว)' : null}
           </ListItem.Title>
           <ListItem.Subtitle style={font.kanit}>
             {item.disease_name}
@@ -263,6 +268,93 @@ const History = ({navigation}) => {
       </ListItem>
     </TouchableOpacity>
   );
+  if (loadData) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View
+          style={{
+            flex: 1,
+            paddingHorizontal: 15,
+          }}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }>
+          {[...Array(8)].map((_, index) => (
+            <View key={index}>
+              <View
+                style={{
+                  flexDirection: 'row',
+
+                  justifyContent: 'space-between',
+
+                  marginVertical: 18,
+                }}>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                  }}>
+                  <Skeleton
+                    LinearGradientComponent={LinearGradient}
+                    animation="wave"
+                    circle
+                    // skeletonStyle={{}}
+                    width={65}
+                    height={65}
+                  />
+                  <View
+                    style={{justifyContent: 'space-evenly', marginLeft: 10}}>
+                    <Skeleton
+                      LinearGradientComponent={LinearGradient}
+                      animation="wave"
+                      width={100}
+                      height={15}
+                      style={{borderRadius: 30}}
+                    />
+                    <Skeleton
+                      LinearGradientComponent={LinearGradient}
+                      animation="wave"
+                      width={80}
+                      height={10}
+                      style={{borderRadius: 30}}
+                    />
+                  </View>
+                </View>
+                <View
+                  style={{
+                    justifyContent: 'space-evenly',
+                    marginLeft: 10,
+                    alignItems: 'flex-end',
+                  }}>
+                  <Skeleton
+                    LinearGradientComponent={LinearGradient}
+                    animation="wave"
+                    width={30}
+                    height={15}
+                    style={{borderRadius: 30}}
+                  />
+                  <Skeleton
+                    LinearGradientComponent={LinearGradient}
+                    animation="wave"
+                    width={80}
+                    height={10}
+                    style={{borderRadius: 30}}
+                  />
+                  <Skeleton
+                    LinearGradientComponent={LinearGradient}
+                    animation="wave"
+                    width={40}
+                    height={10}
+                    style={{borderRadius: 30}}
+                  />
+                </View>
+              </View>
+              <Divider />
+            </View>
+          ))}
+        </View>
+      </SafeAreaView>
+    );
+  }
   if (!history) {
     return (
       <SafeAreaView style={{flex: 1, paddingTop: 100}}>
@@ -334,13 +426,13 @@ const History = ({navigation}) => {
           <View>
             <Text
               style={[font.kanit, {color: '#00000077', marginHorizontal: 10}]}>
-              หมวดหมู่โรค
+              โรค
             </Text>
             <Divider style={{marginVertical: 5}} />
             <View
               style={{
-                flexDirection: 'row',
-                flexWrap: 'wrap',
+                // flexDirection: 'row',
+                // flexWrap: 'wrap',
                 marginBottom: 30,
               }}>
               {allDisease.map((item, i) => (
@@ -513,7 +605,13 @@ const History = ({navigation}) => {
                   </ScrollView>
                 );
               case 'fix':
-                return <StageSelect key={i} detail={history[modalIndex]} />;
+                return (
+                  <StageSelect
+                    key={i}
+                    detail={history[modalIndex]}
+                    onChangeState={getLog}
+                  />
+                );
               default:
                 return <Text key={i}>No Component</Text>;
             }

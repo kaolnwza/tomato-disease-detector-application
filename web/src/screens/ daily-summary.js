@@ -138,6 +138,7 @@ const Daily = ({route, navigation}) => {
       </View>
       {center ? (
         <MapView
+          mapType="satellite"
           // region={Pin}
           // provider={PROVIDER_GOOGLE}
           style={[

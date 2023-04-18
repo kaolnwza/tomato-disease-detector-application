@@ -7,6 +7,7 @@ import {
   RefreshControl,
   SafeAreaView,
   ScrollView,
+  TouchableOpacity,
 } from 'react-native';
 import {Button, SpeedDial, Skeleton} from '@rneui/themed';
 import LinearGradient from 'react-native-linear-gradient';
@@ -16,7 +17,6 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const SelectFarm = ({navigation}) => {
-  const [open, setOpen] = useState(false);
   const [farm, setFarm] = useState([]);
   const [refreshing, setRefreshing] = useState(true);
   const [loadData, setLoadData] = useState(true);
@@ -96,24 +96,21 @@ const SelectFarm = ({navigation}) => {
   return (
     <View style={styles.container}>
       {isOwner ? (
-        <SpeedDial
-          isOpen={open}
-          icon={{name: 'edit', color: '#fff'}}
-          openIcon={{name: 'close', color: '#fff'}}
-          style={{zIndex: 99}}
-          onOpen={() => setOpen(!open)}
-          onClose={() => setOpen(!open)}>
-          <SpeedDial.Action
-            icon={{name: 'add', color: '#fff'}}
-            color="#047675"
-            title="เพิ่มไร่"
-            titleStyle={[font.kanit, {backgroundColor: '#fff'}]}
-            onPress={() => {
-              navigation.navigate('CreateFarm');
-              setOpen(!open);
-            }}
-          />
-        </SpeedDial>
+        <TouchableOpacity
+          onPress={() => {
+            navigation.navigate('CreateFarm');
+          }}
+          style={{
+            borderRadius: 50,
+            backgroundColor: '#047675',
+            padding: 10,
+            bottom: 50,
+            right: 17,
+            zIndex: 1,
+            position: 'absolute',
+          }}>
+          <MaterialCommunityIcons name="plus" size={35} color="#fff" />
+        </TouchableOpacity>
       ) : null}
 
       {farm.length <= 0 ? (

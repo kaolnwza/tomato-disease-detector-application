@@ -5,13 +5,15 @@ import {Button, Avatar, ListItem, Input} from '@rneui/themed';
 import SwitchSelector from 'react-native-switch-selector';
 import {font} from '../../screens/styles';
 import MaterialCommunityIcons from 'react-native-vector-icons/dist/MaterialCommunityIcons';
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const StageSelect = ({detail}) => {
+const StageSelect = ({detail, onChangeState}) => {
   const [select, setSelect] = useState(
     detail
       ? detail.status == 'disease'
         ? 0
-        : detail.status == 'mornitor'
+        : detail.status == 'monitoring'
         ? 1
         : 2
       : 0,
@@ -33,6 +35,30 @@ const StageSelect = ({detail}) => {
       activeColor: '#3ED48D',
     },
   ];
+
+  const updateStatus = async status => {
+    const token = await AsyncStorage.getItem('user_token');
+    const data = new FormData();
+    data.append('status', status);
+    axios
+      .patch(
+        `http://35.244.169.189.nip.io/v1/logs/${detail.tomato_log_uuid}/status`,
+        data,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      )
+      .then(response => {
+        setSelect(select + 1);
+        onChangeState();
+      })
+      .catch(error => {
+        console.log(error);
+      });
+  };
+
   if (!detail) {
     return <></>;
   }
@@ -51,6 +77,7 @@ const StageSelect = ({detail}) => {
         onPress={value => setSelect(value)}
         value={select}
         initial={select}
+        disabled
       />
       <View style={{margin: 20}}>
         <View
@@ -90,9 +117,7 @@ const StageSelect = ({detail}) => {
       </View>
       {select == 0 ? (
         <Button
-          onPress={() => {
-            setSelect(select + 1);
-          }}
+          onPress={() => updateStatus('monitoring')}
           buttonStyle={{
             borderRadius: 30,
             backgroundColor: '#E72970',
@@ -104,7 +129,7 @@ const StageSelect = ({detail}) => {
       ) : select == 1 ? (
         <Button
           onPress={() => {
-            setSelect(select + 1);
+            updateStatus('cured');
           }}
           buttonStyle={{
             borderRadius: 30,
@@ -116,9 +141,7 @@ const StageSelect = ({detail}) => {
         </Button>
       ) : (
         <Button
-          onPress={() => {
-            setSelect(0);
-          }}
+          onPress={() => {}}
           buttonStyle={{
             borderRadius: 30,
             backgroundColor: '#3ED48D',

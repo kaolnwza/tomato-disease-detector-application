@@ -117,6 +117,7 @@ const MapScreen = ({navigation, route}) => {
     <View style={{flex: 1}}>
       {currentRegion && (
         <MapView
+          mapType="satellite"
           style={{flex: 1}}
           initialRegion={currentRegion}
           showsUserLocation={true}

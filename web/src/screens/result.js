@@ -40,7 +40,7 @@ export const ResultPage = ({route, navigation}) => {
   const [inform, setInform] = useState([]);
   const [nameTh, setNameTh] = useState('');
   const pickerRef = useRef();
-  const [selectedDisease, setSelectedDisease] = useState();
+  const [selectedDisease, setSelectedDisease] = useState(null);
   const [isInsidePolygon, setIsInsidePolygon] = useState(false);
   const [description, setDescription] = useState('');
   const [isModalVisible, setModalVisible] = useState(false);
@@ -115,6 +115,39 @@ export const ResultPage = ({route, navigation}) => {
     } else {
       setOutOfRange(true);
       setModalVisible(true);
+    }
+  };
+  const diseaseTh = name => {
+    switch (name) {
+      case 'Healthy':
+        return 'ใบสุขภาพดี';
+
+      case 'Bacterial Spot':
+        return 'โรคใบจุด';
+
+      case 'Yellow Leaf Curl Virus':
+        return 'โรคใบหงิกเหลือง';
+
+      case 'Spider Mites':
+        return 'โรคไรสองจุด';
+
+      case 'Septoria Leaf Spot':
+        return 'โรคใบจุดวงกลม';
+
+      case 'Mosaic Virus':
+        return 'โรคใบด่าง';
+
+      case 'Late Blight':
+        return 'โรคใบไหม้';
+
+      case 'Early Blight':
+        return 'โรคใบจุดวง';
+
+      case 'Leaf Mold':
+        return 'โรครากำมะหยี่';
+
+      default:
+        break;
     }
   };
 
@@ -271,6 +304,7 @@ export const ResultPage = ({route, navigation}) => {
               return (
                 <View key={i} style={[{height: 710}]}>
                   <MapView
+                    mapType="satellite"
                     region={Pin}
                     // provider={PROVIDER_GOOGLE}
                     style={{
@@ -322,8 +356,8 @@ export const ResultPage = ({route, navigation}) => {
                       font.kanit,
                       {fontSize: 25, alignSelf: 'center', marginBottom: 10},
                     ]}>
-                    {/* {JSON.stringify(info)} */}
-
+                    {/* {JSON.stringify(result)} */}
+                    {/* {selectedDisease} */}
                     {nameTh}
                     <TouchableOpacity onPress={() => setEdit(true)}>
                       <Feather name="edit-3" size={30} color="#000" />
@@ -472,6 +506,7 @@ export const ResultPage = ({route, navigation}) => {
             {location.latitude} {location.longitude}
           </Text> */}
             <MapView
+              mapType="satellite"
               onRegionChange={region => onLocationChange(region)}
               onRegionChangeComplete={() => setReady(false)}
               // provider={PROVIDER_GOOGLE}
@@ -515,7 +550,7 @@ export const ResultPage = ({route, navigation}) => {
               {/* <ActivityIndicator /> */}
               <Text style={[font.kanit, {fontSize: 20, color: '#fff'}]}>
                 <MaterialIcons name="location-pin" size={20} color="#fff" />
-                ปักหมุด
+                เลือกตำแหน่ง
               </Text>
             </Button>
             <View
@@ -637,19 +672,18 @@ export const ResultPage = ({route, navigation}) => {
       <Modal
         isVisible={isEdit}
         style={{justifyContent: 'flex-end'}}
-        swipeDirection={['down']} // or any other direction(s) you prefer
-        onSwipeComplete={() => setEdit(false)}
         onBackdropPress={() => setEdit(false)}>
         <View
           style={{
             margin: -20,
             borderRadius: 30,
             padding: 20,
-            height: '35%',
+            height: '45%',
             backgroundColor: '#fff',
           }}>
           <Picker
             ref={pickerRef}
+            itemStyle={font.kanit}
             selectedValue={selectedDisease}
             onValueChange={(itemValue, itemIndex) =>
               setSelectedDisease(itemValue)
@@ -668,6 +702,52 @@ export const ResultPage = ({route, navigation}) => {
             <Picker.Item label="โรคใบจุดวง" value="Early Blight" />
             <Picker.Item label="โรครากำมะหยี่" value="Leaf Mold" />
           </Picker>
+          <View
+            style={{
+              width: '100%',
+              flexDirection: 'row',
+              justifyContent: 'space-around',
+              alignSelf: 'flex-end',
+            }}>
+            <Button
+              onPress={() => {
+                setSelectedDisease(null);
+              }}
+              radius={'xl'}
+              type="solid"
+              size="sm"
+              titleStyle={[font.kanit]}
+              buttonStyle={{backgroundColor: '#E72970'}}
+              containerStyle={{width: '45%', marginBottom: 10}}>
+              ยกเลิก
+              <MaterialCommunityIcons
+                name="close"
+                size={20}
+                style={{marginHorizontal: 2}}
+                color="white"
+              />
+            </Button>
+            <Button
+              onPress={() => {
+                setResult(selectedDisease);
+                setNameTh(diseaseTh(selectedDisease));
+                setPercentage(100);
+              }}
+              radius={'xl'}
+              type="solid"
+              size="sm"
+              buttonStyle={{backgroundColor: '#047675'}}
+              titleStyle={font.kanit}
+              containerStyle={{width: '45%', marginBottom: 10}}>
+              ตกลง
+              <MaterialIcons
+                name="check"
+                size={20}
+                style={{marginHorizontal: 2}}
+                color="white"
+              />
+            </Button>
+          </View>
         </View>
       </Modal>
     </View>

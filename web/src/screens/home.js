@@ -95,7 +95,11 @@ export const HomeScreen = ({navigation, route}) => {
     setFarmLocation(current_farm.farm_location);
     axios
       .get(
-        `http://35.244.169.189.nip.io/v1/farms/${current_farm.farm_uuid}/summary`,
+        `http://35.244.169.189.nip.io/v1/farms/${
+          current_farm.farm_uuid
+        }/summary?start_time=${moment().format(
+          'YYYY-MM-DD',
+        )} 00:00:00&end_time=${moment().format('YYYY-MM-DD')} 23:59:59`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -184,8 +188,8 @@ export const HomeScreen = ({navigation, route}) => {
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }>
-        {isOwner ? (
-          <View style={[styles.card, styles.shadowProp]}>
+        <View style={[styles.card, styles.shadowProp]}>
+          {isOwner ? (
             <View
               style={{flexDirection: 'row', justifyContent: 'space-between'}}>
               <Text style={font.kanit}>
@@ -202,89 +206,89 @@ export const HomeScreen = ({navigation, route}) => {
                   <Feather name="chevron-right" size={30} color="#000" />
                 }></Button>
             </View>
-
-            {location ? (
-              <>
-                <View style={(styles.container, {paddingBottom: 5})}>
-                  <MapView
-                    // provider={PROVIDER_GOOGLE}
-                    style={{
-                      height: 200,
-                      width: '100%',
-                      borderRadius: 30,
-                    }}
-                    showsUserLocation={true}
-                    initialRegion={location}>
-                    {markers.map((coordinate, index) => (
-                      <Marker key={index} coordinate={coordinate} />
-                    ))}
-                    <Polygon
-                      coordinates={farmLocation}
-                      fillColor="rgba(255, 255, 255, 0.1)"
-                      strokeColor="rgba(255, 0, 0, 1)"
-                      strokeWidth={2}
-                    />
-                  </MapView>
-                </View>
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    justifyContent: 'space-around',
-                  }}>
-                  <Text style={styles.info}>
-                    {moment().format('DD/MM/YYYY')}
-                    {/* {'  '}
-          00.00 -{' '}
-          {props.time == 'currnt'
-            ? time
-              ? time.substring(0, 5)
-              : moment().format(' HH:mm')
-            : props.time}{' '}
-          น. */}
-                  </Text>
-                  <Text style={styles.info}>โรคใบไหม้ 10%</Text>
-                  <Text style={styles.info}>
-                    เกิดโรคทั้งหมด {markers.length} ต้น
-                  </Text>
-                </View>
-              </>
-            ) : refreshMap ? (
-              <View
-                style={
-                  (styles.container, {paddingBottom: 5, alignItems: 'center'})
-                }>
-                <Skeleton
-                  LinearGradientComponent={LinearGradient}
-                  animation="wave"
-                  style={{borderRadius: 30}}
-                  width="100%"
-                  height={200}
-                />
-                <Skeleton
-                  LinearGradientComponent={LinearGradient}
-                  animation="wave"
-                  style={{borderRadius: 30, marginTop: 8}}
-                  width="95%"
-                  height={10}
-                />
-              </View>
-            ) : (
-              <Text
-                style={[
-                  font.kanit,
-                  {fontSize: 12, alignSelf: 'center', color: '#00000055'},
-                ]}>
-                ข้อมูลมีน้อยเกินไปที่จะคำนวณ
+          ) : (
+            <View
+              style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+              <Text style={font.kanit}>
+                <MaterialCommunityIcons name="map-marker" size={24} />
+                <Text style={{fontSize: 24}}>ตำแหน่งโรคทั้งหมด</Text> ในวันนี้
               </Text>
-            )}
-          </View>
-        ) : null}
+            </View>
+          )}
+
+          {location ? (
+            <>
+              <View style={(styles.container, {paddingBottom: 5})}>
+                <MapView
+                  // provider={PROVIDER_GOOGLE}
+                  mapType="satellite"
+                  style={{
+                    height: 200,
+                    width: '100%',
+                    borderRadius: 30,
+                  }}
+                  showsUserLocation={true}
+                  initialRegion={location}>
+                  {markers.map((coordinate, index) => (
+                    <Marker key={index} coordinate={coordinate} />
+                  ))}
+                  <Polygon
+                    coordinates={farmLocation}
+                    fillColor="rgba(255, 255, 255, 0.1)"
+                    strokeColor="rgba(255, 0, 0, 1)"
+                    strokeWidth={2}
+                  />
+                </MapView>
+              </View>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  justifyContent: 'space-around',
+                }}>
+                <Text style={styles.info}>{moment().format('DD/MM/YYYY')}</Text>
+                <Text style={styles.info}>โรคใบไหม้ 10%</Text>
+                <Text style={styles.info}>
+                  เกิดโรคทั้งหมด {markers.length} ต้น
+                </Text>
+              </View>
+            </>
+          ) : refreshMap ? (
+            <View
+              style={
+                (styles.container, {paddingBottom: 5, alignItems: 'center'})
+              }>
+              <Skeleton
+                LinearGradientComponent={LinearGradient}
+                animation="wave"
+                style={{borderRadius: 30}}
+                width="100%"
+                height={200}
+              />
+              <Skeleton
+                LinearGradientComponent={LinearGradient}
+                animation="wave"
+                style={{borderRadius: 30, marginTop: 8}}
+                width="95%"
+                height={10}
+              />
+            </View>
+          ) : (
+            <Text
+              style={[
+                font.kanit,
+                {fontSize: 12, alignSelf: 'center', color: '#00000055'},
+              ]}>
+              วันนี้มีข้อมูลน้อยเกินไปที่จะคำนวณ
+            </Text>
+          )}
+        </View>
+
         <View
           style={{
             flex: 1,
             flexDirection: 'row',
             flexWrap: 'wrap',
-            justifyContent: 'space-between',
+            justifyContent: 'center',
             paddingHorizontal: 20,
           }}>
           {menu.map((item, index) => (

@@ -19,8 +19,9 @@ export const ValidatePhoto = ({route, navigation}) => {
       <Image
         style={{
           minHeight: Width,
-          width: Width,
+          width: photo.width,
           height: photo.height,
+          maxWidth: Width,
           maxHeight: Height,
         }}
         source={{

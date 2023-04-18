@@ -46,6 +46,7 @@ const DiseaseChart = props => {
       <View style={(styles.container, {paddingBottom: 5})}>
         <MapView
           // provider={PROVIDER_GOOGLE}
+          mapType="satellite"
           style={{
             height: 200,
             width: '100%',

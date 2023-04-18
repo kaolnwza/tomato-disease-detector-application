@@ -18,9 +18,9 @@ import axios from 'axios';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 import ImagePicker from 'react-native-image-crop-picker';
 
-const DiseaseDetail = ({item, id, canEdit}) => {
+const DiseaseDetail = ({item, id, canEdit, onAdd}) => {
   const width = Dimensions.get('window').width;
-  const carousel = item.images;
+
   // carousel.push('');
   const [expandedItems, setExpandedItems] = useState([]);
   const [text, setText] = useState(item.data);
@@ -28,6 +28,12 @@ const DiseaseDetail = ({item, id, canEdit}) => {
   const [isOwner, setOwner] = useState(false);
 
   useEffect(() => {
+    if (item.images) {
+      if (isOwner) {
+        item.images.push('');
+      }
+    }
+
     checkRole();
   }, []);
 
@@ -114,6 +120,7 @@ const DiseaseDetail = ({item, id, canEdit}) => {
               )
               .then(response => {
                 console.log(response.data);
+                onAdd();
               })
               .catch(error => {
                 console.log(error);
@@ -280,56 +287,105 @@ const DiseaseDetail = ({item, id, canEdit}) => {
             </View>
           ) : null}
           <View style={{marginLeft: -13.8}}>
-            <Carousel
-              mode="parallax"
-              width={canEdit ? width : 350}
-              height={width / 2}
-              data={carousel}
-              scrollAnimationDuration={500}
-              // onSnapToItem={index => console.log('current index:', index)}
-              renderItem={({item: img, index}) =>
-                index == carousel.length - 1 ? (
+            {item.images ? (
+              <Carousel
+                mode="parallax"
+                width={canEdit ? width : 350}
+                height={width / 2}
+                data={item.images}
+                scrollAnimationDuration={500}
+                // onSnapToItem={index => console.log('current index:', index)}
+                renderItem={({item: img, index}) =>
                   isOwner ? (
-                    <TouchableOpacity
-                      style={{height: '100%'}}
-                      onPress={() => OpenPhoto(item.title)}>
-                      <View
-                        style={{
-                          flex: 1,
-                          borderWidth: 1,
+                    index == item.images.length - 1 ? (
+                      <TouchableOpacity
+                        style={{height: '100%'}}
+                        onPress={() => OpenPhoto(item.title)}>
+                        <View
+                          style={{
+                            flex: 1,
+                            borderWidth: 1,
+                            borderRadius: 30,
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            flexDirection: 'column',
+                            marginHorizontal: canEdit ? 0 : 10,
+                          }}>
+                          <MaterialCommunityIcons
+                            name="file-image-plus-outline"
+                            color="gray"
+                            size={40}
+                            style={{margin: 5}}
+                          />
+                          <Text style={[font.kanit, {color: 'gray'}]}>
+                            เพิ่มรูปภาพ
+                          </Text>
+                        </View>
+                      </TouchableOpacity>
+                    ) : (
+                      <Avatar
+                        containerStyle={{
+                          width: '100%',
+                          height: '100%',
+                        }}
+                        avatarStyle={{
                           borderRadius: 30,
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                          flexDirection: 'column',
-                          marginHorizontal: canEdit ? 0 : 10,
-                        }}>
-                        <MaterialCommunityIcons
-                          name="file-image-plus-outline"
-                          color="gray"
-                          size={40}
-                          style={{margin: 5}}
-                        />
-                        <Text style={[font.kanit, {color: 'gray'}]}>
-                          เพิ่มรูปภาพ
-                        </Text>
-                      </View>
-                    </TouchableOpacity>
-                  ) : null
-                ) : (
-                  <Avatar
-                    containerStyle={{
-                      width: '100%',
-                      height: '100%',
-                    }}
-                    avatarStyle={{
-                      borderRadius: 30,
-                    }}
-                    source={img.image_uri && {uri: img.image_uri}}
-                    title={<ActivityIndicator />}
-                  />
-                )
-              }
-            />
+                        }}
+                        source={img.image_uri && {uri: img.image_uri}}
+                        title={<ActivityIndicator />}
+                      />
+                    )
+                  ) : (
+                    <Avatar
+                      containerStyle={{
+                        width: '100%',
+                        height: '100%',
+                      }}
+                      avatarStyle={{
+                        borderRadius: 30,
+                      }}
+                      source={img.image_uri && {uri: img.image_uri}}
+                      title={<ActivityIndicator />}
+                    />
+                  )
+                }
+              />
+            ) : (
+              <Carousel
+                mode="parallax"
+                width={canEdit ? width : 350}
+                height={width / 2}
+                data={['']}
+                scrollAnimationDuration={500}
+                // onSnapToItem={index => console.log('current index:', index)}
+                renderItem={({item: img, index}) => (
+                  <TouchableOpacity
+                    style={{height: '100%'}}
+                    onPress={() => OpenPhoto(item.title)}>
+                    <View
+                      style={{
+                        flex: 1,
+                        borderWidth: 1,
+                        borderRadius: 30,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        flexDirection: 'column',
+                        marginHorizontal: canEdit ? 0 : 10,
+                      }}>
+                      <MaterialCommunityIcons
+                        name="file-image-plus-outline"
+                        color="gray"
+                        size={40}
+                        style={{margin: 5}}
+                      />
+                      <Text style={[font.kanit, {color: 'gray'}]}>
+                        เพิ่มรูปภาพ
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                )}
+              />
+            )}
           </View>
         </ListItem.Content>
       </ListItem>

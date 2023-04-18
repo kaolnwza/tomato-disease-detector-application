@@ -31,6 +31,7 @@ const HistoryMap = props => {
   const [farmLocation, setFarmLocation] = useState();
 
   useEffect(() => {
+    console.log(props.detail.status);
     getFarmLocation();
     Geolocation.getCurrentPosition(
       position => {
@@ -65,6 +66,7 @@ const HistoryMap = props => {
 
   return (
     <MapView
+      mapType="satellite"
       // provider={PROVIDER_GOOGLE}
       style={{
         height: '100%',
@@ -80,6 +82,13 @@ const HistoryMap = props => {
       showsUserLocation={true}
       initialRegion={location}>
       <Marker
+        pinColor={
+          props.detail
+            ? props.detail.status == 'monitoring'
+              ? '#2089dc'
+              : ''
+            : ''
+        }
         coordinate={{
           latitude: props.detail ? props.detail.latitude : '',
           longitude: props.detail ? props.detail.longtitude : '',

@@ -299,14 +299,14 @@ const HomeNavigator = () => (
       options={({navigation}) => ({
         title: 'ตรวจสอบ',
         gestureEnabled: false,
-        headerTintColor: '#fff',
+        headerTintColor: '#000',
         headerBackVisible: false,
         headerRight: () => (
           <Octicons
             onPress={() => navigation.navigate('Home')}
             name="home"
             size={25}
-            color="#fFF"
+            color="#000"
           />
         ),
       })}

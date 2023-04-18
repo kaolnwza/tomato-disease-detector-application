@@ -7,6 +7,8 @@ import {
   ActivityIndicator,
   ScrollView,
   Dimensions,
+  SafeAreaView,
+  RefreshControl,
 } from 'react-native';
 import {Button, Avatar, ListItem} from '@rneui/themed';
 import MaterialCommunityIcons from 'react-native-vector-icons/dist/MaterialCommunityIcons';
@@ -14,39 +16,80 @@ import MaterialCommunityIcons from 'react-native-vector-icons/dist/MaterialCommu
 import Ionicons from 'react-native-vector-icons/dist/Ionicons';
 import {font, buttons} from './styles';
 import DiseaseDetail from '../components/list/disease-detail';
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 const Detail = props => {
-  const {name_th, image_url, uuid, inform} = props.route.params.item;
+  const {name, name_th, image_url, uuid, inform} = props.route.params.item;
+  const [info, setInfo] = useState();
+  const [refreshing, setRefreshing] = useState(true);
+
+  useEffect(() => {
+    getInfo();
+  }, []);
+
+  const getInfo = async () => {
+    const value = await AsyncStorage.getItem('user_token');
+
+    axios
+      .get(`http://35.244.169.189.nip.io/v1/diseases/name/${name}`, {
+        headers: {
+          Authorization: `Bearer ${value}`,
+        },
+      })
+      .then(response => {
+        setInfo(response.data);
+        setRefreshing(false);
+      })
+      .catch(error => {
+        console.log(error);
+      });
+  };
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    // Put your refresh logic here
+    getInfo();
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 2000); // Simulate a delay before refreshing completes
+  };
+  if (!info) {
+    return <Text>loading</Text>;
+  }
 
   return (
-    <View style={styles.container}>
-      <View style={{alignItems: 'center'}}>
-        <Avatar
-          rounded
-          size={150}
-          source={image_url && {uri: image_url}}
-          title={<ActivityIndicator />}
-        />
-        {/* <Button size="md" onPress={logData}>
+    <SafeAreaView style={styles.container}>
+      <ScrollView
+        contentContainerStyle={styles.scrollView}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }>
+        <View style={{alignItems: 'center'}}>
+          <Avatar
+            rounded
+            size={150}
+            source={image_url && {uri: image_url}}
+            title={<ActivityIndicator />}
+          />
+          {/* <Button size="md" onPress={logData}>
           Medium
         </Button> */}
-        <Text style={[font.kanit, {marginVertical: 15, fontSize: 18}]}>
-          {name_th}
-        </Text>
-      </View>
-      {/* <Button>asd</Button> */}
-
-      <FlatList
-        data={inform.inform_data}
-        renderItem={({item, index}) => (
+          <Text style={[font.kanit, {marginVertical: 15, fontSize: 18}]}>
+            {name_th}
+          </Text>
+        </View>
+        {/* <Button>asd</Button> */}
+        {info.inform.inform_data.map((item, index) => (
           <DiseaseDetail
+            key={index}
             item={item}
             id={uuid}
             canEdit={props.route.params.canEdit}
+            onAdd={onRefresh}
           />
-        )}
-        keyExtractor={item => item.title.toString()}
-      />
-    </View>
+        ))}
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 const styles = StyleSheet.create({

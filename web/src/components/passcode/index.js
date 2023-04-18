@@ -23,6 +23,7 @@ import styles, {
   NOT_EMPTY_CELL_BG_COLOR,
 } from './styles';
 import {font} from '../../screens/styles';
+import Lottie from 'lottie-react-native';
 
 const {Value, Text: AnimatedText} = Animated;
 
@@ -62,7 +63,7 @@ const FarmPasscode = ({onVerify}) => {
       ref.current.focus();
     }
     DeviceInfo.getUniqueId().then(uniqueId => {
-      console.log(uniqueId);
+      // console.log(uniqueId);
     });
   }, []);
 
@@ -121,7 +122,13 @@ const FarmPasscode = ({onVerify}) => {
   return (
     <SafeAreaView style={styles.root}>
       <Text style={[styles.title, font.kanit]}>รหัสพนักงาน</Text>
-      <Image style={styles.icon} source={source} />
+      <Lottie
+        style={{height: 140}}
+        loop={false}
+        source={{
+          uri: 'https://assets4.lottiefiles.com/datafiles/ZcdNyXkAEV8raEE/data.json',
+        }}
+      />
 
       <Text style={[styles.subTitle, font.kanit]}>
         รหัสประจำตัวของพนักงาน {value}

@@ -4,8 +4,10 @@ require_relative '../node_modules/@react-native-community/cli-platform-ios/nativ
 platform :ios, '13.0'
 install! 'cocoapods', :deterministic_uuids => false
 
-target 'web' do
+target 'Tomato Watcher' do
   # React Native Maps dependencies
+  pod 'RNFS', :path => '../node_modules/react-native-fs'
+
   pod 'GoogleSignIn'
   pod 'GoogleSignInSwiftSupport'
 rn_maps_path = '../node_modules/react-native-maps'
@@ -34,7 +36,7 @@ pod 'react-native-google-maps', :path => rn_maps_path
     :app_path => "#{Pod::Config.instance.installation_root}/.."
   )
 
-  target 'webTests' do
+  target 'Tomato WatcherTests' do
     inherit! :complete
     # Pods for testing
   end

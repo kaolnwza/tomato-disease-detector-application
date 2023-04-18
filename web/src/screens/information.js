@@ -7,14 +7,18 @@ import {
   View,
   TouchableOpacity,
   ActivityIndicator,
+  SafeAreaView,
 } from 'react-native';
-import {Button, ListItem, Avatar} from '@rneui/themed';
+import {Button, ListItem, Avatar, Chip, Divider, Skeleton} from '@rneui/themed';
+import LinearGradient from 'react-native-linear-gradient';
+
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 
 const Information = ({navigation}) => {
   const [disease, setDisease] = useState([]);
-  const [refreshing, setRefreshing] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [loadData, setLoadData] = useState(true);
 
   useEffect(() => {
     navigation.addListener('focus', getData);
@@ -35,6 +39,7 @@ const Information = ({navigation}) => {
       })
       .then(response => {
         setDisease(response.data);
+        setLoadData(false);
       })
       .catch(error => {
         console.log(error);
@@ -70,6 +75,65 @@ const Information = ({navigation}) => {
       </ListItem>
     </TouchableOpacity>
   );
+  if (loadData) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View
+          style={{
+            flex: 1,
+            paddingHorizontal: 15,
+          }}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }>
+          {[...Array(8)].map((_, index) => (
+            <View key={index}>
+              <View
+                style={{
+                  flexDirection: 'row',
+
+                  justifyContent: 'space-between',
+
+                  marginVertical: 14.5,
+                }}>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                  }}>
+                  <Skeleton
+                    LinearGradientComponent={LinearGradient}
+                    animation="wave"
+                    circle
+                    // skeletonStyle={{}}
+                    width={60}
+                    height={60}
+                  />
+                  <View
+                    style={{justifyContent: 'space-evenly', marginLeft: 10}}>
+                    <Skeleton
+                      LinearGradientComponent={LinearGradient}
+                      animation="wave"
+                      width={100}
+                      height={15}
+                      style={{borderRadius: 30}}
+                    />
+                    <Skeleton
+                      LinearGradientComponent={LinearGradient}
+                      animation="wave"
+                      width={80}
+                      height={10}
+                      style={{borderRadius: 30}}
+                    />
+                  </View>
+                </View>
+              </View>
+              <Divider />
+            </View>
+          ))}
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <View style={styles.container}>
