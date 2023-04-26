@@ -1,15 +1,18 @@
 package redisdb
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/go-redis/redis/v8"
 )
 
 func NewRedisServer() *redis.Client {
-	return redis.NewClient(&redis.Options{
-		Addr:     os.Getenv("REDIS_HOST") + ":6379",
-		Password: "", // no password set
-		DB:       0,  // use default DB
-	})
+	opts, err := redis.ParseURL(os.Getenv("REDIS_URL"))
+	if err != nil {
+		fmt.Println("------------err", err.Error())
+	}
+
+	return redis.NewClient(opts)
+
 }
