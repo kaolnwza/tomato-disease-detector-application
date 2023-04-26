@@ -61,9 +61,13 @@ func main() {
 	predSvc := service.NewPredictionService(tmtDiseaseSvc)
 	predHandler := handler.NewPredictionHandler(predSvc)
 
+	expoHandler := handler.NewExpoHandler()
+
 	health := handler.NewHealthHandler()
 
 	r.GET("/jwt/:user_uuid", userHandler.NewAccessToken)
+
+	r.GET("/expo", expoHandler.ExpoWebpageHandler)
 
 	r.GET("/health", health.HealthCheck)
 
