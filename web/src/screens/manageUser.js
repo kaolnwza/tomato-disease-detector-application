@@ -51,7 +51,7 @@ const ManageFarm = ({route}) => {
 
     axios
       .post(
-        `http://35.244.169.189.nip.io/v1/farms/${route.params.farm_uuid}/users`,
+        `http://34.110.173.162/v1/farms/${route.params.farm_uuid}/users`,
         data,
         {
           headers: {
@@ -73,7 +73,7 @@ const ManageFarm = ({route}) => {
 
     axios
       .get(
-        `http://35.244.169.189.nip.io/v1/farms/${route.params.farm_uuid}/users?limit=${count}`,
+        `http://34.110.173.162/v1/farms/${route.params.farm_uuid}/users?limit=${count}`,
         {
           headers: {
             Authorization: `Bearer ${value}`,
@@ -99,7 +99,7 @@ const ManageFarm = ({route}) => {
 
     axios
       .put(
-        `http://35.244.169.189.nip.io/v1/farms/${route.params.farm_uuid}/users/${userUUID}/status`,
+        `http://34.110.173.162/v1/farms/${route.params.farm_uuid}/users/${userUUID}/status`,
         data,
         {
           headers: {

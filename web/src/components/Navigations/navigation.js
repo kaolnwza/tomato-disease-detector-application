@@ -127,7 +127,7 @@ function HomeDrawer(item) {
         })}
       />
       {isOwner ? (
-        <Drawer.Screen name="จัดการฟาร์ม" component={ManageFarm} />
+        <Drawer.Screen name="จัดการไร่" component={ManageFarm} />
       ) : null}
       <Drawer.Screen name="คู่มือการใช้งาน" component={UserManual} />
     </Drawer.Navigator>

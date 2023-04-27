@@ -40,15 +40,12 @@ const Detail = ({detail}) => {
 
   useEffect(() => {
     axios
-      .get(
-        `http://35.244.169.189.nip.io/v1/diseases/name/${detail.disease_name}`,
-        {
-          headers: {
-            Authorization:
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NfdXVpZCI6IjUzYmRhZThlLWMxZTMtNDAzMC1hODVkLWNkMWZhOTNhOWJlNSIsImV4cCI6MTg1MzkyNTA4OCwidXNlcl91dWlkIjoiOGU0ZDgzMjAtOGExOS00NmZjLTgxNTEtN2E2MjI2ZDc2ZjZiIn0.YKjeADsaC5oKaD4bBEkWxTDVbZMH_34j4Vx3bKgeZhc',
-          },
+      .get(`http://34.110.173.162/v1/diseases/name/${detail.disease_name}`, {
+        headers: {
+          Authorization:
+            'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3NfdXVpZCI6IjUzYmRhZThlLWMxZTMtNDAzMC1hODVkLWNkMWZhOTNhOWJlNSIsImV4cCI6MTg1MzkyNTA4OCwidXNlcl91dWlkIjoiOGU0ZDgzMjAtOGExOS00NmZjLTgxNTEtN2E2MjI2ZDc2ZjZiIn0.YKjeADsaC5oKaD4bBEkWxTDVbZMH_34j4Vx3bKgeZhc',
         },
-      )
+      })
       .then(response => {
         setInfo(response.data.inform);
       })
@@ -157,7 +154,7 @@ const History = ({navigation}) => {
 
     axios
       .get(
-        `http://35.244.169.189.nip.io/v1/farms/${
+        `http://34.110.173.162/v1/farms/${
           current_farm.farm_uuid
         }/log?disease_name=${selectedItems.join(',')}&start_time=${
           startDate
@@ -229,8 +226,8 @@ const History = ({navigation}) => {
             backgroundColor:
               item.status == 'monitoring'
                 ? '#2089dc'
-                : item.disease_name == 'Healthy'
-                ? '#047675'
+                : item.status == 'cured'
+                ? '#3ED48D'
                 : '#E72970',
             borderRadius: 50,
             padding: 5,

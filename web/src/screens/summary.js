@@ -87,7 +87,7 @@ const Summary = ({navigation}) => {
     setFarmLocation(current_farm.farm_location);
     axios
       .get(
-        `http://35.244.169.189.nip.io/v1/farms/${
+        `http://34.110.173.162/v1/farms/${
           current_farm.farm_uuid
         }/summary?start_time=${startDate.format(
           'YYYY-MM-DD',
@@ -140,7 +140,7 @@ const Summary = ({navigation}) => {
 
     axios
       .get(
-        `http://35.244.169.189.nip.io/v1/farms/${
+        `http://34.110.173.162/v1/farms/${
           current_farm.farm_uuid
         }/percentage?start_time=${startDate.format(
           'YYYY-MM-DD',
@@ -152,6 +152,8 @@ const Summary = ({navigation}) => {
         },
       )
       .then(response => {
+        console.log(response.data);
+
         setList(response.data);
         setLoadData(false);
       })
@@ -166,7 +168,7 @@ const Summary = ({navigation}) => {
     const current_farm = JSON.parse(await AsyncStorage.getItem('user_farm'));
     axios
       .get(
-        `http://35.244.169.189.nip.io/v1/farms/${current_farm.farm_uuid}/percentage?start_time=${start} 00:00:00&end_time=${end} 23:59:59`,
+        `http://34.110.173.162/v1/farms/${current_farm.farm_uuid}/percentage?start_time=${start} 00:00:00&end_time=${end} 23:59:59`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

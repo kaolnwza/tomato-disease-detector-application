@@ -3,12 +3,7 @@ import {
   Text,
   StyleSheet,
   View,
-  Image,
-  Dimensions,
   ScrollView,
-  useWindowDimensions,
-  StatusBar,
-  ActivityIndicator,
   TouchableOpacity,
   FlatList,
 } from 'react-native';
@@ -24,12 +19,8 @@ import {Button, Input, ListItem, Dialog} from '@rneui/base';
 import {font} from './styles';
 
 import MapView, {Marker, Polygon, PROVIDER_GOOGLE} from 'react-native-maps';
-import moment from 'moment';
 import {useSharedValue} from 'react-native-reanimated';
-import {
-  TabbedHeaderPager,
-  DetailsHeaderScrollView,
-} from 'react-native-sticky-parallax-header';
+import {TabbedHeaderPager} from 'react-native-sticky-parallax-header';
 import DiseaseDetail from '../components/list/disease-detail';
 import axios from 'axios';
 
@@ -190,7 +181,7 @@ export const ResultPage = ({route, navigation}) => {
       name: fileName,
     });
 
-    fetch('http://35.244.169.189.nip.io/v2/prediction', {
+    fetch('http://34.110.173.162/v2/prediction', {
       method: 'POST',
       headers: {
         'Content-Type': 'multipart/form-data',
@@ -200,6 +191,13 @@ export const ResultPage = ({route, navigation}) => {
     })
       .then(response => response.json())
       .then(responseData => {
+        //v1 prediction
+        // setInform(responseData.disease_info.inform);
+        // setNameTh(diseaseTh(responseData.disease_info.name));
+        // setResult(responseData.disease_info.name);
+        // setPercentage(responseData.prediction_score);
+
+        //v2 prediction
         setNameTh(diseaseTh(responseData.disease_name));
         setResult(responseData.disease_name);
         setPercentage(Number(responseData.score * 100));
@@ -214,7 +212,7 @@ export const ResultPage = ({route, navigation}) => {
     const token = await AsyncStorage.getItem('user_token');
 
     axios
-      .get(`http://35.244.169.189.nip.io/v1/diseases/name/${name}`, {
+      .get(`http://34.110.173.162/v1/diseases/name/${name}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -250,17 +248,14 @@ export const ResultPage = ({route, navigation}) => {
     data.append('longtitude', Pin.longitude);
     data.append('score', percentage.toFixed(2));
 
-    fetch(
-      `http://35.244.169.189.nip.io/v1/farms/${current_farm.farm_uuid}/log`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          Authorization: `Bearer ${token}`,
-        },
-        body: data,
+    fetch(`http://34.110.173.162/v1/farms/${current_farm.farm_uuid}/log`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        Authorization: `Bearer ${token}`,
       },
-    )
+      body: data,
+    })
       .then(response => response.json())
       .then(responseData => {
         console.log('response:', responseData);
@@ -421,7 +416,7 @@ export const ResultPage = ({route, navigation}) => {
                     <FlatList
                       data={inform.inform_data}
                       renderItem={({item, index}) => (
-                        <DiseaseDetail item={item} />
+                        <DiseaseDetail item={item} canEdit={true} />
                       )}
                       keyExtractor={item => item.title.toString()}
                     />
@@ -731,6 +726,7 @@ export const ResultPage = ({route, navigation}) => {
             <Button
               onPress={() => {
                 setSelectedDisease(null);
+                setEdit(false);
               }}
               radius={'xl'}
               type="solid"
@@ -751,6 +747,7 @@ export const ResultPage = ({route, navigation}) => {
                 setResult(selectedDisease);
                 setNameTh(diseaseTh(selectedDisease));
                 setPercentage(100);
+                setEdit(false);
               }}
               radius={'xl'}
               type="solid"

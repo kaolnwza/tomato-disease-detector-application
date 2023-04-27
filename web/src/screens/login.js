@@ -60,7 +60,7 @@ const Login = ({navigation}) => {
         data.append('auth_id', userInfo.user.id);
 
         axios
-          .post('http://35.244.169.189.nip.io/oauth/login', data, {
+          .post('http://34.110.173.162/oauth/login', data, {
             headers: {
               'Content-Type': 'multipart/form-data',
               // Authorization: 'Bearer',
@@ -109,7 +109,7 @@ const Login = ({navigation}) => {
     try {
       axios
         .get(
-          `http://35.244.169.189.nip.io/auth/provider?provider_type=device_id&provider_id=${device}`,
+          `http://34.110.173.162/auth/provider?provider_type=device_id&provider_id=${device}`,
         )
         .then(async response => {
           if (!response.data) {
@@ -140,15 +140,12 @@ const Login = ({navigation}) => {
   };
 
   const codeIn = async () => {
-    // if (user) {
-    //   navigation.navigate('SelectFarm');
-    // } else {
     try {
       const data = new FormData();
       data.append('name', name);
       data.append('device_id', await DeviceInfo.getUniqueId());
       axios
-        .post('http://35.244.169.189.nip.io/auth', data, {
+        .post('http://34.110.173.162/auth', data, {
           headers: {
             'Content-Type': 'multipart/form-data',
             // Authorization: 'Bearer',

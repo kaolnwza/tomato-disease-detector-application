@@ -81,7 +81,7 @@ const MapScreen = ({navigation, route}) => {
     if (route.params) {
       axios
         .patch(
-          `http://35.244.169.189.nip.io/v1/farms/${route.params.item.farm_uuid}/`,
+          `http://34.110.173.162/v1/farms/${route.params.item.farm_uuid}/`,
           data,
           {
             headers: {
@@ -98,7 +98,7 @@ const MapScreen = ({navigation, route}) => {
         });
     } else {
       axios
-        .post('http://35.244.169.189.nip.io/v1/farms', data, {
+        .post('http://34.110.173.162/v1/farms', data, {
           headers: {
             Authorization: `Bearer ${value}`,
             'Content-Type': 'multipart/form-data',

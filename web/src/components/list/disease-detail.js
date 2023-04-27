@@ -91,7 +91,7 @@ const DiseaseDetail = ({item, id, canEdit, onAdd}) => {
           name: fileName,
         });
 
-        fetch(`http://35.244.169.189.nip.io/v1/upload`, {
+        fetch(`http://34.110.173.162/v1/upload`, {
           method: 'POST',
           headers: {
             'Content-Type': 'multipart/form-data',
@@ -110,7 +110,7 @@ const DiseaseDetail = ({item, id, canEdit, onAdd}) => {
             imageData.append('column', column);
             axios
               .post(
-                `http://35.244.169.189.nip.io/v1/diseases/${id}/images/`,
+                `http://34.110.173.162/v1/diseases/${id}/images/`,
                 imageData,
                 {
                   headers: {
@@ -159,7 +159,7 @@ const DiseaseDetail = ({item, id, canEdit, onAdd}) => {
     data.append('column', column);
     data.append('text', text);
     axios
-      .patch(`http://35.244.169.189.nip.io/v1/diseases/${id}/`, data, {
+      .patch(`http://34.110.173.162/v1/diseases/${id}/`, data, {
         headers: {
           Authorization: `Bearer ${value}`,
         },

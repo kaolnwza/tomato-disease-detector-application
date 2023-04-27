@@ -32,7 +32,7 @@ const Information = ({navigation}) => {
   const getData = async () => {
     const value = await AsyncStorage.getItem('user_token');
     axios
-      .get('http://35.244.169.189.nip.io/v1/diseases', {
+      .get('http://34.110.173.162/v1/diseases', {
         headers: {
           Authorization: `Bearer ${value}`,
         },

@@ -41,7 +41,7 @@ const SelectFarm = ({navigation}) => {
     }
 
     axios
-      .get('http://35.244.169.189.nip.io/v1/farms', {
+      .get('http://34.110.173.162/v1/farms', {
         headers: {
           Authorization: `Bearer ${value}`,
         },

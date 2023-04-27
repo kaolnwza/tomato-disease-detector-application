@@ -42,7 +42,7 @@ const StageSelect = ({detail, onChangeState}) => {
     data.append('status', status);
     axios
       .patch(
-        `http://35.244.169.189.nip.io/v1/logs/${detail.tomato_log_uuid}/status`,
+        `http://34.110.173.162/v1/logs/${detail.tomato_log_uuid}/status`,
         data,
         {
           headers: {

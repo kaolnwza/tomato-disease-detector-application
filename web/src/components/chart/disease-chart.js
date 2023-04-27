@@ -83,7 +83,9 @@ const DiseaseChart = props => {
             : props.time}{' '}
           น.
         </Text> */}
-        <Text style={styles.info}>{props.img} รูป</Text>
+        <Text style={styles.info}>
+          เริ่มการรักษาแล้ว {Math.floor(props.img * (props.disease / 100))} รูป
+        </Text>
       </View>
     </View>
   );

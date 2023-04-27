@@ -16,6 +16,9 @@ const Daily = ({route, navigation}) => {
   const {date} = route.params;
   const allDisease = [
     {label: 'ใบสุขภาพดี', value: 'Healthy', color: '#047675'},
+    // {label: 'กำลังรักษา', value: 'monitoring', color: '#2089dc'},
+    // {label: 'รักษาแล้ว', value: 'cured', color: '#3ED48D'},
+
     {
       label: 'โรคใบหงิกเหลือง',
       value: 'Yellow Leaf Curl Virus',
@@ -55,6 +58,40 @@ const Daily = ({route, navigation}) => {
   const handleCloseModal = () => {
     setIsVisible(false);
   };
+
+  const diseaseTh = name => {
+    switch (name) {
+      case 'Healthy':
+        return 'ใบสุขภาพดี';
+
+      case 'Bacterial Spot':
+        return 'โรคใบจุด';
+
+      case 'Yellow Leaf Curl Virus':
+        return 'โรคใบหงิกเหลือง';
+
+      case 'Spider Mites':
+        return 'โรคไรสองจุด';
+
+      case 'Septoria Leaf Spot':
+        return 'โรคใบจุดวงกลม';
+
+      case 'Mosaic Virus':
+        return 'โรคใบด่าง';
+
+      case 'Late Blight':
+        return 'โรคใบไหม้';
+
+      case 'Early Blight':
+        return 'โรคใบจุดวง';
+
+      case 'Leaf Mold':
+        return 'โรครากำมะหยี่';
+
+      default:
+        break;
+    }
+  };
   const getSummery = async () => {
     const token = await AsyncStorage.getItem('user_token');
     const current_farm = JSON.parse(await AsyncStorage.getItem('user_farm'));
@@ -63,7 +100,7 @@ const Daily = ({route, navigation}) => {
 
     axios
       .get(
-        `http://35.244.169.189.nip.io/v1/farms/${current_farm.farm_uuid}/summary?start_time=${dateTime} 00:00:00&end_time=${dateTime} 23:59:59`,
+        `http://34.110.173.162/v1/farms/${current_farm.farm_uuid}/summary?start_time=${dateTime} 00:00:00&end_time=${dateTime} 23:59:59`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -88,7 +125,7 @@ const Daily = ({route, navigation}) => {
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity
+      {/* <TouchableOpacity
         onPress={() => setIsVisible(true)}
         style={[
           styles.shadowProp,
@@ -103,7 +140,7 @@ const Daily = ({route, navigation}) => {
           },
         ]}>
         <MaterialCommunityIcons name="filter-variant" size={35} color="#fff" />
-      </TouchableOpacity>
+      </TouchableOpacity> */}
       <View style={[styles.card]}>
         <Text style={[font.kanit, {fontSize: 20}]}>
           ตรววจจับโรคได้ {pins ? pins.length : null} รูป
@@ -118,20 +155,22 @@ const Daily = ({route, navigation}) => {
               ? pins.filter(pin => pin.disease_name === item.value).length
               : 0;
             return (
-              <View
+              <Chip
                 key={i}
-                style={{flexDirection: 'row', alignItems: 'center', margin: 2}}>
-                <Octicons
-                  name="dot-fill"
-                  color={item.color}
-                  size={30}
-                  style={{marginHorizontal: 10}}
-                />
-
-                <Text key={i} style={font.kanit}>
-                  {item.label} {count != 0 ? `(${count})` : null}
-                </Text>
-              </View>
+                icon={<Octicons name="dot-fill" color={item.color} size={15} />}
+                title={` ${item.label} ${count != 0 ? `(${count})` : ''}`}
+                buttonStyle={[
+                  styles.chipButton,
+                  isItemSelected(item.value) && {borderColor: item.color},
+                ]}
+                titleStyle={[
+                  styles.chipTitle,
+                  isItemSelected(item.value) && styles.chipTitleSelected,
+                  font.kanit,
+                ]}
+                onPress={() => handleSelectItem(item.value)}
+                type="outline"
+              />
             );
           })}
         </View>
@@ -161,8 +200,21 @@ const Daily = ({route, navigation}) => {
             ? pins.map((item, index) => (
                 <Marker
                   key={index}
-                  title={item.disease_name}
-                  pinColor={getDiseaseObject(item).color}
+                  title={diseaseTh(item.disease_name)}
+                  description={
+                    item.status == 'monitoring'
+                      ? 'กำลังรักษา'
+                      : item.status == 'cured'
+                      ? 'รักษาแล้ว'
+                      : 'ติดโรค'
+                  }
+                  pinColor={
+                    item.status == 'monitoring'
+                      ? '#2089dc'
+                      : item.status == 'cured'
+                      ? '#3ED48D'
+                      : getDiseaseObject(item).color
+                  }
                   coordinate={{
                     latitude: item.latitude,
                     longitude: item.longitude,
@@ -174,8 +226,21 @@ const Daily = ({route, navigation}) => {
                 .map((item, index) => (
                   <Marker
                     key={index}
-                    title={item.disease_name}
-                    pinColor={getDiseaseObject(item).color}
+                    title={diseaseTh(item.disease_name)}
+                    description={
+                      item.status == 'monitoring'
+                        ? 'กำลังรักษา'
+                        : item.status == 'cured'
+                        ? 'รักษาแล้ว'
+                        : 'ติดโรค'
+                    }
+                    pinColor={
+                      item.status == 'monitoring'
+                        ? '#2089dc'
+                        : item.status == 'cured'
+                        ? '#3ED48D'
+                        : getDiseaseObject(item).color
+                    }
                     coordinate={{
                       latitude: item.latitude,
                       longitude: item.longitude,
@@ -191,7 +256,7 @@ const Daily = ({route, navigation}) => {
         </MapView>
       ) : null}
 
-      <Modal
+      {/*<Modal
         isVisible={isVisible}
         onBackdropPress={handleCloseModal}
         onSwipeComplete={handleCloseModal}
@@ -230,7 +295,7 @@ const Daily = ({route, navigation}) => {
                   type="outline"
                 />
               ))}
-              {/* <Text>{JSON.stringify(selectedItems)}</Text> */}
+
             </View>
           </View>
           <Button
@@ -241,13 +306,9 @@ const Daily = ({route, navigation}) => {
             size="sm"
             onPress={() => setSelectedItems([])}
           />
-          {/* <Text
-            style={[font.kanit, {color: '#00000077', marginHorizontal: 10}]}>
-            วัน
-          </Text>
-          <Divider style={{marginVertical: 5}} /> */}
+     
         </View>
-      </Modal>
+      </Modal> */}
     </View>
   );
 };
@@ -299,9 +360,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   chipButton: {
-    paddingHorizontal: 20,
-    margin: 5,
-    borderColor: 'gray',
+    paddingVertical: 3,
+    margin: 3,
+    borderWidth: 1.3,
+    borderColor: '#00000000',
     backgroundColor: 'white',
   },
   chipButtonSelected: {
@@ -311,7 +373,7 @@ const styles = StyleSheet.create({
     color: 'gray',
   },
   chipTitleSelected: {
-    color: 'white',
+    // color: 'white',
   },
 });
 
