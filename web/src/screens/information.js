@@ -153,7 +153,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'flex-start',
     paddingTop: 100,
-    backgroundColor: '#F0F9F8',
   },
 });
 export default Information;

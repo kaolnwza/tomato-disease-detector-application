@@ -353,8 +353,6 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'flex-start',
-
-    backgroundColor: '#F0F9F8',
   },
   image: {
     flex: 1,

@@ -98,7 +98,6 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     // alignItems: 'center',
     paddingTop: 100,
-    backgroundColor: '#F0F9F8',
   },
 });
 export default Detail;
