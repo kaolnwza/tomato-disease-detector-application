@@ -18,15 +18,15 @@ spec:
       terminationGracePeriodSeconds: 31
       containers:
       - name: tomato-api
-        image: asia.gcr.io/able-stock-380702/tomato-api:latest
+        image: asia.gcr.io/lunar-works-371407/tomato-api:latest
         imagePullPolicy: Always
         resources:
           requests:
             memory: "64Mi"
             cpu: "250m"
           limits:
-            memory: "128Mi"
-            cpu: "500m"
+            memory: "768Mi"
+            cpu: "800m"
         ports:
         - containerPort: 8765
           name: web-port
@@ -89,3 +89,8 @@ spec:
               configMapKeyRef:
                 name: api-config
                 key: TZ
+          - name: REDIS_URL
+            valueFrom:
+              configMapKeyRef:
+                name: api-config
+                key: REDIS_URL

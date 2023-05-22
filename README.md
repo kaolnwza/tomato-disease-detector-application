@@ -67,8 +67,8 @@ kubectl rollout restart deployment tomato -n tomato
 
     ```
     docker build -t tomato/api:latest . 
-    docker tag tomato-api:latest asia.gcr.io/able-stock-380702/tomato-api
-	docker push asia.gcr.io/able-stock-380702/tomato-api
+    docker tag tomato-api:latest asia.gcr.io/lunar-works-371407/tomato-api
+	docker push asia.gcr.io/lunar-works-371407/tomato-api
     ```
 
     or
@@ -92,7 +92,7 @@ kubectl rollout restart deployment tomato -n tomato
     ```
 
     ```
-    gcloud container clusters get-credentials tomato-k8s --project able-stock-380702 --zone asia-southeast1
+    gcloud container clusters get-credentials tomato-k8s --project lunar-works-371407 --zone asia-southeast1
     ```
 
 > where do i find above values?
@@ -102,6 +102,19 @@ kubectl rollout restart deployment tomato -n tomato
 
 you can find them in Google Console/Kubenetes Engine/Clusters/$CLUSTER_NAME
 
+    ```
+    helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+    ```
+    
+    ```
+    helm repo update
+    ```
+
+    ```
+    helm install ingress-nginx ingress-nginx/ingress-nginx --namespace kube-system
+    ```
+
+> for autopilot (dont touch it)
 > install nginx-ingress
 
      ```
@@ -131,9 +144,9 @@ you can find them in Google Console/Kubenetes Engine/Clusters/$CLUSTER_NAME
 > push install GCR (it's like docker hub)
 
     ```
-	docker tag kaowasabi/tomato-api:latest asia.gcr.io/able-stock-380702/tomato-api
+	docker tag kaowasabi/tomato-api:latest asia.gcr.io/lunar-works-371407/tomato-api
     
-	docker push asia.gcr.io/able-stock-380702/tomato-api
+	docker push asia.gcr.io/lunar-works-371407/tomato-api
     ```
 
 ---
