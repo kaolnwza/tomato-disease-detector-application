@@ -16,7 +16,7 @@ func NewUploadRepo(tx port.Transactor) port.UploadRepository {
 	return &uploadRepo{tx: tx}
 }
 
-func (r uploadRepo) Upload(ctx context.Context, upload *model.Upload) (uuid.UUID, error) {
+func (r uploadRepo) Upload(ctx context.Context, upload model.Upload) (uuid.UUID, error) {
 	query := `
 		INSERT INTO upload (user_uuid, bucket, path)
 		SELECT $1, $2, $3

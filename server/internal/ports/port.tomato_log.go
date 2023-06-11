@@ -23,13 +23,13 @@ type TomatoLogRepository interface {
 }
 
 type TomatoLogService interface {
-	GetByFarmUUID(ctx context.Context, farmUUID uuid.UUID, userUUID uuid.UUID, startTime *time.Time, endTime *time.Time, diseaseList string) ([]*model.TomatoLogResponse, error)
+	GetByFarmUUID(ctx context.Context, farmUUID uuid.UUID, userUUID uuid.UUID, startTime *time.Time, endTime *time.Time, diseaseList string) ([]model.TomatoLogResponse, error)
 	// GetByUserUUID(ctx context.Context, userUUID uuid.UUID, farmUUID uuid.UUID) ([]*model.TomatoLogResponse, error)
-	GetByLogUUID(ctx context.Context, logUUID uuid.UUID) (*model.TomatoLogResponse, error)
+	GetByLogUUID(ctx context.Context, logUUID uuid.UUID) (model.TomatoLogResponse, error)
 	Create(ctx context.Context, userUUID uuid.UUID, farmUUID uuid.UUID, desc string, diseaseName string, file multipart.File, bucket string, lat string, long string, score float64) error
 	UpdateByLogUUID(ctx context.Context, logUUID uuid.UUID, desc string, diseaseName string, status string, lat string, long string) error
-	GetClusterByFarmUUID(ctx context.Context, farmUUID uuid.UUID, startTime string, endTime string, diseaseName string) (*model.TomatoSummaryResponse, error)
-	GetLogsPercentageByFarmUUID(ctx context.Context, farmUUID uuid.UUID, startTime string, endTime string) (*[]model.TomatoLogPercentage, error)
-	GetLogsPercentageDailyByFarmUUID(ctx context.Context, farmUUID uuid.UUID, startTime string, endTime string) (*[]*model.TomatoLogPercentageDailyResponse, error)
+	GetClusterByFarmUUID(ctx context.Context, farmUUID uuid.UUID, startTime string, endTime string, diseaseName string) (model.TomatoSummaryResponse, error)
+	GetLogsPercentageByFarmUUID(ctx context.Context, farmUUID uuid.UUID, startTime string, endTime string) ([]model.TomatoLogPercentage, error)
+	GetLogsPercentageDailyByFarmUUID(ctx context.Context, farmUUID uuid.UUID, startTime string, endTime string) ([]model.TomatoLogPercentageDailyResponse, error)
 	UpdateLogStatusByLogUUID(ctx context.Context, logUUID uuid.UUID, status model.TomatoLogStatus) error
 }

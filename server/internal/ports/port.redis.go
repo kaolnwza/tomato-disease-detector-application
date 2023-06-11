@@ -11,6 +11,6 @@ type RedisDB interface {
 	IsNil(err error) bool
 	DeleteValue(ctx context.Context, key model.RedisKey) error
 
-	GetTomatoDiseasesCache(ctx context.Context) ([]*model.TomatoDiseaseResponse, error)
-	GetTomatoDiseasesCacheByUUID(ctx context.Context, key model.RedisKey) ([]*model.TomatoDiseaseImageResponse, error)
+	GetTomatoDiseasesCache(ctx context.Context) ([]model.TomatoDiseaseResponse, error)
+	GetTomatoDiseasesCacheByUUID(ctx context.Context, key model.RedisKey) ([]model.TomatoDiseaseImageResponse, error)
 }

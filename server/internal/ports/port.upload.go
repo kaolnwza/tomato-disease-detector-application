@@ -9,9 +9,9 @@ import (
 )
 
 type UploadRepository interface {
-	Upload(context.Context, *model.Upload) (uuid.UUID, error)
+	Upload(context.Context, model.Upload) (uuid.UUID, error)
 }
 
 type UploadService interface {
-	Upload(context.Context, uuid.UUID, multipart.File, string) (*model.Upload, error)
+	Upload(context.Context, uuid.UUID, multipart.File, string) (model.Upload, error)
 }

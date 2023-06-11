@@ -18,11 +18,11 @@ type TomatoDiseaseRepository interface {
 }
 
 type TomatoDiseaseService interface {
-	GetTomatoDiseases(context.Context) ([]*model.TomatoDiseaseResponse, error)
-	GetTomatoDiseaseByName(context.Context, string) (*model.TomatoDiseaseResponse, error)
+	GetTomatoDiseases(context.Context) ([]model.TomatoDiseaseResponse, error)
+	GetTomatoDiseaseByName(context.Context, string) (model.TomatoDiseaseResponse, error)
 	CreateTomatoLog(context.Context) error
 	AddDiseaseImage(ctx context.Context, diseaseUUID uuid.UUID, uploadUUIDs string, column string) error
 	DeleteDiseaseImage(ctx context.Context, diseaseUUID uuid.UUID, imageUUID uuid.UUID) error
 	UpdateDiseaseInfo(ctx context.Context, diseaseUUID uuid.UUID, column string, text string) error
-	GetImagesByDiseaseUUID(ctx context.Context, diseaseUUID uuid.UUID) (*[]*model.TomatoDiseaseImageResponse, error)
+	GetImagesByDiseaseUUID(ctx context.Context, diseaseUUID uuid.UUID) ([]model.TomatoDiseaseImageResponse, error)
 }

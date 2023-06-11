@@ -48,7 +48,7 @@ func (s predictionService) PredictTomato(ctx context.Context, file multipart.Fil
 		return nil, err
 	}
 
-	pred.DiseaseInfo = disease
+	pred.DiseaseInfo = &disease
 
 	return &pred, err
 }

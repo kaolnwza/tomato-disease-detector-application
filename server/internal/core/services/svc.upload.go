@@ -24,16 +24,16 @@ func NewUploadService(r port.UploadRepository, tx port.Transactor, storer port.I
 	return &uploadService{uploadRepo: r, tx: tx, storer: storer}
 }
 
-func (s uploadService) Upload(ctx context.Context, userUUID uuid.UUID, file multipart.File, bucket string) (*model.Upload, error) {
+func (s uploadService) Upload(ctx context.Context, userUUID uuid.UUID, file multipart.File, bucket string) (model.Upload, error) {
 	upload, err := s.storer.UploadImage(ctx, file, bucket)
 	if err != nil {
-		return nil, err
+		return model.Upload{}, err
 	}
 
 	upload.UserUUID = userUUID
 	uploadUUID, err := s.uploadRepo.Upload(ctx, upload)
 	if err != nil {
-		return nil, err
+		return model.Upload{}, err
 	}
 
 	upload.UUID = uploadUUID

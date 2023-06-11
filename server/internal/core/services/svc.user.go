@@ -23,18 +23,18 @@ func NewUserService(r port.UserRepository, tx port.Transactor) port.UserService 
 	}
 }
 
-func (s userService) GetUserByProviderID(ctx context.Context, providerType model.ProviderType, providerID string) (*model.UserResponse, error) {
+func (s userService) GetUserByProviderID(ctx context.Context, providerType model.ProviderType, providerID string) (model.UserResponse, error) {
 	user, err := s.userRepo.GetUserByProviderID(ctx, providerType, providerID)
 	if err != nil {
-		return nil, err
+		return model.UserResponse{}, err
 	}
 
 	resp := model.UserResponse{}
 	if err := helper.StructCopy(user, &resp); err != nil {
-		return nil, err
+		return model.UserResponse{}, err
 	}
 
-	return &resp, nil
+	return resp, nil
 }
 
 func (s userService) GoogleLogin(ctx context.Context, providerType model.ProviderType, providerID string, email string, name string) (*string, *string, error) {
@@ -111,30 +111,30 @@ func (s userService) DeviceLogin(ctx context.Context, providerType model.Provide
 	return accessToken, &role, nil
 }
 
-func (s userService) GetUserByUUID(ctx context.Context, userUUID uuid.UUID) (*model.UserResponse, error) {
+func (s userService) GetUserByUUID(ctx context.Context, userUUID uuid.UUID) (model.UserResponse, error) {
 	user, err := s.userRepo.GetUserByUUID(ctx, userUUID)
 	if err != nil {
-		return nil, err
+		return model.UserResponse{}, err
 	}
 
 	resp := model.UserResponse{}
 	if err := helper.StructCopy(user, &resp); err != nil {
-		return nil, err
+		return model.UserResponse{}, err
 	}
 
-	return &resp, nil
+	return resp, nil
 }
 
-func (s userService) GetUserByMemberID(ctx context.Context, memberID string) (*model.UserResponse, error) {
+func (s userService) GetUserByMemberID(ctx context.Context, memberID string) (model.UserResponse, error) {
 	user, err := s.userRepo.GetUserByMemberID(ctx, memberID)
 	if err != nil {
-		return nil, err
+		return model.UserResponse{}, err
 	}
 
 	resp := model.UserResponse{}
 	if err := helper.StructCopy(user, &resp); err != nil {
-		return nil, err
+		return model.UserResponse{}, err
 	}
 
-	return &resp, nil
+	return resp, nil
 }

@@ -22,21 +22,21 @@ func NewGCSStorer(cli *storage.Client) port.ImageStorer {
 	return gcsStorer{cli: cli}
 }
 
-func (g gcsStorer) UploadImage(ctx context.Context, file multipart.File, bucket string) (*model.Upload, error) {
+func (g gcsStorer) UploadImage(ctx context.Context, file multipart.File, bucket string) (model.Upload, error) {
 	var err error
 	objectLocation := fmt.Sprintf(`images/%s`, uuid.New())
 
 	sw := g.cli.Bucket(bucket).Object(objectLocation).NewWriter(ctx)
 	if _, err := io.Copy(sw, file); err != nil {
-		return nil, err
+		return model.Upload{}, err
 	}
 	if err := sw.Close(); err != nil {
-		return nil, err
+		return model.Upload{}, err
 	}
 
 	u, err := url.Parse(sw.Attrs().Name)
 	if err != nil {
-		return nil, err
+		return model.Upload{}, err
 	}
 
 	upload := model.Upload{
@@ -44,7 +44,7 @@ func (g gcsStorer) UploadImage(ctx context.Context, file multipart.File, bucket 
 		Path:   u.EscapedPath(),
 	}
 
-	return &upload, nil
+	return upload, nil
 }
 
 func (g gcsStorer) GenerateImageURI(ctx context.Context, bucket string, objectLocation string) (string, error) {

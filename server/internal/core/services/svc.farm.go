@@ -39,13 +39,13 @@ func (s *farmSvc) Create(ctx context.Context, farmName string, userUUID uuid.UUI
 	return nil
 }
 
-func (s *farmSvc) GetAll(ctx context.Context, userUUID uuid.UUID) (*[]*model.FarmResponse, error) {
+func (s *farmSvc) GetAll(ctx context.Context, userUUID uuid.UUID) ([]model.FarmResponse, error) {
 	farm, err := s.farmRepo.GetAll(ctx, userUUID)
 	if err != nil {
 		return nil, err
 	}
 
-	resp := []*model.FarmResponse{}
+	resp := []model.FarmResponse{}
 	for _, item := range farm {
 		ls := []*model.LineString{}
 
@@ -53,7 +53,7 @@ func (s *farmSvc) GetAll(ctx context.Context, userUUID uuid.UUID) (*[]*model.Far
 			ls = *helper.LineToLatLong(item.FarmLocation)
 		}
 
-		resp = append(resp, &model.FarmResponse{
+		resp = append(resp, model.FarmResponse{
 			FarmUUID:     item.FarmUUID,
 			FarmName:     item.FarmName,
 			CreatedAt:    item.CreatedAt,
@@ -61,7 +61,7 @@ func (s *farmSvc) GetAll(ctx context.Context, userUUID uuid.UUID) (*[]*model.Far
 		})
 	}
 
-	return &resp, nil
+	return resp, nil
 }
 
 func (s *farmSvc) DeleteFarmByUUID(ctx context.Context, userUUID uuid.UUID, farmUUID uuid.UUID) error {

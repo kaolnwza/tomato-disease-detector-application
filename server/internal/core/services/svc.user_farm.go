@@ -17,13 +17,13 @@ func NewUserFarmService(tx port.Transactor, usrFarmRepo port.UserFarmRepository)
 	return &usrFarmSvc{tx: tx, usrFarmRepo: usrFarmRepo}
 }
 
-func (s *usrFarmSvc) FetchUserFarmInfo(ctx context.Context, userUUID uuid.UUID, farmUUID uuid.UUID) (*model.UserFarm, error) {
+func (s *usrFarmSvc) FetchUserFarmInfo(ctx context.Context, userUUID uuid.UUID, farmUUID uuid.UUID) (model.UserFarm, error) {
 	user, err := s.usrFarmRepo.FetchUserFarmInfo(ctx, userUUID, farmUUID)
 	if err != nil {
-		return nil, err
+		return model.UserFarm{}, err
 	}
 
-	return &user, nil
+	return user, nil
 }
 
 func (s *usrFarmSvc) IsUserFarmOwner(ctx context.Context, userUUID uuid.UUID, farmUUID uuid.UUID) (*bool, error) {
@@ -37,13 +37,13 @@ func (s *usrFarmSvc) IsUserFarmOwner(ctx context.Context, userUUID uuid.UUID, fa
 	return &isOwer, nil
 }
 
-func (s *usrFarmSvc) GetAll(ctx context.Context, farmUUID uuid.UUID, limit int, offset int) (*[]model.UserFarm, error) {
+func (s *usrFarmSvc) GetAll(ctx context.Context, farmUUID uuid.UUID, limit int, offset int) ([]model.UserFarm, error) {
 	users, err := s.usrFarmRepo.GetAll(ctx, farmUUID, limit, offset)
 	if err != nil {
 		return nil, err
 	}
 
-	return &users, nil
+	return users, nil
 }
 
 func (s *usrFarmSvc) AddUserFarm(ctx context.Context, farmUUID uuid.UUID, newUserUUID uuid.UUID, role string) error {

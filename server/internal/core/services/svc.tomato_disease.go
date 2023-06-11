@@ -27,7 +27,7 @@ func NewTomatoDiseaseServices(r port.TomatoDiseaseRepository, db port.Transactor
 	}
 }
 
-func (s *tomatoDiseaseServices) GetTomatoDiseases(ctx context.Context) ([]*model.TomatoDiseaseResponse, error) {
+func (s *tomatoDiseaseServices) GetTomatoDiseases(ctx context.Context) ([]model.TomatoDiseaseResponse, error) {
 	resp, err := s.rdb.GetTomatoDiseasesCache(ctx)
 	if err != nil {
 		if s.rdb.IsNil(err) {
@@ -36,7 +36,7 @@ func (s *tomatoDiseaseServices) GetTomatoDiseases(ctx context.Context) ([]*model
 				return nil, err
 			}
 
-			resp = make([]*model.TomatoDiseaseResponse, len(disease))
+			resp = make([]model.TomatoDiseaseResponse, len(disease))
 
 			ch := make(chan error, len(disease))
 
@@ -52,9 +52,9 @@ func (s *tomatoDiseaseServices) GetTomatoDiseases(ctx context.Context) ([]*model
 						return
 					}
 
-					informGenerator(&i, inform, images)
+					informGenerator(&i, inform, &images)
 
-					respT := &model.TomatoDiseaseResponse{
+					respT := model.TomatoDiseaseResponse{
 						UUID:     i.DiseaseUUID,
 						ImageURL: &uri,
 						Name:     i.DiseaseName,
@@ -89,10 +89,10 @@ func (s *tomatoDiseaseServices) GetTomatoDiseases(ctx context.Context) ([]*model
 	return resp, nil
 }
 
-func (s *tomatoDiseaseServices) GetTomatoDiseaseByName(ctx context.Context, diseaseName string) (*model.TomatoDiseaseResponse, error) {
+func (s *tomatoDiseaseServices) GetTomatoDiseaseByName(ctx context.Context, diseaseName string) (model.TomatoDiseaseResponse, error) {
 	disease, err := s.tdsRepo.GetByName(ctx, diseaseName)
 	if err != nil {
-		return nil, err
+		return model.TomatoDiseaseResponse{}, err
 	}
 
 	inform := model.NewTomatoDiseaseInform()
@@ -101,18 +101,18 @@ func (s *tomatoDiseaseServices) GetTomatoDiseaseByName(ctx context.Context, dise
 		var err error
 		uri, err = s.storer.GenerateImageURI(ctx, os.Getenv("GCS_BUCKET_1"), *disease.ImagePath)
 		if err != nil {
-			return nil, err
+			return model.TomatoDiseaseResponse{}, err
 		}
 	}
 
 	images, err := s.GetImagesByDiseaseUUID(ctx, disease.DiseaseUUID)
 	if err != nil {
-		return nil, err
+		return model.TomatoDiseaseResponse{}, err
 	}
 
-	informGenerator(&disease, inform, images)
+	informGenerator(&disease, inform, &images)
 
-	resp := &model.TomatoDiseaseResponse{
+	resp := model.TomatoDiseaseResponse{
 		UUID:     disease.DiseaseUUID,
 		ImageURL: &uri,
 		Name:     disease.DiseaseName,
@@ -124,7 +124,7 @@ func (s *tomatoDiseaseServices) GetTomatoDiseaseByName(ctx context.Context, dise
 }
 
 // func (inform *tomatoDiseaseInform) informGenerator(disease model.TomatoDisease) {
-func informGenerator(disease *model.TomatoDisease, inform *model.TomatoDiseaseInform, images *[]*model.TomatoDiseaseImageResponse) {
+func informGenerator(disease *model.TomatoDisease, inform *model.TomatoDiseaseInform, images *[]model.TomatoDiseaseImageResponse) {
 	imgMap := make(map[string][]model.TomatoDiseaseInformImage, 0)
 	for _, item := range *images {
 		imgMap[item.Column] = append(imgMap[item.Column],
@@ -190,7 +190,7 @@ func (s *tomatoDiseaseServices) DeleteDiseaseImage(ctx context.Context, diseaseU
 	})
 }
 
-func (s *tomatoDiseaseServices) GetImagesByDiseaseUUID(ctx context.Context, diseaseUUID uuid.UUID) (*[]*model.TomatoDiseaseImageResponse, error) {
+func (s *tomatoDiseaseServices) GetImagesByDiseaseUUID(ctx context.Context, diseaseUUID uuid.UUID) ([]model.TomatoDiseaseImageResponse, error) {
 	resp, err := s.rdb.GetTomatoDiseasesCacheByUUID(ctx, model.REDIS_TMT_DISEASE_UUID_MAP(diseaseUUID))
 	if err != nil {
 		if s.rdb.IsNil(err) {
@@ -199,7 +199,7 @@ func (s *tomatoDiseaseServices) GetImagesByDiseaseUUID(ctx context.Context, dise
 				return nil, err
 			}
 
-			resp = make([]*model.TomatoDiseaseImageResponse, len(disease))
+			resp = make([]model.TomatoDiseaseImageResponse, len(disease))
 
 			ch := make(chan error, len(disease))
 
@@ -208,7 +208,7 @@ func (s *tomatoDiseaseServices) GetImagesByDiseaseUUID(ctx context.Context, dise
 					uri, err := s.storer.GenerateImageURI(ctx, os.Getenv("GCS_BUCKET_1"), i.ImagePath)
 					ch <- err
 
-					respT := &model.TomatoDiseaseImageResponse{
+					respT := model.TomatoDiseaseImageResponse{
 						UUID:      i.UUID,
 						ImageURI:  uri,
 						Column:    i.Column,
@@ -230,13 +230,13 @@ func (s *tomatoDiseaseServices) GetImagesByDiseaseUUID(ctx context.Context, dise
 				return nil, err
 			}
 
-			return &resp, nil
+			return resp, nil
 		}
 
 		return nil, err
 	}
 
-	return &resp, nil
+	return resp, nil
 }
 
 func (s *tomatoDiseaseServices) UpdateDiseaseInfo(ctx context.Context, diseaseUUID uuid.UUID, column string, text string) error {
