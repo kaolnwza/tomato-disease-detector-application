@@ -9,6 +9,32 @@ restart
 kubectl rollout restart deployment tomato -n tomato
 
 ---
+
+# Content
+
+- TODO
+- Kubernetes Installation Guide
+- Application Architecture
+- Hexagonal Architecture
+- Infrastructure
+
+---
+
+# TODO
+### Something i just learned/notic/want2do after project has done, but i'll improve them.
+
+- CQRS Pattern
+- Validation data
+- CICD
+- Unit test 😈
+- Model Per Layer
+- Hexagonal On Prediction Services
+- Handler Error on Bussiness Logic
+- Reduce prediction images SIZE on linux build (k8s doesn't support arm64 image building (on this kind))
+- Log centralize on k8s (for replica node)
+
+
+---
 <br />
 
 # Tomato App's Kubenetes installation guild
