@@ -9,7 +9,7 @@ import (
 )
 
 type UploadRepository interface {
-	Upload(context.Context, *model.Upload) error
+	Upload(context.Context, *model.Upload) (uuid.UUID, error)
 }
 
 type UploadService interface {

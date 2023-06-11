@@ -2,8 +2,10 @@ package pgsql
 
 import (
 	"context"
+	"database/sql"
 	model "tomato-api/internal/core/models"
 	port "tomato-api/internal/ports"
+	"tomato-api/lib/helper"
 
 	"github.com/google/uuid"
 )
@@ -16,7 +18,7 @@ func NewUserFarmRepository(tx port.Transactor) port.UserFarmRepository {
 	return &usrFarmRepo{tx: tx}
 }
 
-func (r *usrFarmRepo) FetchUserFarmInfo(ctx context.Context, user *model.UserFarm, userUUID uuid.UUID, farmUUID uuid.UUID) error {
+func (r *usrFarmRepo) FetchUserFarmInfo(ctx context.Context, userUUID uuid.UUID, farmUUID uuid.UUID) (model.UserFarm, error) {
 	query := `
 		SELECT 
 			user_farm_uuid,
@@ -31,10 +33,24 @@ func (r *usrFarmRepo) FetchUserFarmInfo(ctx context.Context, user *model.UserFar
 			AND is_active IS TRUE
 	`
 
-	return r.tx.GetOne(ctx, user, query, farmUUID, userUUID)
+	userFarmDB := model.UserFarmDB{}
+	if err := r.tx.GetOne(ctx, &userFarmDB, query, farmUUID, userUUID); err != nil {
+		if err == sql.ErrNoRows {
+			return model.UserFarm{}, nil
+		}
+
+		return model.UserFarm{}, err
+	}
+
+	userFarm := model.UserFarm{}
+	if err := helper.StructCopy(userFarmDB, &userFarm); err != nil {
+		return model.UserFarm{}, err
+	}
+
+	return userFarm, nil
 }
 
-func (r *usrFarmRepo) GetAll(ctx context.Context, users *[]*model.UserFarm, farmUUID uuid.UUID, limit int, offset int) error {
+func (r *usrFarmRepo) GetAll(ctx context.Context, farmUUID uuid.UUID, limit int, offset int) ([]model.UserFarm, error) {
 	query := `
 		SELECT
 			user_farm_uuid,
@@ -53,7 +69,22 @@ func (r *usrFarmRepo) GetAll(ctx context.Context, users *[]*model.UserFarm, farm
 		LIMIT $3
 	`
 
-	return r.tx.Get(ctx, users, query, farmUUID, offset, limit)
+	userFarmDB := make([]model.UserFarmDB, 0)
+	if err := r.tx.Get(ctx, &userFarmDB, query, farmUUID, offset, limit); err != nil {
+		if err == sql.ErrNoRows {
+			return []model.UserFarm{}, nil
+		}
+
+		return []model.UserFarm{}, err
+	}
+
+	userFarm := make([]model.UserFarm, 0)
+	if err := helper.StructCopy(userFarmDB, &userFarm); err != nil {
+		return []model.UserFarm{}, err
+	}
+
+	return userFarm, nil
+
 }
 
 func (r *usrFarmRepo) AddUserFarm(ctx context.Context, farmUUID uuid.UUID, newUserUUID uuid.UUID, role model.UserFarmRole) error {

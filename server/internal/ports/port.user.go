@@ -8,10 +8,10 @@ import (
 )
 
 type UserRepository interface {
-	Create(ctx context.Context, dest *model.User, providerType model.ProviderType, providerID string) error
-	GetUserByProviderID(ctx context.Context, dest *model.User, providerType model.ProviderType, providerID string) error
-	GetUserByUUID(ctx context.Context, dest *model.User, userUUID uuid.UUID) error
-	GetUserByMemberID(ctx context.Context, dest *model.User, memberID string) error
+	Create(ctx context.Context, dest model.User, providerType model.ProviderType, providerID string) error
+	GetUserByProviderID(ctx context.Context, providerType model.ProviderType, providerID string) (model.User, error)
+	GetUserByUUID(ctx context.Context, userUUID uuid.UUID) (model.User, error)
+	GetUserByMemberID(ctx context.Context, memberID string) (model.User, error)
 }
 
 type UserService interface {

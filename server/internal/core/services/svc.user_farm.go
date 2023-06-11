@@ -18,9 +18,8 @@ func NewUserFarmService(tx port.Transactor, usrFarmRepo port.UserFarmRepository)
 }
 
 func (s *usrFarmSvc) FetchUserFarmInfo(ctx context.Context, userUUID uuid.UUID, farmUUID uuid.UUID) (*model.UserFarm, error) {
-	user := model.UserFarm{}
-
-	if err := s.usrFarmRepo.FetchUserFarmInfo(ctx, &user, userUUID, farmUUID); err != nil {
+	user, err := s.usrFarmRepo.FetchUserFarmInfo(ctx, userUUID, farmUUID)
+	if err != nil {
 		return nil, err
 	}
 
@@ -28,9 +27,8 @@ func (s *usrFarmSvc) FetchUserFarmInfo(ctx context.Context, userUUID uuid.UUID, 
 }
 
 func (s *usrFarmSvc) IsUserFarmOwner(ctx context.Context, userUUID uuid.UUID, farmUUID uuid.UUID) (*bool, error) {
-	user := model.UserFarm{}
-
-	if err := s.usrFarmRepo.FetchUserFarmInfo(ctx, &user, userUUID, farmUUID); err != nil {
+	user, err := s.usrFarmRepo.FetchUserFarmInfo(ctx, userUUID, farmUUID)
+	if err != nil {
 		return nil, err
 	}
 
@@ -39,9 +37,9 @@ func (s *usrFarmSvc) IsUserFarmOwner(ctx context.Context, userUUID uuid.UUID, fa
 	return &isOwer, nil
 }
 
-func (s *usrFarmSvc) GetAll(ctx context.Context, farmUUID uuid.UUID, limit int, offset int) (*[]*model.UserFarm, error) {
-	users := make([]*model.UserFarm, 0)
-	if err := s.usrFarmRepo.GetAll(ctx, &users, farmUUID, limit, offset); err != nil {
+func (s *usrFarmSvc) GetAll(ctx context.Context, farmUUID uuid.UUID, limit int, offset int) (*[]model.UserFarm, error) {
+	users, err := s.usrFarmRepo.GetAll(ctx, farmUUID, limit, offset)
+	if err != nil {
 		return nil, err
 	}
 

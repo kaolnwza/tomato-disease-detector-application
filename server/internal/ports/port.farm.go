@@ -9,10 +9,10 @@ import (
 
 type FarmRepository interface {
 	Create(ctx context.Context, farmName string, userUUID uuid.UUID, location string) error
-	GetAll(ctx context.Context, farm *[]*model.Farm, userUUID uuid.UUID) error
+	GetAll(ctx context.Context, userUUID uuid.UUID) ([]model.Farm, error)
 	Update(ctx context.Context, farmUUID uuid.UUID, farmName string, location string) error
 	Delete(ctx context.Context, farmUUID uuid.UUID) error
-	GetByUUID(ctx context.Context, farm *model.Farm, farmUUID uuid.UUID) error
+	GetByUUID(ctx context.Context, farmUUID uuid.UUID) (model.Farm, error)
 }
 
 type FarmService interface {

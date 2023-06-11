@@ -33,7 +33,8 @@ func NewTomatoLogService(r port.TomatoLogRepository, tx port.Transactor, uploadS
 }
 
 func (s *tomatoLogService) GetByFarmUUID(ctx context.Context, farmUUID uuid.UUID, userUUID uuid.UUID, startTime *time.Time, endTime *time.Time, diseaseListString string) ([]*model.TomatoLogResponse, error) {
-	logs := []*model.TomatoLog{}
+	logs := []model.TomatoLog{}
+	var err error
 
 	disease := []model.TomatoDiseaseName{
 		model.TOMATO_DISEASE_NAME_SPIDER_MITES,
@@ -55,12 +56,14 @@ func (s *tomatoLogService) GetByFarmUUID(ctx context.Context, farmUUID uuid.UUID
 	}
 
 	if startTime != nil && endTime != nil {
-		if err := s.tlRepo.GetByFarmUUIDWithTime(ctx, &logs, farmUUID, startTime, endTime, disease); err != nil {
+		logs, err = s.tlRepo.GetByFarmUUIDWithTime(ctx, farmUUID, startTime, endTime, disease)
+		if err != nil {
 			return nil, err
 		}
 
 	} else {
-		if err := s.tlRepo.GetByFarmUUID(ctx, &logs, farmUUID, disease); err != nil {
+		logs, err = s.tlRepo.GetByFarmUUID(ctx, farmUUID, disease)
+		if err != nil {
 			return nil, err
 		}
 	}
@@ -73,14 +76,14 @@ func (s *tomatoLogService) GetByFarmUUID(ctx context.Context, farmUUID uuid.UUID
 	errCh := make(chan error)
 
 	for idx, i := range logs {
-		lat, long := helper.PointToLatLong(i.Location.String)
+		lat, long := helper.PointToLatLong(i.Location)
 
 		resp = append(resp, &model.TomatoLogResponse{
 			TomatoLogUUID:   i.TomatoLogUUID,
 			RecorderUUID:    i.RecorderUUID,
 			DiseaseName:     i.TomatoDiseaseInfo.DiseaseName,
 			DiseaseNameThai: i.TomatoDiseaseInfo.DiseaseNameThai,
-			Description:     &i.Description.String,
+			Description:     &i.Description,
 			CreatedAt:       i.CreatedAt,
 			UpdatedAt:       i.UpdatedAt,
 			Latitude:        lat,
@@ -89,7 +92,7 @@ func (s *tomatoLogService) GetByFarmUUID(ctx context.Context, farmUUID uuid.UUID
 			Score:           i.Score,
 		})
 
-		go func(i *model.TomatoLog, idx int, respI *model.TomatoLogResponse) {
+		go func(i model.TomatoLog, idx int, respI *model.TomatoLogResponse) {
 			uri, err := s.storer.GenerateImageURI(ctx, os.Getenv("GCS_BUCKET_1"), i.UploadPath)
 			errCh <- err
 
@@ -108,54 +111,9 @@ func (s *tomatoLogService) GetByFarmUUID(ctx context.Context, farmUUID uuid.UUID
 	return resp, nil
 }
 
-// func (s *tomatoLogService) GetByUserUUID(ctx context.Context, userUUID uuid.UUID, farmUUID uuid.UUID) ([]*model.TomatoLogResponse, error) {
-// 	logs := []*model.TomatoLog{}
-// 	if err := s.tlRepo.GetByUserUUID(ctx, &logs, userUUID, farmUUID); err != nil {
-// 		log.Error(err)
-// 		return nil, err
-// 	}
-
-// 	errCh := make(chan error)
-// 	resp := []*model.TomatoLogResponse{}
-
-// 	for idx, i := range logs {
-// 		fmt.Println(i.Location.String)
-// 		lat, long := helper.PointToLatLong(i.Location.String)
-
-// 		resp = append(resp, &model.TomatoLogResponse{
-// 			TomatoLogUUID:   i.TomatoLogUUID,
-// 			RecorderUUID:    i.RecorderUUID,
-// 			DiseaseName:     i.TomatoDiseaseInfo.DiseaseName,
-// 			DiseaseNameThai: i.TomatoDiseaseInfo.DiseaseNameThai,
-// 			Description:     &i.Description.String,
-// 			CreatedAt:       i.CreatedAt,
-// 			UpdatedAt:       i.UpdatedAt,
-// 			Latitude:        lat,
-// 			Longtitude:      long,
-// 			Status:          i.Status,
-// 		})
-
-// 		go func(i *model.TomatoLog, respI *model.TomatoLogResponse) {
-// 			uri, err := helper.GenerateImageURI(ctx, os.Getenv("GCS_BUCKET_1"), i.UploadPath)
-// 			errCh <- err
-
-// 			respI.ImageURI = uri
-// 		}(i, resp[idx])
-// 	}
-
-// 	for i := 0; i < len(logs); i++ {
-// 		err := <-errCh
-// 		if err != nil {
-// 			return nil, err
-// 		}
-// 	}
-
-// 	return resp, nil
-// }
-
 func (s *tomatoLogService) GetByLogUUID(ctx context.Context, logUUID uuid.UUID) (*model.TomatoLogResponse, error) {
-	var logs model.TomatoLog
-	if err := s.tlRepo.GetByLogUUID(ctx, &logs, logUUID); err != nil {
+	logs, err := s.tlRepo.GetByLogUUID(ctx, logUUID)
+	if err != nil {
 		log.Error(err)
 		return nil, err
 	}
@@ -170,7 +128,7 @@ func (s *tomatoLogService) GetByLogUUID(ctx context.Context, logUUID uuid.UUID) 
 		RecorderUUID:    logs.RecorderUUID,
 		DiseaseName:     logs.TomatoDiseaseInfo.DiseaseName,
 		DiseaseNameThai: logs.TomatoDiseaseInfo.DiseaseNameThai,
-		Description:     &logs.Description.String,
+		Description:     &logs.Description,
 		CreatedAt:       logs.CreatedAt,
 		UpdatedAt:       logs.UpdatedAt,
 		ImageURI:        uri,
@@ -201,8 +159,7 @@ func (s *tomatoLogService) Create(
 
 	var logs model.TomatoLog
 	logs.RecorderUUID = userUUID
-	logs.Description.String = description
-	logs.Description.Valid = description != ""
+	logs.Description = description
 	logs.UploadUUID = upload.UUID
 	geom := helper.LatLongToPoint(lat, long)
 
@@ -234,8 +191,8 @@ func (s *tomatoLogService) GetClusterByFarmUUID(ctx context.Context, farmUUID uu
 		"disease_name": diseaseName,
 	}
 
-	logs := []*model.TomatoSummary{}
-	if err := s.tlRepo.GetClusterByFarmUUID(ctx, &logs, farmUUID, condition); err != nil {
+	logs, err := s.tlRepo.GetClusterByFarmUUID(ctx, farmUUID, condition)
+	if err != nil {
 		return nil, err
 	}
 
@@ -269,20 +226,20 @@ func (s *tomatoLogService) GetClusterByFarmUUID(ctx context.Context, farmUUID uu
 	return &resp, nil
 }
 
-func (s *tomatoLogService) GetLogsPercentageByFarmUUID(ctx context.Context, farmUUID uuid.UUID, startTime string, endTime string) (*[]*model.TomatoLogPercentage, error) {
+func (s *tomatoLogService) GetLogsPercentageByFarmUUID(ctx context.Context, farmUUID uuid.UUID, startTime string, endTime string) (*[]model.TomatoLogPercentage, error) {
 	condition := map[string]string{
 		"start_time": startTime,
 		"end_time":   endTime,
 	}
 
-	logs := []*model.TomatoLogPercentage{}
-	if err := s.tlRepo.GetLogsPercentageByFarmUUID(ctx, &logs, farmUUID, condition); err != nil {
+	logs, err := s.tlRepo.GetLogsPercentageByFarmUUID(ctx, farmUUID, condition)
+	if err != nil {
 		return nil, err
 	}
 
 	imgErr := make(chan error)
 	for _, item := range logs {
-		go func(item *model.TomatoLogPercentage) {
+		go func(item model.TomatoLogPercentage) {
 			url, err := s.storer.GenerateImageURI(ctx, os.Getenv("GCS_BUCKET_1"), item.Path)
 			imgErr <- err
 
@@ -301,13 +258,12 @@ func (s *tomatoLogService) GetLogsPercentageByFarmUUID(ctx context.Context, farm
 }
 
 func (s *tomatoLogService) GetLogsPercentageDailyByFarmUUID(ctx context.Context, farmUUID uuid.UUID, startDate string, endDate string) (*[]*model.TomatoLogPercentageDailyResponse, error) {
-
-	logs := make([]*model.TomatoLogPercentage, 0)
-	resp := make([]*model.TomatoLogPercentageDailyResponse, 0)
-	if err := s.tlRepo.GetLogsPercentageDailyByFarmUUID(ctx, &logs, farmUUID, startDate, endDate); err != nil {
+	logs, err := s.tlRepo.GetLogsPercentageDailyByFarmUUID(ctx, farmUUID, startDate, endDate)
+	if err != nil {
 		return nil, err
 	}
 
+	resp := make([]*model.TomatoLogPercentageDailyResponse, 0)
 	if err := helper.StructCopy(logs, &resp); err != nil {
 		return nil, err
 	}

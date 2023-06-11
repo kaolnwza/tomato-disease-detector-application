@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"database/sql"
 	"strings"
 	model "tomato-api/internal/core/models"
 	port "tomato-api/internal/ports"
@@ -25,8 +24,8 @@ func NewUserService(r port.UserRepository, tx port.Transactor) port.UserService 
 }
 
 func (s userService) GetUserByProviderID(ctx context.Context, providerType model.ProviderType, providerID string) (*model.UserResponse, error) {
-	user := model.User{}
-	if err := s.userRepo.GetUserByProviderID(ctx, &user, providerType, providerID); err != nil {
+	user, err := s.userRepo.GetUserByProviderID(ctx, providerType, providerID)
+	if err != nil {
 		return nil, err
 	}
 
@@ -41,20 +40,22 @@ func (s userService) GetUserByProviderID(ctx context.Context, providerType model
 func (s userService) GoogleLogin(ctx context.Context, providerType model.ProviderType, providerID string, email string, name string) (*string, *string, error) {
 	user := model.User{}
 	if err := s.tx.WithinTransaction(ctx, func(tx context.Context) error {
-		if err := s.userRepo.GetUserByProviderID(tx, &user, providerType, providerID); err != nil && err != sql.ErrNoRows {
+		var err error
+
+		user, err = s.userRepo.GetUserByProviderID(tx, providerType, providerID)
+		if err != nil {
 			return err
 		}
 
 		if user.UserUUID == uuid.Nil {
-			user.Email.String = email
-			user.Email.Valid = email != ""
+			user.Email = email
 			if name != "" {
 				name := strings.Split(name, " ")
 				user.FirstName = name[0]
 				user.LastName = name[1]
 			}
 
-			if err := s.userRepo.Create(tx, &user, providerType, providerID); err != nil {
+			if err := s.userRepo.Create(tx, user, providerType, providerID); err != nil {
 				return err
 			}
 		}
@@ -77,12 +78,8 @@ func (s userService) GoogleLogin(ctx context.Context, providerType model.Provide
 
 func (s userService) DeviceLogin(ctx context.Context, providerType model.ProviderType, deviceId string, fullname string) (*string, *string, error) {
 
-	user := model.User{}
-	if err := s.userRepo.GetUserByProviderID(ctx, &user, model.PROVIDER_TYPE_DEVICE_ID, deviceId); err != nil {
-		if err != sql.ErrNoRows {
-			return nil, nil, err
-		}
-
+	user, err := s.userRepo.GetUserByProviderID(ctx, model.PROVIDER_TYPE_DEVICE_ID, deviceId)
+	if err != nil {
 		nameSplit := []string{"", ""}
 		if fullname != "" {
 			temp := strings.Split(fullname, " ")
@@ -92,13 +89,14 @@ func (s userService) DeviceLogin(ctx context.Context, providerType model.Provide
 				nameSplit[0] = temp[0]
 			}
 		}
+
 		user = model.User{
-			Email:     sql.NullString{"", false},
+			Email:     user.Email,
 			FirstName: nameSplit[0],
 			LastName:  nameSplit[1],
 		}
 
-		if err := s.userRepo.Create(ctx, &user, providerType, deviceId); err != nil {
+		if err := s.userRepo.Create(ctx, user, providerType, deviceId); err != nil {
 			return nil, nil, err
 		}
 	}
@@ -114,8 +112,8 @@ func (s userService) DeviceLogin(ctx context.Context, providerType model.Provide
 }
 
 func (s userService) GetUserByUUID(ctx context.Context, userUUID uuid.UUID) (*model.UserResponse, error) {
-	user := model.User{}
-	if err := s.userRepo.GetUserByUUID(ctx, &user, userUUID); err != nil {
+	user, err := s.userRepo.GetUserByUUID(ctx, userUUID)
+	if err != nil {
 		return nil, err
 	}
 
@@ -128,8 +126,8 @@ func (s userService) GetUserByUUID(ctx context.Context, userUUID uuid.UUID) (*mo
 }
 
 func (s userService) GetUserByMemberID(ctx context.Context, memberID string) (*model.UserResponse, error) {
-	user := model.User{}
-	if err := s.userRepo.GetUserByMemberID(ctx, &user, memberID); err != nil {
+	user, err := s.userRepo.GetUserByMemberID(ctx, memberID)
+	if err != nil {
 		return nil, err
 	}
 

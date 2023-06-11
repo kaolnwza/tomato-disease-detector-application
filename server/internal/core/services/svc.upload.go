@@ -31,9 +31,12 @@ func (s uploadService) Upload(ctx context.Context, userUUID uuid.UUID, file mult
 	}
 
 	upload.UserUUID = userUUID
-	if err := s.uploadRepo.Upload(ctx, upload); err != nil {
+	uploadUUID, err := s.uploadRepo.Upload(ctx, upload)
+	if err != nil {
 		return nil, err
 	}
+
+	upload.UUID = uploadUUID
 
 	return upload, nil
 }

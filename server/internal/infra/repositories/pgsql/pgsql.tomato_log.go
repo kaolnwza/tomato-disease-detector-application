@@ -2,9 +2,11 @@ package pgsql
 
 import (
 	"context"
+	"database/sql"
 	"time"
 	model "tomato-api/internal/core/models"
 	port "tomato-api/internal/ports"
+	"tomato-api/lib/helper"
 
 	"github.com/google/uuid"
 	"github.com/lib/pq"
@@ -18,7 +20,7 @@ func NewTomatoLogRepo(tx port.Transactor) port.TomatoLogRepository {
 	return &tomatoLogRepo{tx: tx}
 }
 
-func (r *tomatoLogRepo) GetByFarmUUID(ctx context.Context, log *[]*model.TomatoLog, farmUUID uuid.UUID, disease []model.TomatoDiseaseName) error {
+func (r *tomatoLogRepo) GetByFarmUUID(ctx context.Context, farmUUID uuid.UUID, disease []model.TomatoDiseaseName) ([]model.TomatoLog, error) {
 	query := `
 		SELECT 
 			tomato_log_uuid,
@@ -44,10 +46,24 @@ func (r *tomatoLogRepo) GetByFarmUUID(ctx context.Context, log *[]*model.TomatoL
 		ORDER BY created_at DESC
  `
 
-	return r.tx.Get(ctx, log, query, farmUUID.String(), pq.Array(disease))
+	logsDB := make([]model.TomatoLogDB, 0)
+	if err := r.tx.Get(ctx, &logsDB, query, farmUUID.String(), pq.Array(disease)); err != nil {
+		if err == sql.ErrNoRows {
+			return []model.TomatoLog{}, nil
+		}
+
+		return []model.TomatoLog{}, err
+	}
+
+	logs := make([]model.TomatoLog, 0)
+	if err := helper.StructCopy(logsDB, &logs); err != nil {
+		return []model.TomatoLog{}, err
+	}
+
+	return logs, nil
 }
 
-func (r *tomatoLogRepo) GetByFarmUUIDWithTime(ctx context.Context, log *[]*model.TomatoLog, farmUUID uuid.UUID, startTime *time.Time, endTime *time.Time, diseaseList []model.TomatoDiseaseName) error {
+func (r *tomatoLogRepo) GetByFarmUUIDWithTime(ctx context.Context, farmUUID uuid.UUID, startTime *time.Time, endTime *time.Time, diseaseList []model.TomatoDiseaseName) ([]model.TomatoLog, error) {
 	query := `
 		SELECT 
 			tomato_log_uuid,
@@ -75,10 +91,24 @@ func (r *tomatoLogRepo) GetByFarmUUIDWithTime(ctx context.Context, log *[]*model
 		ORDER BY created_at DESC
  `
 
-	return r.tx.Get(ctx, log, query, farmUUID.String(), startTime, endTime, pq.Array(diseaseList))
+	logsDB := make([]model.TomatoLogDB, 0)
+	if err := r.tx.Get(ctx, &logsDB, query, farmUUID.String(), startTime, endTime, pq.Array(diseaseList)); err != nil {
+		if err == sql.ErrNoRows {
+			return []model.TomatoLog{}, nil
+		}
+
+		return []model.TomatoLog{}, err
+	}
+
+	logs := make([]model.TomatoLog, 0)
+	if err := helper.StructCopy(logsDB, &logs); err != nil {
+		return []model.TomatoLog{}, err
+	}
+
+	return logs, nil
 }
 
-func (r *tomatoLogRepo) GetByUserUUID(ctx context.Context, log *[]*model.TomatoLog, userUUID uuid.UUID, farmUUID uuid.UUID) error {
+func (r *tomatoLogRepo) GetByUserUUID(ctx context.Context, userUUID uuid.UUID, farmUUID uuid.UUID) ([]model.TomatoLog, error) {
 	query := `
 		SELECT 
 			tomato_log_uuid,
@@ -103,10 +133,24 @@ func (r *tomatoLogRepo) GetByUserUUID(ctx context.Context, log *[]*model.TomatoL
 		ORDER BY created_at DESC
  `
 
-	return r.tx.Get(ctx, log, query, userUUID.String(), farmUUID)
+	logsDB := make([]model.TomatoLogDB, 0)
+	if err := r.tx.Get(ctx, &logsDB, query, userUUID.String(), farmUUID); err != nil {
+		if err == sql.ErrNoRows {
+			return []model.TomatoLog{}, nil
+		}
+
+		return []model.TomatoLog{}, err
+	}
+
+	logs := make([]model.TomatoLog, 0)
+	if err := helper.StructCopy(logsDB, &logs); err != nil {
+		return []model.TomatoLog{}, err
+	}
+
+	return logs, nil
 }
 
-func (r *tomatoLogRepo) GetByLogUUID(ctx context.Context, log *model.TomatoLog, logUUID uuid.UUID) error {
+func (r *tomatoLogRepo) GetByLogUUID(ctx context.Context, logUUID uuid.UUID) (model.TomatoLog, error) {
 	query := `
 		SELECT 
 			tomato_log_uuid,
@@ -125,7 +169,21 @@ func (r *tomatoLogRepo) GetByLogUUID(ctx context.Context, log *model.TomatoLog, 
 		ORDER BY created_at DESC
  `
 
-	return r.tx.GetOne(ctx, log, query, logUUID.String())
+	logDB := model.TomatoLogDB{}
+	if err := r.tx.GetOne(ctx, &logDB, query, logUUID.String()); err != nil {
+		if err == sql.ErrNoRows {
+			return model.TomatoLog{}, nil
+		}
+
+		return model.TomatoLog{}, err
+	}
+
+	logs := model.TomatoLog{}
+	if err := helper.StructCopy(logDB, &logs); err != nil {
+		return model.TomatoLog{}, err
+	}
+
+	return logs, nil
 }
 
 func (r *tomatoLogRepo) Create(
@@ -167,7 +225,7 @@ func (r *tomatoLogRepo) Update(ctx context.Context, logUUID uuid.UUID, desc stri
 	return r.tx.Insert(ctx, query, logUUID, desc, diseaseName, location, status)
 }
 
-func (r *tomatoLogRepo) GetClusterByFarmUUID(ctx context.Context, logs *[]*model.TomatoSummary, farmUUID uuid.UUID, condition map[string]string) error {
+func (r *tomatoLogRepo) GetClusterByFarmUUID(ctx context.Context, farmUUID uuid.UUID, condition map[string]string) ([]model.TomatoSummary, error) {
 	dateCond := ``
 	if condition["start_time"] != "" && condition["end_time"] != "" {
 		dateCond = `
@@ -239,10 +297,24 @@ func (r *tomatoLogRepo) GetClusterByFarmUUID(ctx context.Context, logs *[]*model
 	-- 	)
 	`
 
-	return r.tx.Get(ctx, logs, query, farmUUID)
+	logsDB := make([]model.TomatoSummaryDB, 0)
+	if err := r.tx.Get(ctx, &logsDB, query, farmUUID); err != nil {
+		if err == sql.ErrNoRows {
+			return []model.TomatoSummary{}, nil
+		}
+
+		return []model.TomatoSummary{}, err
+	}
+
+	logs := []model.TomatoSummary{}
+	if err := helper.StructCopy(logsDB, &logs); err != nil {
+		return []model.TomatoSummary{}, err
+	}
+
+	return logs, nil
 }
 
-func (r *tomatoLogRepo) GetLogsPercentageByFarmUUID(ctx context.Context, logs *[]*model.TomatoLogPercentage, farmUUID uuid.UUID, condition map[string]string) error {
+func (r *tomatoLogRepo) GetLogsPercentageByFarmUUID(ctx context.Context, farmUUID uuid.UUID, condition map[string]string) ([]model.TomatoLogPercentage, error) {
 	dateCond := ``
 	if condition["start_time"] != "" && condition["end_time"] != "" {
 		dateCond = `
@@ -288,10 +360,24 @@ func (r *tomatoLogRepo) GetLogsPercentageByFarmUUID(ctx context.Context, logs *[
 	GROUP BY tomato_disease_uuid, disease_name, upload."path"
 	`
 
-	return r.tx.Get(ctx, logs, query, farmUUID)
+	logsDB := make([]model.TomatoLogPercentageDB, 0)
+	if err := r.tx.Get(ctx, &logsDB, query, farmUUID); err != nil {
+		if err == sql.ErrNoRows {
+			return []model.TomatoLogPercentage{}, nil
+		}
+
+		return []model.TomatoLogPercentage{}, err
+	}
+
+	logs := []model.TomatoLogPercentage{}
+	if err := helper.StructCopy(logsDB, &logs); err != nil {
+		return []model.TomatoLogPercentage{}, err
+	}
+
+	return logs, nil
 }
 
-func (r *tomatoLogRepo) GetLogsPercentageDailyByFarmUUID(ctx context.Context, logs *[]*model.TomatoLogPercentage, farmUUID uuid.UUID, startDate string, endDate string) error {
+func (r *tomatoLogRepo) GetLogsPercentageDailyByFarmUUID(ctx context.Context, farmUUID uuid.UUID, startDate string, endDate string) ([]model.TomatoLogPercentage, error) {
 	query := `
 	WITH log AS (
 		SELECT
@@ -316,7 +402,21 @@ func (r *tomatoLogRepo) GetLogsPercentageDailyByFarmUUID(ctx context.Context, lo
 		ORDER BY created_at::date DESC
 	`
 
-	return r.tx.Get(ctx, logs, query, startDate, endDate, farmUUID)
+	logsDB := make([]model.TomatoLogPercentageDB, 0)
+	if err := r.tx.Get(ctx, &logsDB, query, startDate, endDate, farmUUID); err != nil {
+		if err == sql.ErrNoRows {
+			return []model.TomatoLogPercentage{}, nil
+		}
+
+		return []model.TomatoLogPercentage{}, err
+	}
+
+	logs := []model.TomatoLogPercentage{}
+	if err := helper.StructCopy(logsDB, &logs); err != nil {
+		return []model.TomatoLogPercentage{}, err
+	}
+
+	return logs, nil
 }
 
 func (r *tomatoLogRepo) UpdateLogStatusByLogUUID(ctx context.Context, logUUID uuid.UUID, status model.TomatoLogStatus) error {

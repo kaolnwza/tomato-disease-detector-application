@@ -4,6 +4,7 @@ import (
 	"context"
 	model "tomato-api/internal/core/models"
 	port "tomato-api/internal/ports"
+	"tomato-api/lib/helper"
 
 	"github.com/google/uuid"
 )
@@ -35,7 +36,7 @@ func (r *farmRepo) Create(ctx context.Context, farmName string, userUUID uuid.UU
 	return r.tx.Insert(ctx, query, farmName, userUUID)
 }
 
-func (r *farmRepo) GetAll(ctx context.Context, farm *[]*model.Farm, userUUID uuid.UUID) error {
+func (r *farmRepo) GetAll(ctx context.Context, userUUID uuid.UUID) ([]model.Farm, error) {
 	query := `
 		SELECT
 			farm_uuid,
@@ -54,10 +55,20 @@ func (r *farmRepo) GetAll(ctx context.Context, farm *[]*model.Farm, userUUID uui
 		AND is_active IS TRUE
 	`
 
-	return r.tx.Get(ctx, farm, query, userUUID)
+	farmDB := make([]model.FarmDB, 0)
+	if err := r.tx.Get(ctx, &farmDB, query, userUUID); err != nil {
+		return nil, err
+	}
+
+	farm := make([]model.Farm, 0)
+	if err := helper.StructCopy(farmDB, &farm); err != nil {
+		return nil, err
+	}
+
+	return farm, nil
 }
 
-func (r *farmRepo) GetByUUID(ctx context.Context, farm *model.Farm, farmUUID uuid.UUID) error {
+func (r *farmRepo) GetByUUID(ctx context.Context, farmUUID uuid.UUID) (model.Farm, error) {
 	query := `
 		SELECT
 			farm_uuid,
@@ -70,7 +81,17 @@ func (r *farmRepo) GetByUUID(ctx context.Context, farm *model.Farm, farmUUID uui
 		AND farm_uuid = $1
 	`
 
-	return r.tx.GetOne(ctx, farm, query, farmUUID)
+	farmDB := model.FarmDB{}
+	if err := r.tx.GetOne(ctx, &farmDB, query, farmUUID); err != nil {
+		return model.Farm{}, err
+	}
+
+	farm := model.Farm{}
+	if err := helper.StructCopy(farmDB, &farm); err != nil {
+		return model.Farm{}, err
+	}
+
+	return farm, nil
 }
 
 func (r *farmRepo) Delete(ctx context.Context, farmUUID uuid.UUID) error {

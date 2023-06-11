@@ -28,11 +28,11 @@ func NewTomatoDiseaseServices(r port.TomatoDiseaseRepository, db port.Transactor
 }
 
 func (s *tomatoDiseaseServices) GetTomatoDiseases(ctx context.Context) ([]*model.TomatoDiseaseResponse, error) {
-	resp := make([]*model.TomatoDiseaseResponse, 0)
-	if err := s.rdb.GetValue(ctx, model.REDIS_TMT_DISEASE, &resp); err != nil {
+	resp, err := s.rdb.GetTomatoDiseasesCache(ctx)
+	if err != nil {
 		if s.rdb.IsNil(err) {
-			disease := []*model.TomatoDisease{}
-			if err := s.tdsRepo.GetAll(ctx, &disease); err != nil {
+			disease, err := s.tdsRepo.GetAll(ctx)
+			if err != nil {
 				return nil, err
 			}
 
@@ -41,7 +41,7 @@ func (s *tomatoDiseaseServices) GetTomatoDiseases(ctx context.Context) ([]*model
 			ch := make(chan error, len(disease))
 
 			for idx, i := range disease {
-				go func(i *model.TomatoDisease, idx int, ctx context.Context) {
+				go func(i model.TomatoDisease, idx int, ctx context.Context) {
 					inform := model.NewTomatoDiseaseInform()
 
 					uri, imgErr := s.storer.GenerateImageURI(ctx, os.Getenv("GCS_BUCKET_1"), *i.ImagePath)
@@ -52,7 +52,7 @@ func (s *tomatoDiseaseServices) GetTomatoDiseases(ctx context.Context) ([]*model
 						return
 					}
 
-					informGenerator(i, inform, images)
+					informGenerator(&i, inform, images)
 
 					respT := &model.TomatoDiseaseResponse{
 						UUID:     i.DiseaseUUID,
@@ -90,8 +90,8 @@ func (s *tomatoDiseaseServices) GetTomatoDiseases(ctx context.Context) ([]*model
 }
 
 func (s *tomatoDiseaseServices) GetTomatoDiseaseByName(ctx context.Context, diseaseName string) (*model.TomatoDiseaseResponse, error) {
-	disease := &model.TomatoDisease{}
-	if err := s.tdsRepo.GetByName(ctx, diseaseName, disease); err != nil {
+	disease, err := s.tdsRepo.GetByName(ctx, diseaseName)
+	if err != nil {
 		return nil, err
 	}
 
@@ -110,7 +110,7 @@ func (s *tomatoDiseaseServices) GetTomatoDiseaseByName(ctx context.Context, dise
 		return nil, err
 	}
 
-	informGenerator(disease, inform, images)
+	informGenerator(&disease, inform, images)
 
 	resp := &model.TomatoDiseaseResponse{
 		UUID:     disease.DiseaseUUID,
@@ -191,11 +191,11 @@ func (s *tomatoDiseaseServices) DeleteDiseaseImage(ctx context.Context, diseaseU
 }
 
 func (s *tomatoDiseaseServices) GetImagesByDiseaseUUID(ctx context.Context, diseaseUUID uuid.UUID) (*[]*model.TomatoDiseaseImageResponse, error) {
-	resp := make([]*model.TomatoDiseaseImageResponse, 0)
-	if err := s.rdb.GetValue(ctx, model.REDIS_TMT_DISEASE_UUID_MAP(diseaseUUID), &resp); err != nil {
+	resp, err := s.rdb.GetTomatoDiseasesCacheByUUID(ctx, model.REDIS_TMT_DISEASE_UUID_MAP(diseaseUUID))
+	if err != nil {
 		if s.rdb.IsNil(err) {
-			disease := make([]*model.TomatoDiseaseImage, 0)
-			if err := s.tdsRepo.GetImagesByDiseaseUUID(ctx, diseaseUUID, &disease); err != nil {
+			disease, err := s.tdsRepo.GetImagesByDiseaseUUID(ctx, diseaseUUID)
+			if err != nil {
 				return nil, err
 			}
 
@@ -204,7 +204,7 @@ func (s *tomatoDiseaseServices) GetImagesByDiseaseUUID(ctx context.Context, dise
 			ch := make(chan error, len(disease))
 
 			for idx, i := range disease {
-				go func(i *model.TomatoDiseaseImage, idx int) {
+				go func(i model.TomatoDiseaseImage, idx int) {
 					uri, err := s.storer.GenerateImageURI(ctx, os.Getenv("GCS_BUCKET_1"), i.ImagePath)
 					ch <- err
 

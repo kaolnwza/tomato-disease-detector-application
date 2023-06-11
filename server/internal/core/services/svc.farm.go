@@ -40,17 +40,17 @@ func (s *farmSvc) Create(ctx context.Context, farmName string, userUUID uuid.UUI
 }
 
 func (s *farmSvc) GetAll(ctx context.Context, userUUID uuid.UUID) (*[]*model.FarmResponse, error) {
-	farm := []*model.Farm{}
-	resp := []*model.FarmResponse{}
-	if err := s.farmRepo.GetAll(ctx, &farm, userUUID); err != nil {
+	farm, err := s.farmRepo.GetAll(ctx, userUUID)
+	if err != nil {
 		return nil, err
 	}
 
+	resp := []*model.FarmResponse{}
 	for _, item := range farm {
 		ls := []*model.LineString{}
 
-		if item.FarmLocation.Valid {
-			ls = *helper.LineToLatLong(item.FarmLocation.String)
+		if item.FarmLocation != "" {
+			ls = *helper.LineToLatLong(item.FarmLocation)
 		}
 
 		resp = append(resp, &model.FarmResponse{
@@ -65,8 +65,8 @@ func (s *farmSvc) GetAll(ctx context.Context, userUUID uuid.UUID) (*[]*model.Far
 }
 
 func (s *farmSvc) DeleteFarmByUUID(ctx context.Context, userUUID uuid.UUID, farmUUID uuid.UUID) error {
-	userFarm := &model.UserFarm{}
-	if err := s.usrFarmRepo.FetchUserFarmInfo(ctx, userFarm, userUUID, farmUUID); err != nil {
+	userFarm, err := s.usrFarmRepo.FetchUserFarmInfo(ctx, userUUID, farmUUID)
+	if err != nil {
 		return err
 	}
 
@@ -89,8 +89,8 @@ func (s *farmSvc) UpdateFarmByUUID(ctx context.Context, userUUID uuid.UUID, farm
 
 	}
 
-	userFarm := &model.UserFarm{}
-	if err := s.usrFarmRepo.FetchUserFarmInfo(ctx, userFarm, userUUID, farmUUID); err != nil {
+	userFarm, err := s.usrFarmRepo.FetchUserFarmInfo(ctx, userUUID, farmUUID)
+	if err != nil {
 		return err
 	}
 

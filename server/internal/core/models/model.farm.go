@@ -7,12 +7,20 @@ import (
 	"github.com/google/uuid"
 )
 
+type FarmDB struct {
+	FarmUUID     uuid.UUID      `db:"farm_uuid" json:"farm_uuid"`
+	FarmName     string         `db:"farm_name" json:"farm_name"`
+	FarmLocation sql.NullString `db:"farm_location" json:"farm_location"`
+	IsActive     bool           `db:"is_active" json:"is_active"`
+	CreatedAt    time.Time      `db:"created_at" json:"created_at"`
+}
+
 type Farm struct {
-	FarmUUID     uuid.UUID      `db:"farm_uuid"`
-	FarmName     string         `db:"farm_name"`
-	FarmLocation sql.NullString `db:"farm_location"`
-	IsActive     bool           `db:"is_active"`
-	CreatedAt    time.Time      `db:"created_at"`
+	FarmUUID     uuid.UUID `db:"farm_uuid" json:"farm_uuid"`
+	FarmName     string    `db:"farm_name" json:"farm_name"`
+	FarmLocation string    `db:"farm_location" json:"farm_location"`
+	IsActive     bool      `db:"is_active" json:"is_active"`
+	CreatedAt    time.Time `db:"created_at" json:"created_at"`
 }
 
 type FarmResponse struct {

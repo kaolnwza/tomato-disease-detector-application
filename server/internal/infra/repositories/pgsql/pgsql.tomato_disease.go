@@ -5,6 +5,7 @@ import (
 	"fmt"
 	model "tomato-api/internal/core/models"
 	port "tomato-api/internal/ports"
+	"tomato-api/lib/helper"
 
 	"github.com/google/uuid"
 )
@@ -40,7 +41,7 @@ func (r *tomatoDiseaseRepo) Create(ctx context.Context) error {
 
 }
 
-func (r *tomatoDiseaseRepo) GetAll(ctx context.Context, disease *[]*model.TomatoDisease) error {
+func (r *tomatoDiseaseRepo) GetAll(ctx context.Context) ([]model.TomatoDisease, error) {
 	query := `
 		SELECT
 			disease_uuid,
@@ -55,10 +56,20 @@ func (r *tomatoDiseaseRepo) GetAll(ctx context.Context, disease *[]*model.Tomato
 		LEFT JOIN upload ON upload.upload_uuid = tomato_disease_info.upload_uuid
 		WHERE disease_name != 'Healthy'`
 
-	return r.tx.Get(ctx, disease, query)
+	diseaseDB := make([]model.TomatoDiseaseDB, 0)
+	if err := r.tx.Get(ctx, &diseaseDB, query); err != nil {
+		return nil, err
+	}
+
+	disease := make([]model.TomatoDisease, 0)
+	if err := helper.StructCopy(diseaseDB, &disease); err != nil {
+		return nil, err
+	}
+
+	return disease, nil
 }
 
-func (r *tomatoDiseaseRepo) GetByName(ctx context.Context, diseaseName string, disease *model.TomatoDisease) error {
+func (r *tomatoDiseaseRepo) GetByName(ctx context.Context, diseaseName string) (model.TomatoDisease, error) {
 	query := `
 		SELECT
 			disease_uuid,
@@ -73,7 +84,17 @@ func (r *tomatoDiseaseRepo) GetByName(ctx context.Context, diseaseName string, d
 		LEFT JOIN upload ON upload.upload_uuid = tomato_disease_info.upload_uuid
 		WHERE disease_name = $1`
 
-	return r.tx.GetOne(ctx, disease, query, diseaseName)
+	diseaseDB := model.TomatoDiseaseDB{}
+	if err := r.tx.GetOne(ctx, &diseaseDB, query, diseaseName); err != nil {
+		return model.TomatoDisease{}, err
+	}
+
+	disease := model.TomatoDisease{}
+	if err := helper.StructCopy(diseaseDB, &disease); err != nil {
+		return model.TomatoDisease{}, err
+	}
+
+	return disease, nil
 }
 
 func (r *tomatoDiseaseRepo) AddDiseaseImage(ctx context.Context, diseaseUUID uuid.UUID, uploadUUID []uuid.UUID, column string) error {
@@ -102,7 +123,7 @@ func (r *tomatoDiseaseRepo) DeleteDiseaseImage(ctx context.Context, diseaseUUID 
 	return r.tx.Delete(ctx, query, diseaseUUID, imageUUID)
 }
 
-func (r *tomatoDiseaseRepo) GetImagesByDiseaseUUID(ctx context.Context, diseaseUUID uuid.UUID, dest *[]*model.TomatoDiseaseImage) error {
+func (r *tomatoDiseaseRepo) GetImagesByDiseaseUUID(ctx context.Context, diseaseUUID uuid.UUID) ([]model.TomatoDiseaseImage, error) {
 	query := `
 		SELECT
 			uuid,
@@ -117,7 +138,17 @@ func (r *tomatoDiseaseRepo) GetImagesByDiseaseUUID(ctx context.Context, diseaseU
 		ORDER BY created_at DESC
 	`
 
-	return r.tx.Get(ctx, dest, query, diseaseUUID)
+	diseaseDB := make([]model.TomatoDiseaseImageDB, 0)
+	if err := r.tx.Get(ctx, &diseaseDB, query, diseaseUUID); err != nil {
+		return nil, err
+	}
+
+	disease := make([]model.TomatoDiseaseImage, 0)
+	if err := helper.StructCopy(diseaseDB, &disease); err != nil {
+		return nil, err
+	}
+
+	return disease, nil
 }
 
 func (r *tomatoDiseaseRepo) UpdateDiseaseInfo(ctx context.Context, diseaseUUID uuid.UUID, column string, text string) error {

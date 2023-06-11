@@ -25,7 +25,7 @@ var LogStatusToType = map[string]TomatoLogStatus{
 	"monitoring": TOMATO_LOG_STATUS_MONITORING,
 }
 
-type TomatoLog struct {
+type TomatoLogDB struct {
 	TomatoLogUUID     uuid.UUID      `db:"tomato_log_uuid" json:"tomato_log_uuid"`
 	FarmPlotUUID      uuid.UUID      `db:"farm_plot_uuid" json:"-"`
 	RecorderUUID      uuid.UUID      `db:"recorder_uuid" json:"recorder_uuid"`
@@ -36,9 +36,25 @@ type TomatoLog struct {
 	UploadUUID        uuid.UUID      `db:"upload_uuid" json:"upload_uuid"`
 	UploadPath        string         `db:"upload_path" json:"-"`
 	ImageURI          string         `json:"image_uri"`
-	Location          sql.NullString `db:"location"`
-	Status            string         `db:"status"`
-	Score             float64        `db:"score"`
+	Location          string         `db:"location" json:"location"`
+	Status            string         `db:"status" json:"status"`
+	Score             float64        `db:"score" json:"score"`
+}
+
+type TomatoLog struct {
+	TomatoLogUUID     uuid.UUID      `db:"tomato_log_uuid" json:"tomato_log_uuid"`
+	FarmPlotUUID      uuid.UUID      `db:"farm_plot_uuid" json:"-"`
+	RecorderUUID      uuid.UUID      `db:"recorder_uuid" json:"recorder_uuid"`
+	TomatoDiseaseInfo *TomatoDisease `db:"tomato_disease_info"`
+	Description       string         `db:"description" json:"description"`
+	CreatedAt         time.Time      `db:"created_at" json:"created_at"`
+	UpdatedAt         time.Time      `db:"updated_at" json:"updated_at"`
+	UploadUUID        uuid.UUID      `db:"upload_uuid" json:"upload_uuid"`
+	UploadPath        string         `db:"upload_path" json:"-"`
+	ImageURI          string         `json:"image_uri"`
+	Location          string         `db:"location" json:"location"`
+	Status            string         `db:"status" json:"status"`
+	Score             float64        `db:"score" json:"score"`
 }
 
 type TomatoLogResponse struct {
@@ -57,13 +73,22 @@ type TomatoLogResponse struct {
 	Score           float64   `json:"score"`
 }
 
+type TomatoSummaryDB struct {
+	TomatoLogUUID  uuid.UUID      `db:"tomato_log_uuid" json:"tomato_log_uuid"`
+	CenterLocation sql.NullString `db:"center_location" json:"center_location"`
+	Location       sql.NullString `db:"location" json:"location"`
+	DiseaseName    string         `db:"disease_name" json:"disease_name"`
+	Status         string         `db:"status" json:"status"`
+	CreatedAt      time.Time      `db:"created_at" json:"created_at"`
+}
+
 type TomatoSummary struct {
-	TomatoLogUUID  uuid.UUID      `db:"tomato_log_uuid"`
-	CenterLocation sql.NullString `db:"center_location"`
-	Location       sql.NullString `db:"location"`
-	DiseaseName    string         `db:"disease_name"`
-	Status         string         `db:"status"`
-	CreatedAt      time.Time      `db:"created_at"`
+	TomatoLogUUID  uuid.UUID      `db:"tomato_log_uuid" json:"tomato_log_uuid"`
+	CenterLocation sql.NullString `db:"center_location" json:"center_location"`
+	Location       sql.NullString `db:"location" json:"location"`
+	DiseaseName    string         `db:"disease_name" json:"disease_name"`
+	Status         string         `db:"status" json:"status"`
+	CreatedAt      time.Time      `db:"created_at" json:"created_at"`
 }
 
 type TomatoSummaryResponse struct {
@@ -77,6 +102,19 @@ type TomatoSummaryInfo struct {
 	DiseaseName string    `json:"disease_name"`
 	Status      string    `json:"status"`
 	CreatedAt   time.Time `json:"created_at"`
+}
+
+type TomatoLogPercentageDB struct {
+	TomatoDiseaseUUID uuid.UUID `db:"tomato_disease_uuid" json:"tomato_disease_uuid"`
+	DiseaseName       string    `db:"disease_name" json:"disease_name"`
+	LogPercentage     float32   `db:"log_percentage" json:"log_percentage"`
+	DiseasePercentage float32   `db:"disease_percentage" json:"disease_percentage"`
+	TotalLog          int       `db:"total_log" json:"total_log"`
+	TotalDisease      int       `db:"total_disease" json:"total_disease"`
+	TotalCured        int       `db:"total_cured" json:"total_cured"`
+	Path              string    `db:"path" json:"-"`
+	ImageUrl          string    `json:"image_url"`
+	CreatedAt         time.Time `db:"created_at" json:"created_at" `
 }
 
 type TomatoLogPercentage struct {

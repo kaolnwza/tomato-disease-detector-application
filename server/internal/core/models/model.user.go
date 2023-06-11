@@ -6,7 +6,7 @@ import (
 	"github.com/google/uuid"
 )
 
-type User struct {
+type UserDB struct {
 	UserUUID     uuid.UUID      `db:"user_uuid" json:"user_uuid"`
 	FirstName    string         `db:"first_name" json:"first_name"`
 	LastName     string         `db:"last_name" json:"last_name"`
@@ -15,6 +15,17 @@ type User struct {
 	Email        sql.NullString `db:"email" json:"email"`
 	Password     sql.NullString `db:"password" json:"password"`
 	MemberID     string         `db:"member_id" json:"member_id"`
+}
+
+type User struct {
+	UserUUID     uuid.UUID    `db:"user_uuid" json:"user_uuid"`
+	FirstName    string       `db:"first_name" json:"first_name"`
+	LastName     string       `db:"last_name" json:"last_name"`
+	ProviderType ProviderType `db:"token_type" json:"token_type"`
+	Token        string       `db:"token" json:"token"`
+	Email        string       `db:"email" json:"email"`
+	Password     string       `db:"password" json:"password"`
+	MemberID     string       `db:"member_id" json:"member_id"`
 }
 
 type UserResponse struct {
